@@ -5,6 +5,15 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.4.0-alpha (2026-10-11)
+- Nav is now Home, Games (category dropdown), Blog, News, Community, Shop.
+- News tab: short announcements, same post system as the blog (type: 'news' in posts.js), own list and post pages.
+- Community tab: thread list with board filters (General, Ideas, Bugs, Show off), a page per thread with the
+  opening post and a replies area wired to giscus (GitHub Discussions). Replies stay off until repoId/categoryId are set.
+- Shop tab: product grid with type filters, price, Buy / Coming soon / Sold out; Buy links out to an external store.
+- Home: sidebar now shows Latest News, Community threads and the Workshop; new From the Shop row.
+- Mobile menu breakpoint raised to 1000px for the longer nav; fixed the mobile Play Now button.
+
 v0.3.0-alpha (2026-10-11)
 - Rebuilt as a one-person game portal in the style of the reference template: black, crimson, electric yellow,
   cut corners, neon edges, hazard stripes, HUD crosshairs. Saira / Saira Condensed fonts.

@@ -16,10 +16,17 @@ docs/
   blog/index.html         all posts
   blog/<slug>/            one folder per post: the post text lives in its index.html
   blog/_template/         copy this to start a new post
+  news/                   same as blog, for short announcements (news/_template/ to start one)
+  community/index.html    thread list with board filters
+  community/<slug>/       one folder per thread: opening post in index.html, replies via giscus
+  community/_template/
+  shop/index.html         product grid with type filters; images go in shop/img/
   404.html
   css/site.css            the look: black, crimson, electric yellow, cut corners, hazard stripes
   js/data/games.js        THE GAME LIST: every card, category and game page is built from it
-  js/data/posts.js        THE BLOG LIST: titles, dates, tags, excerpts
+  js/data/posts.js        BLOG + NEWS LIST: titles, dates, tags, excerpts (type: 'news' = News tab)
+  js/data/threads.js      COMMUNITY: thread list, boards, giscus settings
+  js/data/products.js     SHOP: products, prices, store links
   js/site.js              builds the header, dropdown, footer and every page from the two lists
   assets/favicon.svg
   CNAME, .nojekyll
@@ -48,10 +55,21 @@ add new category names to `CATEGORIES` at the top of games.js.
 1. Add an entry at the top of `docs/js/data/posts.js` (title, date, tag, excerpt; `game` to link it to a game).
 2. Copy `docs/blog/_template/` to `docs/blog/<slug>/`, set `data-slug`, write the post inside `<article>`.
 
+## Community replies (one-time setup)
+
+Threads are pages you start; replies are stored in GitHub Discussions on this repo through
+[giscus](https://giscus.app). Visitors need a GitHub account to reply. Until it's set up, threads
+show "Replies open soon". Steps are at the top of `docs/js/data/threads.js`.
+
+## Shop
+
+The shop is a storefront only. Each product's `link` points to where it's actually sold
+(itch.io, Ko-fi, Gumroad, a print-on-demand store). No payments happen on this site.
+
 ## Removing the samples
 
 Entries with `sample: true` are placeholders, and while any exist a striped "Preview" bar shows under
-the header. Delete them from both lists and delete their `games/sample-*` and `blog/sample-*` folders.
+the header. Delete them from every list in `docs/js/data/` and delete the matching `sample-*` folders under games/, blog/, news/ and community/.
 
 ## Versioning
 

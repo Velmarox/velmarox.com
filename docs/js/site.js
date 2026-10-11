@@ -2,6 +2,13 @@
   var GAMES = window.GAMES || [];
   var POSTS = (window.POSTS || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
   var CATS = window.CATEGORIES || {};
+  var BLOG = POSTS.filter(function (p) { return p.type !== 'news'; });
+  var NEWS = POSTS.filter(function (p) { return p.type === 'news'; });
+  var THREADS = (window.THREADS || []).slice().sort(function (a, b) {
+    return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (a.date < b.date ? 1 : -1);
+  });
+  var PRODUCTS = window.PRODUCTS || [];
+  var GISCUS = window.GISCUS || {};
   var body = document.body;
   var page = body.dataset.page;
   var slug = body.dataset.slug;
@@ -23,7 +30,8 @@
   }
   function recent(d) { return d && (Date.now() - new Date(d + 'T12:00:00')) < 30 * DAY; }
   function gameUrl(g) { return '/games/' + g.slug + '/'; }
-  function postUrl(p) { return '/blog/' + p.slug + '/'; }
+  function postUrl(p) { return (p.type === 'news' ? '/news/' : '/blog/') + p.slug + '/'; }
+  function threadUrl(t) { return '/community/' + t.slug + '/'; }
   function findGame(s) { return GAMES.filter(function (g) { return g.slug === s; })[0]; }
   function playable(g) { return g.status === 'live' && g.play && g.play !== '#'; }
   function img(src, alt, label) {
@@ -88,6 +96,29 @@
       '</span><span class="live' + (i % 2 ? ' y' : '') + '">' + (g.progress != null ? g.progress + '%' : 'WIP') + '</span></a>';
   }
 
+  function threadRow(t, i) {
+    return '<a class="row" href="' + threadUrl(t) + '"><span class="row-ico">' + (t.pinned ? '&#9650;' : String(i + 1).padStart(2, '0')) + '</span>' +
+      '<span><b>' + esc(t.title) + '</b><small>' + esc(t.board || 'General') + ' · ' + date(t.date) + '</small></span>' +
+      (t.pinned ? '<span class="live y">Pinned</span>' : recent(t.date) ? '<span class="live">New</span>' : '<span></span>') + '</a>';
+  }
+  function productCard(p) {
+    var g = p.game && findGame(p.game);
+    var st = p.status || 'available';
+    var buy = st === 'sold-out' ? '<span class="btn ghost" aria-disabled="true">Sold out</span>'
+      : (st === 'soon' || !p.link) ? '<span class="btn ghost" aria-disabled="true">Coming soon</span>'
+      : '<a class="btn" href="' + esc(p.link) + '" rel="noopener">Buy</a>';
+    return '<li class="card product' + (st === 'sold-out' ? ' out' : '') + '"><div class="card-in">' +
+      '<div class="card-img">' + img(p.image, p.title, 'Product') +
+      '<div class="badge-row">' + (p.badge ? '<span class="tag y">' + esc(p.badge) + '</span>' : '') +
+        (st === 'sold-out' ? '<span class="tag solid">Sold out</span>' : '') + '</div></div>' +
+      '<div class="card-body"><span class="tag">' + esc(p.kind || 'Item') + '</span>' +
+      '<h3>' + esc(p.title) + '</h3>' +
+      (p.blurb ? '<p class="ex">' + esc(p.blurb) + '</p>' : '') +
+      (g ? '<p class="line"><a href="' + gameUrl(g) + '">From ' + esc(g.title) + '</a></p>' : '') +
+      '<div class="buy"><span class="price">' + esc(p.price || '') + '</span>' + buy + '</div>' +
+      '</div></div></li>';
+  }
+
   // ---------- header / footer ----------
   function categoryCounts() {
     var counts = {};
@@ -101,7 +132,11 @@
     return f ? gameUrl(f) : '/games/';
   }
   function chrome() {
-    var cur = page === 'game' ? 'games' : page === 'post' ? 'blog' : page;
+    var cur = { game: 'games', thread: 'community' }[page] || page;
+    if (page === 'post') {
+      var me = POSTS.filter(function (p) { return p.slug === slug; })[0];
+      cur = me && me.type === 'news' ? 'news' : 'blog';
+    }
     function a(key, href, label) { return '<a href="' + href + '"' + (cur === key ? ' aria-current="page"' : '') + '>' + label + '</a>'; }
     var cats = categoryCounts().map(function (c) {
       return '<a href="/games/?cat=' + c[0] + '">' + esc(catName(c[0])) + ' <small>' + c[1] + '</small></a>';
@@ -117,16 +152,19 @@
           '<div class="drop"><button type="button" aria-expanded="false"' + (cur === 'games' ? ' aria-current="page"' : '') + '>Games <i class="caret"></i></button>' +
             '<div class="drop-menu"><a href="/games/">All games <small>' + GAMES.length + '</small></a><div class="sep"></div>' + cats + '</div></div>' +
           a('blog', '/blog/', 'Blog') +
+          a('news', '/news/', 'News') +
+          a('community', '/community/', 'Community') +
+          a('shop', '/shop/', 'Shop') +
           '<a class="btn yellow mobile-cta" href="' + playNowTarget() + '">Play now</a>' +
         '</nav>' +
         '<div class="head-cta"><a class="btn yellow" href="' + playNowTarget() + '">Play now</a></div>' +
       '</div>';
     body.insertBefore(head, body.firstChild);
 
-    if (GAMES.some(function (g) { return g.sample; }) || POSTS.some(function (p) { return p.sample; })) {
+    if ([GAMES, POSTS, THREADS, PRODUCTS].some(function (l) { return l.some(function (x) { return x.sample; }); })) {
       var bar = document.createElement('div');
       bar.className = 'sample-bar';
-      bar.textContent = 'Preview: games and posts marked sample are placeholders';
+      bar.textContent = 'Preview: everything marked sample is a placeholder';
       body.insertBefore(bar, head.nextSibling);
     }
 
@@ -159,7 +197,8 @@
         '<div><h4>Games</h4><ul><li><a href="/games/">All games</a></li>' +
           categoryCounts().slice(0, 5).map(function (c) { return '<li><a href="/games/?cat=' + c[0] + '">' + esc(catName(c[0])) + '</a></li>'; }).join('') +
         '</ul></div>' +
-        '<div><h4>Site</h4><ul><li><a href="/">Home</a></li><li><a href="/blog/">Blog</a></li></ul></div>' +
+        '<div><h4>Site</h4><ul><li><a href="/">Home</a></li><li><a href="/blog/">Blog</a></li><li><a href="/news/">News</a></li>' +
+          '<li><a href="/community/">Community</a></li><li><a href="/shop/">Shop</a></li></ul></div>' +
       '</div>' +
       '<div class="wrap foot-base"><span>&copy; ' + new Date().getFullYear() + ' Velmarox</span><span>velmarox.com</span></div>';
     body.appendChild(foot);
@@ -193,13 +232,19 @@
     html += '<section class="sec">' + secHead('New releases', null, true) +
       (fresh.length ? '<ul class="cards">' + fresh.map(gameCard).join('') + '</ul>' : '<p class="empty-note">Nothing released yet.</p>') + '</section>';
     html += '</div><aside class="sec">' +
-      secHead('Latest posts', ['Blog', '/blog/']) +
-      '<div class="panel"><div class="panel-in">' + (POSTS.length ? POSTS.slice(0, 5).map(postRow).join('') : '<p class="empty-note">No posts yet.</p>') + '</div></div>' +
+      secHead('Latest news', ['News', '/news/']) +
+      '<div class="panel"><div class="panel-in">' + (NEWS.length ? NEWS.slice(0, 4).map(postRow).join('') : '<p class="empty-note">No news yet.</p>') + '</div></div>' +
+      (THREADS.length ? secHead('Community', ['Threads', '/community/'], true) + '<div class="panel"><div class="panel-in">' + THREADS.slice(0, 4).map(threadRow).join('') + '</div></div>' : '') +
       (wip.length ? secHead('In the workshop', null, true) + '<div class="panel"><div class="panel-in">' + wip.map(workshopRow).join('') + '</div></div>' : '') +
       '</aside></div>';
-    if (POSTS.length) {
+    if (BLOG.length) {
       html += '<section class="sec wrap">' + secHead('From the blog', ['All posts', '/blog/']) +
-        '<ul class="posts">' + POSTS.slice(0, 3).map(postCard).join('') + '</ul></section>';
+        '<ul class="posts">' + BLOG.slice(0, 3).map(postCard).join('') + '</ul></section>';
+    }
+    var shopPick = PRODUCTS.filter(function (p) { return (p.status || 'available') !== 'sold-out'; }).slice(0, 4);
+    if (shopPick.length) {
+      html += '<section class="sec wrap">' + secHead('From the shop', ['Shop', '/shop/'], true) +
+        '<ul class="cards shop-grid">' + shopPick.map(productCard).join('') + '</ul></section>';
     }
     main.innerHTML = html;
 
@@ -319,11 +364,105 @@
   }
 
   // ---------- blog list ----------
-  function blog() {
+  function postList(list, crumb, h1, intro) {
     $('main').innerHTML =
-      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Blog</div>' +
-      '<h1>The <em>blog</em></h1><p>Devlogs, updates and whatever else is on my mind.</p></div>' +
-      '<section class="sec">' + (POSTS.length ? '<ul class="posts">' + POSTS.map(postCard).join('') + '</ul>' : '<p class="empty-note">No posts yet.</p>') + '</section></div>';
+      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>' + crumb + '</div>' +
+      '<h1>' + h1 + '</h1><p>' + intro + '</p></div>' +
+      '<section class="sec">' + (list.length ? '<ul class="posts">' + list.map(postCard).join('') + '</ul>' : '<p class="empty-note">Nothing posted yet.</p>') + '</section></div>';
+  }
+  function blog() { postList(BLOG, 'Blog', 'The <em>blog</em>', 'Devlogs, thoughts and whatever else is on my mind.'); }
+  function news() { postList(NEWS, 'News', 'Latest <em>news</em>', 'Releases, updates and announcements.'); }
+
+  // ---------- community ----------
+  function community() {
+    var board = new URLSearchParams(location.search).get('board');
+    var boards = (window.BOARDS || []).slice();
+    THREADS.forEach(function (t) { if (t.board && boards.indexOf(t.board) < 0) boards.push(t.board); });
+    var list = THREADS.filter(function (t) { return !board || t.board === board; });
+    $('main').innerHTML =
+      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Community</div>' +
+      '<h1>Community <em>threads</em></h1><p>Talk about the games, report bugs, pitch ideas.</p></div>' +
+      '<nav class="chips" aria-label="Boards"><a class="chip" href="/community/"' + (!board ? ' aria-current="true"' : '') + '>All <small>' + THREADS.length + '</small></a>' +
+        boards.map(function (b) {
+          var n = THREADS.filter(function (t) { return t.board === b; }).length;
+          return '<a class="chip" href="/community/?board=' + encodeURIComponent(b) + '"' + (board === b ? ' aria-current="true"' : '') + '>' + esc(b) + ' <small>' + n + '</small></a>';
+        }).join('') + '</nav>' +
+      '<section class="sec">' + (list.length ? '<div class="panel"><div class="panel-in threads">' +
+        '<div class="thread-head"><span>Thread</span><span>Board</span><span>Started</span></div>' +
+        list.map(function (t) {
+          var g = t.game && findGame(t.game);
+          return '<a class="thread" href="' + threadUrl(t) + '"><span class="t-main">' +
+            (t.pinned ? '<span class="tag y">Pinned</span> ' : '') + '<b>' + esc(t.title) + '</b>' +
+            (t.excerpt ? '<small>' + esc(t.excerpt) + '</small>' : '') + '</span>' +
+            '<span class="t-board"><span class="tag dim">' + esc(t.board || 'General') + '</span>' + (g ? ' <span class="tag">' + esc(g.title) + '</span>' : '') + '</span>' +
+            '<span class="t-date">' + date(t.date) + '</span></a>';
+        }).join('') + '</div></div>' : '<p class="empty-note">No threads here yet.</p>') + '</section></div>';
+  }
+
+  function giscusReady() { return GISCUS.repo && GISCUS.repoId && GISCUS.categoryId; }
+
+  function thread() {
+    var main = $('main');
+    var article = $('#post-content');
+    var t = THREADS.filter(function (x) { return x.slug === slug; })[0] || {};
+    var g = t.game && findGame(t.game);
+    if (t.title) document.title = t.title + ' | Community | Velmarox';
+    var wrap = document.createElement('div');
+    wrap.className = 'wrap';
+    wrap.innerHTML =
+      '<header class="post-head"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/community/">Community</a>' +
+        (t.board ? '<span>/</span><a href="/community/?board=' + encodeURIComponent(t.board) + '">' + esc(t.board) + '</a>' : '') + '</div>' +
+        '<div class="tags">' + (t.pinned ? '<span class="tag y">Pinned</span>' : '') + '<span class="tag dim">' + esc(t.board || 'General') + '</span>' +
+        (g ? '<a class="tag" href="' + gameUrl(g) + '">' + esc(g.title) + '</a>' : '') + '</div>' +
+        '<h1>' + esc(t.title || 'Thread') + '</h1></header>' +
+      '<div class="op panel"><div class="panel-in"><div class="op-by"><span class="row-ico">V</span>' +
+        '<span><b>Velmarox</b> <span class="tag solid">Dev</span><small>' + date(t.date) + '</small></span></div>' +
+        '<div class="op-body"></div></div></div>' +
+      '<section class="sec replies">' + secHead('Replies') + '<div id="replies"></div></section>';
+    article.classList.add('prose');
+    $('.op-body', wrap).appendChild(article);
+    main.appendChild(wrap);
+
+    var box = $('#replies');
+    if (!giscusReady()) {
+      box.innerHTML = '<div class="panel"><div class="panel-in"><p class="empty-note">Replies open soon.</p></div></div>';
+      return;
+    }
+    var sc = document.createElement('script');
+    sc.src = 'https://giscus.app/client.js';
+    sc.async = true;
+    sc.crossOrigin = 'anonymous';
+    var attrs = {
+      'data-repo': GISCUS.repo, 'data-repo-id': GISCUS.repoId,
+      'data-category': GISCUS.category, 'data-category-id': GISCUS.categoryId,
+      'data-mapping': 'specific', 'data-term': 'thread:' + slug, 'data-strict': '1',
+      'data-reactions-enabled': '1', 'data-emit-metadata': '0', 'data-input-position': 'top',
+      'data-theme': 'transparent_dark', 'data-lang': 'en', 'data-loading': 'lazy'
+    };
+    Object.keys(attrs).forEach(function (k) { sc.setAttribute(k, attrs[k]); });
+    box.appendChild(sc);
+  }
+
+  // ---------- shop ----------
+  function shop() {
+    var kind = new URLSearchParams(location.search).get('kind');
+    var kinds = [];
+    PRODUCTS.forEach(function (p) { if (p.kind && kinds.indexOf(p.kind) < 0) kinds.push(p.kind); });
+    if (kind && kinds.indexOf(kind) < 0) kind = null;
+    var order = { available: 0, soon: 1, 'sold-out': 2 };
+    var list = PRODUCTS.filter(function (p) { return !kind || p.kind === kind; })
+      .sort(function (a, b) { return (order[a.status || 'available'] || 0) - (order[b.status || 'available'] || 0); });
+    $('main').innerHTML =
+      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Shop</div>' +
+      '<h1>The <em>shop</em></h1><p>Soundtracks, extras and merch. Every purchase helps keep the games free.</p></div>' +
+      '<nav class="chips" aria-label="Product types"><a class="chip" href="/shop/"' + (!kind ? ' aria-current="true"' : '') + '>All <small>' + PRODUCTS.length + '</small></a>' +
+        kinds.map(function (k) {
+          var n = PRODUCTS.filter(function (p) { return p.kind === k; }).length;
+          return '<a class="chip" href="/shop/?kind=' + encodeURIComponent(k) + '"' + (kind === k ? ' aria-current="true"' : '') + '>' + esc(k) + ' <small>' + n + '</small></a>';
+        }).join('') + '</nav>' +
+      '<section class="sec">' + (list.length ? '<ul class="cards shop-grid">' + list.map(productCard).join('') + '</ul>' : '<p class="empty-note">Nothing in the shop yet.</p>') + '</section>' +
+      '<div class="hazard red" style="opacity:.5"></div>' +
+      '<p class="shop-note">Purchases are handled by the store each item links to. Questions about an order go to that store.</p></div>';
   }
 
   // ---------- single post (content lives in the page's <article>) ----------
@@ -334,17 +473,18 @@
     var g = p.game && findGame(p.game);
     if (p.title) document.title = p.title + ' | Velmarox';
     var idx = POSTS.indexOf(p);
-    var others = POSTS.filter(function (x) { return x !== p; }).slice(0, 3);
+    var isNews = p.type === 'news';
+    var others = (isNews ? NEWS : BLOG).filter(function (x) { return x !== p; }).slice(0, 3);
     var wrap = document.createElement('div');
     wrap.className = 'wrap';
     wrap.innerHTML =
-      '<header class="post-head"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/blog/">Blog</a></div>' +
+      '<header class="post-head"><div class="crumbs"><a href="/">Home</a><span>/</span>' + (isNews ? '<a href="/news/">News</a>' : '<a href="/blog/">Blog</a>') + '</div>' +
         '<div class="tags"><span class="tag solid">' + esc(p.tag || 'Post') + '</span>' + (g ? '<a class="tag" href="' + gameUrl(g) + '">' + esc(g.title) + '</a>' : '') + '</div>' +
         '<h1>' + esc(p.title || document.title) + '</h1>' +
         '<div class="post-meta"><span>' + date(p.date) + '</span></div></header>' +
       (p.cover ? '<div class="post-cover screen"><div class="screen-in">' + img(p.cover, '') + '</div></div>' : '') +
       '<div class="post-body"></div>' +
-      (others.length ? '<section class="sec">' + secHead('More posts', ['All posts', '/blog/']) + '<ul class="posts">' + others.map(postCard).join('') + '</ul></section>' : '');
+      (others.length ? '<section class="sec">' + secHead(isNews ? 'More news' : 'More posts', isNews ? ['All news', '/news/'] : ['All posts', '/blog/']) + '<ul class="posts">' + others.map(postCard).join('') + '</ul></section>' : '');
     article.classList.add('prose');
     $('.post-body', wrap).appendChild(article);
     main.appendChild(wrap);
@@ -357,5 +497,6 @@
   }
 
   chrome();
-  ({ home: home, games: games, game: game, blog: blog, post: post, '404': notFound }[page] || function () {})();
+  ({ home: home, games: games, game: game, blog: blog, news: news, post: post,
+     community: community, thread: thread, shop: shop, '404': notFound }[page] || function () {})();
 })();
