@@ -5,6 +5,12 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.6.2-alpha (2026-10-11)
+- Shop closed for now: /shop/ shows a big COMING SOON panel (links to News and Games) and the home page's
+  "From the shop" row is hidden. Switch: window.SHOP_OPEN in docs/js/data/products.js.
+- The five sample products are out of the live list. The old products.js is saved, unchanged, at
+  _saved/shop/products.js (not published), and git tag shop-as-of-v0.6.1 marks the last commit with the open shop.
+
 v0.6.1-alpha (2026-10-11)
 - Clack Attack works on phones. Portrait: the tray sits on top (42% of the screen), the roll bar and log below,
   a one-row top bar, quick dice in a 4-wide grid of 40px buttons, 16px inputs so iOS doesn't zoom, Dice look

@@ -63,6 +63,11 @@ show "Replies open soon". Steps are at the top of `docs/js/data/threads.js`.
 
 ## Shop
 
+**Closed right now.** `window.SHOP_OPEN = false` in `docs/js/data/products.js` makes /shop/ show COMING SOON
+and hides the home page shop row. The shop as it was (five sample products) is saved at
+`_saved/shop/products.js`; git tag `shop-as-of-v0.6.1` is the last commit with it open. To open: set
+`SHOP_OPEN` to true and fill `PRODUCTS`.
+
 The shop is a storefront only. Each product's `link` points to where it's actually sold
 (itch.io, Ko-fi, Gumroad, a print-on-demand store). No payments happen on this site.
 

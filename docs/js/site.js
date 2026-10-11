@@ -8,6 +8,7 @@
     return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (a.date < b.date ? 1 : -1);
   });
   var PRODUCTS = window.PRODUCTS || [];
+  var SHOP_OPEN = window.SHOP_OPEN !== false;
   var GISCUS = window.GISCUS || {};
   var body = document.body;
   var page = body.dataset.page;
@@ -243,7 +244,7 @@
       html += '<section class="sec wrap">' + secHead('From the blog', ['All posts', '/blog/']) +
         '<ul class="posts">' + BLOG.slice(0, 3).map(postCard).join('') + '</ul></section>';
     }
-    var shopPick = PRODUCTS.filter(function (p) { return (p.status || 'available') !== 'sold-out'; }).slice(0, 4);
+    var shopPick = !SHOP_OPEN ? [] : PRODUCTS.filter(function (p) { return (p.status || 'available') !== 'sold-out'; }).slice(0, 4);
     if (shopPick.length) {
       html += '<section class="sec wrap">' + secHead('From the shop', ['Shop', '/shop/'], true) +
         '<ul class="cards shop-grid">' + shopPick.map(productCard).join('') + '</ul></section>';
@@ -457,6 +458,19 @@
 
   // ---------- shop ----------
   function shop() {
+    if (!SHOP_OPEN) {
+      $('main').innerHTML =
+        '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Shop</div></div>' +
+        '<section class="soon" aria-label="Shop coming soon"><div class="soon-in">' +
+          '<span class="hazard"></span>' +
+          '<p class="soon-kicker">The shop</p>' +
+          '<h1>Coming <em>soon</em></h1>' +
+          '<p class="soon-text">Soundtracks, extras and merch are on the way. Check the news for when it opens.</p>' +
+          '<div class="soon-actions"><a class="btn big" href="/news/">Latest news</a><a class="btn ghost big" href="/games/">Play the games</a></div>' +
+          '<span class="hazard red"></span>' +
+        '</div><span class="cross c1"></span><span class="cross c2"></span></section></div>';
+      return;
+    }
     var kind = new URLSearchParams(location.search).get('kind');
     var kinds = [];
     PRODUCTS.forEach(function (p) { if (p.kind && kinds.indexOf(p.kind) < 0) kinds.push(p.kind); });

@@ -15,30 +15,10 @@
 //   badge    optional short label on the image: "New", "Limited" ...
 //   sample   true = placeholder
 
+// The shop is closed: /shop/ shows a big COMING SOON and the home page hides its shop row.
+// To open it, set SHOP_OPEN to true and fill PRODUCTS. The original sample products are saved in
+// _saved/shop/products.js at the top of the repo (not published) to copy back in as a starting point.
+window.SHOP_OPEN = false;
+
 window.PRODUCTS = [
-  {
-    slug: 'sample-supporter-pack', sample: true,
-    title: 'Supporter pack', kind: 'Support', price: 'Pay what you want', status: 'available', badge: 'New',
-    blurb: 'Placeholder product. Chip in to keep the games free.', link: '#'
-  },
-  {
-    slug: 'sample-neon-drift-ost', sample: true,
-    title: 'Animalism soundtrack', kind: 'Soundtrack', price: '$4.99', status: 'available', game: 'animalism',
-    blurb: 'Placeholder product. Twelve tracks, MP3 and FLAC.', link: '#'
-  },
-  {
-    slug: 'sample-wallpapers', sample: true,
-    title: 'Wallpaper set', kind: 'Digital', price: 'Free', status: 'available',
-    blurb: 'Placeholder product. Desktop and phone wallpapers.', link: '#'
-  },
-  {
-    slug: 'sample-sticker-sheet', sample: true,
-    title: 'Sticker sheet', kind: 'Merch', price: '$6.00', status: 'soon', badge: 'Limited',
-    blurb: 'Placeholder product. Vinyl stickers of every game icon.'
-  },
-  {
-    slug: 'sample-hoard-tee', sample: true,
-    title: 'Wyrmhoard tee', kind: 'Merch', price: '$24.00', status: 'sold-out', game: 'keno',
-    blurb: 'Placeholder product. Gold dragon on black.', link: '#'
-  }
 ];
