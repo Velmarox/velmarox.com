@@ -77,7 +77,7 @@
   function postCard(p) {
     var g = p.game && findGame(p.game);
     return '<li><a class="card post-card" href="' + postUrl(p) + '"><div class="card-in">' +
-      '<div class="card-img">' + img(p.cover, p.title, 'Cover') +
+      '<div class="card-img">' + img(p.cover || (g && (g.thumb || g.banner)), p.title, 'Cover') +
       '<div class="badge-row"><span class="tag solid">' + esc(p.tag || 'Post') + '</span>' +
       (g ? '<span class="tag">' + esc(g.title) + '</span>' : '') + '</div></div>' +
       '<div class="card-body"><span class="date">' + date(p.date) + '</span>' +

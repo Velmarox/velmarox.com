@@ -21,18 +21,23 @@
 
 window.POSTS = [
   {
-    slug: 'sample-site-launch', sample: true, type: 'news',
-    title: 'The site is live', date: '2026-10-11', tag: 'Site',
-    excerpt: 'Placeholder news item. Short announcements go in the News tab.'
+    slug: 'vrx-games-is-live', type: 'news',
+    title: 'VRX Games is live', date: '2026-10-11', tag: 'Site',
+    excerpt: 'Everything I make, in one place: four browser games, a dice roller, a notepad and a roguelike.'
   },
   {
-    slug: 'sample-welcome', sample: true,
-    title: 'Welcome to the site', date: '2026-10-11', tag: 'Thoughts',
-    excerpt: 'Placeholder post. This is where blog posts show up, newest first.'
+    slug: 'clack-attack-on-phones', type: 'news', game: 'clack-attack',
+    title: 'Clack Attack works on phones', date: '2026-10-11', tag: 'Update',
+    excerpt: 'The tray moves to the top, the buttons get bigger, and a tap clears the dice.'
   },
   {
-    slug: 'sample-devlog', sample: true,
-    title: 'Devlog placeholder', date: '2026-10-09', tag: 'Devlog', game: 'animalism',
-    excerpt: 'Placeholder post tied to a game. It also appears on that game\'s page.'
+    slug: 'clack-attack-painted-trays', game: 'clack-attack',
+    title: 'Clack Attack: every tray gets painted', date: '2026-10-09', tag: 'Devlog',
+    excerpt: 'From 1.0 to 1.3 in one day: nineteen trays, all with real artwork now, and an updater that actually swaps itself in.'
+  },
+  {
+    slug: 'pokedungeon-1-23', game: 'pokedungeon',
+    title: 'PokéDungeon 1.23: shops are people, and deep floors pay', date: '2026-09-21', tag: 'Devlog',
+    excerpt: 'Shopkeepers you walk up to, a pier that is the only way down, and an XP curve that stops teams falling behind.'
   }
 ];

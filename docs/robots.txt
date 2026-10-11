@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /games/_template/
+Disallow: /blog/_template/
+Disallow: /news/_template/
+Disallow: /community/_template/
+
+Sitemap: https://velmarox.com/sitemap.xml

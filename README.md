@@ -71,10 +71,24 @@ and hides the home page shop row. The shop as it was (five sample products) is s
 The shop is a storefront only. Each product's `link` points to where it's actually sold
 (itch.io, Ko-fi, Gumroad, a print-on-demand store). No payments happen on this site.
 
-## Removing the samples
+## Link previews and the sitemap
 
-Entries with `sample: true` are placeholders, and while any exist a striped "Preview" bar shows under
-the header. Delete them from every list in `docs/js/data/` and delete the matching `sample-*` folders under games/, blog/, news/ and community/.
+Pages carry Open Graph tags so a shared link shows a card (title, line, image) on Discord, iMessage and
+the rest. Chat apps don't run the page's script, so the tags are written into the HTML by a script.
+**After adding or changing a game, post or thread, run:**
+
+```
+node tools/build_meta.mjs
+```
+
+It rewrites the block between `<!-- meta -->` and `<!-- /meta -->` in every page, sets each page's
+`<title>`, and regenerates `docs/sitemap.xml` and `docs/robots.txt`. Games use their banner as the
+image, posts use their cover or their game's banner, everything else uses `assets/brand/og-default.jpg`.
+
+## Samples
+
+There are none left. If you ever add `sample: true` to an entry, a striped "Preview" bar appears under
+the header until it's gone.
 
 ## Versioning
 

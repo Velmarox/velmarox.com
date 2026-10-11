@@ -29,18 +29,18 @@ window.BOARDS = ['General', 'Ideas', 'Bugs', 'Show off'];
 
 window.THREADS = [
   {
-    slug: 'sample-say-hi', sample: true, pinned: true,
+    slug: 'say-hi', pinned: true,
     title: 'Say hi', date: '2026-10-11', board: 'General',
-    excerpt: 'Placeholder thread. Introduce yourself, tell me what you are playing.'
+    excerpt: 'Introduce yourself. What are you playing?'
   },
   {
-    slug: 'sample-what-next', sample: true,
-    title: 'What should I make next?', date: '2026-10-10', board: 'Ideas',
-    excerpt: 'Placeholder thread for game ideas and requests.'
+    slug: 'what-next', 
+    title: 'What should I make next?', date: '2026-10-11', board: 'Ideas',
+    excerpt: 'Game ideas, tool ideas, requests. All welcome.'
   },
   {
-    slug: 'sample-bug-reports', sample: true,
-    title: 'Bug reports', date: '2026-10-09', board: 'Bugs',
-    excerpt: 'Placeholder thread. Post bugs here with your browser and device.'
+    slug: 'bug-reports',
+    title: 'Bug reports', date: '2026-10-11', board: 'Bugs',
+    excerpt: 'Something broke? Post it here with the game, your browser and your device.'
   }
 ];
