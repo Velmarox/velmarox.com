@@ -5,6 +5,16 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.9.0-alpha (2026-10-11)
+- New look for the three casino games. Safari Time (dusk savanna, pay ladder beside the reels), Elo's Hoard
+  (16:9 iron-and-slate cabinet) and Wyrmhoard Keno (obsidian and magma) replace their old builds at
+  games/<slug>/play/index.html. Square corners, wide-screen layouts; the game logic is unchanged. Sources:
+  Safari Time docs v1.8.0, Elo's Hoard v1.13.0, Wyrmhoard Keno v1.30.0.
+- Each new page makes room for the VRX badge in its top-left corner (body:has(.vrx-badge) rules in the
+  game's own stylesheet); the badge block itself is unchanged.
+- New cover.jpg / cover.avif, thumb.jpg and shot-1.jpg for all three, taken from the new builds.
+- Devlog line "A new look" added to the three games in games.js.
+
 v0.8.1-alpha (2026-10-11)
 - Community replies switched on: giscus repo and category IDs filled in (Velmarox/velmarox.com, category
   Community). Each thread maps to its own discussion titled thread:<slug>, created on its first reply.
