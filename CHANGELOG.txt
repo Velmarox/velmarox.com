@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.2.1-alpha (2026-10-11)
+- Square corners everywhere: cards, buttons, tags, status labels, nav, about box, favicon, logo dot.
+- Removed confetti (canvas, click handler, "click the big name" hint). The logo is plain text again.
+
 v0.2.0-alpha (2026-10-11)
 - Redesign: dark purple base with drifting colour blobs, rainbow gradient logo that bursts confetti on click,
   scrolling word ticker, sticker-style project cards (colour per card, tilt, hard shadow), Bricolage Grotesque font.

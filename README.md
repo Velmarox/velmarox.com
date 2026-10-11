@@ -10,11 +10,11 @@ README and CHANGELOG stay at the top and are not published.
 
 ```
 docs/
-  index.html        the one page: hero (click the name for confetti), ticker, projects, about
+  index.html        the one page: hero, ticker, projects, about
   404.html          shown for any missing URL
-  css/site.css      styles: dark purple base, drifting colour blobs, sticker-style cards
+  css/site.css      styles: dark purple base, drifting colour blobs, sticker-style cards, square corners only
   js/projects.js    THE PROJECT LIST: edit this to add, change or remove projects
-  js/site.js        renders the cards and filter buttons, confetti, scroll-in animation
+  js/site.js        renders the cards and filter buttons, scroll-in animation
   assets/           favicon.svg and any images
   CNAME             tells GitHub Pages the custom domain (velmarox.com)
   .nojekyll         serves files as-is, no Jekyll processing

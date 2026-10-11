@@ -8,65 +8,6 @@
 
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // ---- confetti (click the big name) ----
-  var canvas = document.getElementById('confetti');
-  var ctx = canvas.getContext('2d');
-  var bits = [];
-  var colors = ['#ff5fa2', '#ffd23f', '#3ee8d0', '#9b7bff', '#ff8a3d', '#fff7ec'];
-  var running = false;
-
-  function resize() {
-    var r = window.devicePixelRatio || 1;
-    canvas.width = innerWidth * r;
-    canvas.height = innerHeight * r;
-    ctx.setTransform(r, 0, 0, r, 0, 0);
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  function burst(x, y) {
-    var n = calm ? 0 : 110;
-    for (var i = 0; i < n; i++) {
-      var a = Math.random() * Math.PI * 2;
-      var v = 4 + Math.random() * 9;
-      bits.push({
-        x: x, y: y,
-        vx: Math.cos(a) * v, vy: Math.sin(a) * v - 5,
-        s: 5 + Math.random() * 7, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4,
-        c: colors[(Math.random() * colors.length) | 0], life: 0, round: Math.random() < 0.3
-      });
-    }
-    if (!running) { running = true; requestAnimationFrame(tick); }
-  }
-
-  function tick() {
-    ctx.clearRect(0, 0, innerWidth, innerHeight);
-    bits = bits.filter(function (b) { return b.life < 160 && b.y < innerHeight + 40; });
-    bits.forEach(function (b) {
-      b.life++; b.vy += 0.25; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.r += b.vr;
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, 1 - b.life / 160);
-      ctx.translate(b.x, b.y); ctx.rotate(b.r); ctx.fillStyle = b.c;
-      if (b.round) { ctx.beginPath(); ctx.arc(0, 0, b.s / 2, 0, Math.PI * 2); ctx.fill(); }
-      else ctx.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2);
-      ctx.restore();
-    });
-    if (bits.length) requestAnimationFrame(tick);
-    else { running = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
-  }
-
-  var logo = document.getElementById('logo');
-  var hint = document.querySelector('.hint');
-  if (logo) {
-    logo.addEventListener('click', function (e) {
-      var rect = logo.getBoundingClientRect();
-      var x = e.clientX || rect.left + rect.width / 2;
-      var y = e.clientY || rect.top + rect.height / 2;
-      burst(x, y);
-      if (hint) hint.classList.add('gone');
-    });
-  }
-
   // ---- project cards ----
   function card(p) {
     var li = document.createElement('li');
