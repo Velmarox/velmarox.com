@@ -1,0 +1,46 @@
+/* velmarox.com: phone layouts for the web build of Clack Attack. Desktop is untouched. */
+
+/* Portrait phones: tray on top, roller and log underneath. */
+@media (max-width: 700px) {
+  :root { --top-h: 48px; --tray-h: 42svh; }
+  html, body { height: 100%; height: 100svh; }
+  input, select, textarea { font-size: 16px !important; }   /* stops iOS zooming in on focus */
+
+  .top { height: var(--top-h); gap: 6px; padding: 6px 8px; }
+  .top .brand, .top .grow { display: none; }
+  .top select { flex: 1 1 0; min-width: 0; max-width: none; height: 36px; padding: 0 6px; }
+  .top button { flex: none; height: 36px; padding: 0 10px; }
+
+  .stage { flex-direction: column; }
+  .tray-area { flex: none; height: var(--tray-h); min-height: 220px; border-bottom: 1px solid var(--line); }
+  .tray-area .idle .big { font-size: 15px; }
+  .side { width: auto; flex: 1; border-left: 0; }
+
+  body.rp .roller { gap: 8px; padding: 10px; }
+  body.rp .roller .row { gap: 8px; }
+  body.rp .roller .field, .roller .btn { min-height: 42px; }
+  body.rp .roller .btn.primary { padding: 0 18px; }
+  body.rp .roller .quick-dice { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  body.rp .roller .quick-dice .btn { min-height: 40px; }
+  body.rp .roller .seg { flex: 1; display: flex; }
+  body.rp .roller .seg-btn { flex: 1; min-height: 38px; }
+  body.rp .roller .result { min-height: 0; }
+  body.rp .loghead .btn { min-height: 34px; padding: 0 12px; }
+
+  /* Dice look opens over the controls, under the tray, so a test throw stays in view. */
+  .look-drawer { top: calc(var(--top-h) + max(var(--tray-h), 220px)); width: 100vw; padding-top: 0; }
+  .rp .look.settings2 { border-width: 1px 0 0 0; }
+
+  html a.vrx-badge { top: calc(var(--top-h) + 8px) !important; bottom: auto !important; left: auto !important; right: 8px; width: 54px !important; }
+}
+
+/* Phones on their side: keep the side-by-side layout but tighter. */
+@media (max-height: 500px) and (min-width: 701px) {
+  .side { width: 300px; }
+  .top { padding: 4px 8px; }
+  body.rp .roller { gap: 6px; padding: 8px; }
+  body.rp .roller .quick-dice .btn, .seg-btn { min-height: 32px; }
+  body.rp .roller .result { min-height: 0; }
+  .look-drawer { width: min(420px, 55vw); }
+  html a.vrx-badge { width: 54px !important; }
+}

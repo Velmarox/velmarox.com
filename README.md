@@ -90,7 +90,10 @@ When a game is rebuilt, copy its build into `play/` again and re-apply those two
 
 Clack Attack (from the `clack-attack` repo) is the web half of an Electron app: copy `Current Version/Table`,
 `App.js`, `Clack.css` and `Clack_Attack.html` (renamed `index.html`) into `games/clack-attack/play/`, then
-re-add the VRX badge block at the bottom of that `index.html`.
+re-add the VRX badge block at the bottom of that `index.html`. Also re-apply the phone support:
+`play/Mobile.css` and `play/Mobile.js` are ours (keep them), link them in `index.html` after `Clack.css` and
+`App.js`, and in `Table/Scripts/Dice_Tray.js` `laneRect()` only narrows the dice lane for the Dice look drawer
+when the drawer overlaps the tray (on phones it opens below it).
 
 PokéDungeon (from `PokeDungeon`) is a desktop Python game, so it has a page but no `play/` folder. To offer a
 download, upload the share zip somewhere public (a GitHub release on a public repo, itch.io ...) and put the

@@ -5,6 +5,13 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.6.1-alpha (2026-10-11)
+- Clack Attack works on phones. Portrait: the tray sits on top (42% of the screen), the roll bar and log below,
+  a one-row top bar, quick dice in a 4-wide grid of 40px buttons, 16px inputs so iOS doesn't zoom, Dice look
+  opens under the tray so test throws stay visible. Landscape phones keep side by side, tighter.
+  Touch screens: tap the tray to clear the dice (there is no Esc key). New files play/Mobile.css and
+  play/Mobile.js; Dice_Tray.js laneRect only narrows the lane when the drawer overlaps the tray.
+
 v0.6.0-alpha (2026-10-11)
 - Added Clack Attack (from the clack-attack repo, v1.3.0): the web build of the 3D dice roller is playable at
   games/clack-attack/play/, with a link to the Windows app on clack-attack-releases. Screenshots of four trays.

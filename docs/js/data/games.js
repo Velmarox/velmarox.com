@@ -106,7 +106,7 @@ window.GAMES = [
     title: 'Clack Attack', tagline: 'Type a roll, watch real 3D dice tumble across a themed tray.',
     genres: ['tools'], status: 'live', trending: true,
     released: '2026-10-09', updated: '2026-10-09', version: '1.3.0',
-    controls: 'Keyboard and mouse', platforms: 'Browser, Windows app',
+    controls: 'Touch, or keyboard and mouse', platforms: 'Browser (phone or desktop), Windows app',
     play: '/games/clack-attack/play/',
     download: { label: 'Windows app', url: 'https://github.com/Velmarox/clack-attack-releases/releases/latest', note: 'The Windows app updates itself and can stay on top of other windows.' },
     thumb: '/games/clack-attack/thumb.jpg', banner: '/games/clack-attack/cover.jpg',
@@ -114,6 +114,7 @@ window.GAMES = [
     about: 'The 3D dice from the Warrior Codex as a small app of their own. Type a roll or click a dice button, watch the dice tumble across a themed tray, and keep a log of every roll.\n\nNineteen trays, from green felt and a forest floor to cyberpunk and a nineties carpet, plus colours, skins, face icons and presets for the dice themselves.\n\nPlay it here in the browser, or grab the Windows app.',
     howto: ['Type dice like 1d20, 2d6+3 or 4d6kh3 and press Enter, or click a quick dice button.', 'Adv / Dis rolls 2d20 and keeps the higher or lower.', 'Pick a tray from the top bar, and change the dice in Dice look.', 'Esc clears the dice off the tray.'],
     log: [
+      { date: '2026-10-11', text: 'Phone layout: tray on top, bigger buttons, tap the tray to clear the dice.' },
       { date: '2026-10-11', text: 'Playable in the browser on velmarox.com.' },
       { date: '2026-10-09', text: 'v1.3.0: Forest Druid gets its own painted tray. Every tray now has artwork.' },
       { date: '2026-10-09', text: 'v1.2.0: painted artwork for 14 trays, plus Green Felt, Magenta Felt and Nineties.' },

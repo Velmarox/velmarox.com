@@ -129,7 +129,8 @@
     const area = window.CLACK_ATTACK ? document.querySelector('.tray-area') : null;
     if (area) {
       const r = area.getBoundingClientRect(), drawer = document.querySelector('.look-drawer');   // the Dice look drawer open: the dice keep to what it leaves clear
-      const w = drawer ? Math.min(r.width, drawer.getBoundingClientRect().left - r.left) : r.width;
+      const dr = drawer && drawer.getBoundingClientRect();   // velmarox.com: a drawer below the tray (phones) leaves it whole
+      const w = dr && dr.top < r.bottom - 40 ? Math.min(r.width, dr.left - r.left) : r.width;
       return { left: r.left, top: Math.max(1, r.top), width: Math.max(160, w), height: Math.max(120, r.height) };
     }
     const head = window.DICE_POPOUT ? document.querySelector('.top') : null, top = head ? head.getBoundingClientRect().bottom : 0;
