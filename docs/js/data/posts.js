@@ -21,6 +21,11 @@
 
 window.POSTS = [
   {
+    slug: 'installers-patchers-and-a-pixel-dog',
+    title: 'Installers, patchers and a pixel dog', date: '2026-10-11', tag: 'Thoughts',
+    excerpt: 'I wanted to send Karmen a game without a zip and a list of instructions. Here is everything I ended up learning.'
+  },
+  {
     slug: 'vrx-games-is-live', type: 'news',
     title: 'VRX Games is live', date: '2026-10-11', tag: 'Site',
     excerpt: 'Everything I make, in one place: four browser games, a dice roller, a notepad and a roguelike.'

@@ -5,6 +5,11 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.10.0-alpha (2026-10-11)
+- New blog post: "Installers, patchers and a pixel dog" (blog/installers-patchers-and-a-pixel-dog/), on
+  learning installers, self-updating apps and the patcher while building things to play with Karmen.
+- Posts can hold bullet lists: .prose ul / li rules in css/site.css.
+
 v0.9.0-alpha (2026-10-11)
 - New look for the three casino games. Safari Time (dusk savanna, pay ladder beside the reels), Elo's Hoard
   (16:9 iron-and-slate cabinet) and Wyrmhoard Keno (obsidian and magma) replace their old builds at

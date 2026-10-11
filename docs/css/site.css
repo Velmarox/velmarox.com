@@ -369,6 +369,8 @@ img { display: block; max-width: 100%; }
 .prose { max-width: 70ch; }
 .prose p { margin: 0 0 14px; color: #d4d4dc; }
 .prose h2, .prose h3 { font: italic 800 1.3rem/1.2 var(--display); text-transform: uppercase; color: var(--yellow); margin: 28px 0 10px; }
+.prose ul { margin: 0 0 14px; padding-left: 22px; color: #d4d4dc; }
+.prose li { margin-bottom: 6px; }
 .prose img { margin: 18px 0; border: 2px solid var(--line); }
 .prose blockquote { margin: 18px 0; padding: 4px 0 4px 16px; border-left: 3px solid var(--red); color: var(--muted); }
 .prose code { font-size: 0.9em; background: var(--panel-2); padding: 1px 5px; }

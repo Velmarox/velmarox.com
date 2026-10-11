@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="version" content="v0.10.0-alpha">
+  <meta name="theme-color" content="#0b0b0d">
+  <title>Installers, patchers and a pixel dog | VRX Games</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Saira:ital,wght@0,400;0,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css">
+  <!-- meta -->
+  <link rel="canonical" href="https://velmarox.com/blog/installers-patchers-and-a-pixel-dog/">
+  <meta name="description" content="I wanted to send Karmen a game without a zip and a list of instructions. Here is everything I ended up learning.">
+  <meta property="og:site_name" content="VRX Games">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://velmarox.com/blog/installers-patchers-and-a-pixel-dog/">
+  <meta property="og:title" content="Installers, patchers and a pixel dog | VRX Games">
+  <meta property="og:description" content="I wanted to send Karmen a game without a zip and a list of instructions. Here is everything I ended up learning.">
+  <meta property="og:image" content="https://velmarox.com/assets/brand/og-default.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- /meta -->
+</head>
+<body data-page="post" data-slug="installers-patchers-and-a-pixel-dog">
+  <main>
+    <article id="post-content">
+      <p>Karmen and I roleplay together. Dogs, cats, gems, whatever we're into that month. I build the systems we play in, and for a long time "sharing" one meant sending her a zip and a paragraph of instructions.</p>
+      <p>This month I got tired of that and decided to find out how real software gets onto someone else's computer. I have not had this much fun in ages.</p>
+
+      <h2>Installers</h2>
+      <p>The Warrior Codex is the app our cat game runs in. Its player app now has a proper Windows installer: a welcome page, Next, Finish, done. What I learned making it:</p>
+      <ul>
+        <li>An installer can install for just one Windows user, which means no admin password and no "who is this for" page.</li>
+        <li>The uninstaller is part of the job. Mine asks whether to also delete your saved settings, and No is the default.</li>
+        <li>You can put your own art and your own words on the pages. Mine has a pixel dog. Pixel art only looks right at whole-number sizes, so he is drawn at 4x and 5x and never anything in between.</li>
+        <li>If you don't pay to sign your app, Windows warns people it's from an unknown publisher. Mine isn't signed, so the read-me says to click More info, then Run anyway.</li>
+      </ul>
+      <p>I've made installers for three other things too: a notepad, a read-aloud app, and a Discord backup tool. The Python ones taught me a different lesson. The installer has to find or bring its own Python, and for the read-aloud app it picks the GPU or CPU version of the voice engine by itself. That one stays a folder and not a single exe, because the exe would be three or four gigabytes.</p>
+
+      <h2>Updates that install themselves</h2>
+      <p>Next I wanted to stop sending new copies at all. The player app checks a releases page on GitHub when it opens, downloads a new version in the background, and asks to restart. To do that I learned to keep two repos: a private one with the code, and a public one that holds nothing but the finished downloads.</p>
+      <p>I also learned that an app can't replace its own exe while it's running. <a href="/games/clack-attack/">Clack Attack</a> taught me that the hard way. My first updater closed the app and then did nothing, because the little script meant to do the swap quit the instant it started. One version later it works, and anyone on the broken version had to download the fix by hand. Sorry about that.</p>
+
+      <h2>The patcher</h2>
+      <p>An updater is no help to someone whose copy is too old to have one. So there's a patcher: one exe, one big button. It says Install if you don't have the app, Update if you're behind, and Open if you're current. It carries an installer inside it so it works with no internet, and it can put an older version back if a new one misbehaves.</p>
+      <p>Then I did the same for my own side. Rebuilding everything used to mean a terminal full of scrolling text. Now it's a window with the dog, a progress bar, and the steps ticked off as they finish.</p>
+
+      <h2>Everything else that came along</h2>
+      <ul>
+        <li><strong>Git and GitHub.</strong> Commits, pushes, releases, and a .gitignore that keeps our worlds and save files off the internet.</li>
+        <li><strong>Version numbers and changelogs.</strong> Every change gets a number and a note, and the old version is put away before I touch anything.</li>
+        <li><strong>Backups.</strong> The Codex keeps copies of the world before it saves over it. Losing a whole cat saga to one bad save is not an option.</li>
+        <li><strong>Sharing from my own PC.</strong> Players connect straight to my computer with a private key each. No server, no ports opened on the router.</li>
+        <li><strong>Windows being Windows.</strong> Two kinds of line endings can quietly break a file. A window with no title bar still has to snap to the sides of the screen. Text in OBS gets measured one frame late.</li>
+        <li><strong>Phones.</strong> I turned a web page into an Android app.</li>
+      </ul>
+
+      <h2>Why I'm this excited</h2>
+      <p>The cat game went from version 1.2 to 6.25 in eight days. That is a silly number and I'm proud of it anyway.</p>
+      <p>What I like most is that none of this was the plan. I wanted to play pretend with Karmen and not have to say "okay, now unzip it, no, the other folder." Every skill on this page came from wanting that one thing to be easier. Now she double-clicks and the game opens.</p>
+      <p>Next I want to learn code signing, so Windows stops calling me an unknown publisher.</p>
+    </article>
+  </main>
+  <script src="/js/data/games.js"></script>
+  <script src="/js/data/posts.js"></script>
+  <script src="/js/data/threads.js"></script>
+  <script src="/js/data/products.js"></script>
+  <script src="/js/site.js"></script>
+</body>
+</html>
