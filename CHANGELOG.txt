@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.8.1-alpha (2026-10-11)
+- Community replies switched on: giscus repo and category IDs filled in (Velmarox/velmarox.com, category
+  Community). Each thread maps to its own discussion titled thread:<slug>, created on its first reply.
+
 v0.8.0-alpha (2026-10-11)
 - Real content replaces every sample: news "VRX Games is live" and "Clack Attack works on phones"; devlogs
   "Clack Attack: every tray gets painted" and "PokéDungeon 1.23: shops are people, and deep floors pay"

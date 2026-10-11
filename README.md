@@ -57,9 +57,10 @@ add new category names to `CATEGORIES` at the top of games.js.
 
 ## Community replies (one-time setup)
 
-Threads are pages you start; replies are stored in GitHub Discussions on this repo through
-[giscus](https://giscus.app). Visitors need a GitHub account to reply. Until it's set up, threads
-show "Replies open soon". Steps are at the top of `docs/js/data/threads.js`.
+Threads are pages you start; replies are stored in GitHub Discussions on this repo (category
+**Community**) through [giscus](https://giscus.app). Visitors need a GitHub account to reply. Each thread
+is the discussion titled `thread:<slug>`, created by giscus on the first reply; moderate replies from the
+repo's Discussions tab. Set up and live since v0.8.1-alpha.
 
 ## Shop
 

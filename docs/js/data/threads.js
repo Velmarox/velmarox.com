@@ -20,9 +20,9 @@
 
 window.GISCUS = {
   repo: 'Velmarox/velmarox.com',
-  repoId: '',
+  repoId: 'R_kgDOVFGvcA',
   category: 'Community',
-  categoryId: ''
+  categoryId: 'DIC_kwDOVFGvcM4DHmjD'
 };
 
 window.BOARDS = ['General', 'Ideas', 'Bugs', 'Show off'];
