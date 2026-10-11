@@ -9,7 +9,7 @@ v0.6.2-alpha (2026-10-11)
 - Shop closed for now: /shop/ shows a big COMING SOON panel (links to News and Games) and the home page's
   "From the shop" row is hidden. Switch: window.SHOP_OPEN in docs/js/data/products.js.
 - The five sample products are out of the live list. The old products.js is saved, unchanged, at
-  _saved/shop/products.js (not published), and git tag shop-as-of-v0.6.1 marks the last commit with the open shop.
+  _saved/shop/products.js (not published), and commit 55cb2fb is the last one with the open shop.
 
 v0.6.1-alpha (2026-10-11)
 - Clack Attack works on phones. Portrait: the tray sits on top (42% of the screen), the roll bar and log below,
