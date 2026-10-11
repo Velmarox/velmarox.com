@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="version" content="v0.1.0-alpha">
+  <title>Velmarox</title>
+  <meta name="description" content="Personal projects by Velmarox.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <header class="top">
+    <a class="mark" href="/">velmarox</a>
+    <nav>
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Velmarox</h1>
+      <p>Things I build: games, tools, stories, experiments.</p>
+    </section>
+
+    <section id="projects">
+      <div class="section-head">
+        <h2>Projects</h2>
+        <div class="filters" role="group" aria-label="Filter projects"></div>
+      </div>
+      <ul class="grid" id="project-list"></ul>
+      <p class="empty" id="project-empty" hidden>Nothing posted yet. Check back soon.</p>
+    </section>
+
+    <section id="about">
+      <h2>About</h2>
+      <p>This is where my personal projects live. Some are finished, most are works in progress.</p>
+    </section>
+  </main>
+
+  <footer>
+    <span>&copy; <span id="year"></span> Velmarox</span>
+  </footer>
+
+  <script src="js/projects.js"></script>
+  <script src="js/site.js"></script>
+</body>
+</html>

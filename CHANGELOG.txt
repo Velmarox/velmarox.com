@@ -1,0 +1,11 @@
+VELMAROX.COM - CHANGELOG
+Versioning scheme: v#.#.#-[stage] (semver)
+Patch = fixes | Minor = new content (patch resets) | Major 0 until launch (v1.0.0)
+Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0.0 gold
+The current version lives in <meta name="version"> in index.html and in the latest entry here.
+Git history is the archive: every release is a commit, and old versions can be checked out from it.
+
+v0.1.0-alpha (2026-10-11)
+- Initial release: one-page projects hub (hero, project grid with tag filters, about, footer).
+- Projects are listed in js/projects.js; the grid renders from it and shows an empty state when it is empty.
+- GitHub Pages hosting with CNAME for velmarox.com; 404 page.
