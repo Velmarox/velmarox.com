@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="version" content="v0.2.0-alpha">
+  <meta name="theme-color" content="#140a2e">
+  <title>Velmarox</title>
+  <meta name="description" content="Velmarox's happy place: games, tools, stories and experiments.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <div class="blobs" aria-hidden="true"><span></span><span></span><span></span></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <header class="top">
+    <a class="mark" href="/"><span class="mark-dot"></span>velmarox</a>
+    <nav>
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="hello">hi, welcome to my</p>
+      <h1>
+        <button type="button" class="logo" id="logo" aria-label="Velmarox (click for confetti)">Velmarox</button>
+      </h1>
+      <p class="tagline">happy place <span class="spin" aria-hidden="true">✦</span> where I make games, tools, stories and whatever else sounds fun</p>
+      <p class="hint" aria-hidden="true">psst, click the big name</p>
+    </section>
+
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span>games ✦ tools ✦ stories ✦ experiments ✦ weird little ideas ✦ pixels ✦ dice ✦ dogs ✦&nbsp;</span>
+        <span>games ✦ tools ✦ stories ✦ experiments ✦ weird little ideas ✦ pixels ✦ dice ✦ dogs ✦&nbsp;</span>
+      </div>
+    </div>
+
+    <section id="projects">
+      <div class="section-head">
+        <h2>Projects</h2>
+        <div class="filters" role="group" aria-label="Filter projects"></div>
+      </div>
+      <ul class="grid" id="project-list"></ul>
+      <div class="empty" id="project-empty" hidden>
+        <span class="empty-icon" aria-hidden="true">🛠️</span>
+        <p><strong>Under construction.</strong> Projects are on the way.</p>
+      </div>
+    </section>
+
+    <section id="about">
+      <h2>About</h2>
+      <div class="about-card">
+        <p>This is my corner of the internet. Some things here are finished, most are works in progress, and a few are just ideas I couldn't stop thinking about.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>&copy; <span id="year"></span> Velmarox</span>
+    <span class="made">made with snacks and stubbornness</span>
+  </footer>
+
+  <script src="js/projects.js"></script>
+  <script src="js/site.js"></script>
+</body>
+</html>

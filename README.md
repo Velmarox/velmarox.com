@@ -5,20 +5,26 @@ Personal projects hub. Static site, no build step, hosted on GitHub Pages at
 
 ## Layout
 
+GitHub Pages publishes the `docs/` folder. Everything the website serves lives there;
+README and CHANGELOG stay at the top and are not published.
+
 ```
-index.html        the one page: hero, projects grid, about, footer
-404.html          shown for any missing URL
-css/site.css      styles (light and dark follow the visitor's system setting)
-js/projects.js    THE PROJECT LIST: edit this to add, change or remove projects
-js/site.js        renders the grid and the tag filter buttons from projects.js
-assets/           favicon.svg and any images
-CNAME             tells GitHub Pages the custom domain (velmarox.com)
-.nojekyll         serves files as-is, no Jekyll processing
+docs/
+  index.html        the one page: hero (click the name for confetti), ticker, projects, about
+  404.html          shown for any missing URL
+  css/site.css      styles: dark purple base, drifting colour blobs, sticker-style cards
+  js/projects.js    THE PROJECT LIST: edit this to add, change or remove projects
+  js/site.js        renders the cards and filter buttons, confetti, scroll-in animation
+  assets/           favicon.svg and any images
+  CNAME             tells GitHub Pages the custom domain (velmarox.com)
+  .nojekyll         serves files as-is, no Jekyll processing
 ```
+
+Animations switch off for visitors whose device is set to reduce motion.
 
 ## Adding a project
 
-Open `js/projects.js` and add an entry inside `window.PROJECTS = [ ... ]`:
+Open `docs/js/projects.js` and add an entry inside `window.PROJECTS = [ ... ]`:
 
 ```js
 { title: "My Game", blurb: "One or two sentences.", tags: ["game"], url: "https://...", status: "live" },
@@ -31,7 +37,7 @@ Commit and push to `main`. GitHub Pages republishes in about a minute.
 
 ## Versioning
 
-Bump `<meta name="version">` in `index.html` and add a `CHANGELOG.txt` entry with
+Bump `<meta name="version">` in `docs/index.html` and add a `CHANGELOG.txt` entry with
 every release (patch = fixes, minor = new content). Git history keeps the old versions.
 
 ## Keep the anonymous sites separate
@@ -44,8 +50,8 @@ is meant to stay anonymous, and a link from velmarox.com would break that.
 ### 1. Turn on GitHub Pages
 
 Repo **Settings → Pages**:
-- Source: **Deploy from a branch**, branch **main**, folder **/ (root)**. Save.
-- Custom domain: `velmarox.com` (the `CNAME` file already sets it). Save.
+- Source: **Deploy from a branch**, branch **main**, folder **/docs**. Save.
+- Custom domain: `velmarox.com` (the `docs/CNAME` file already sets it). Save.
 - Once the DNS check passes, tick **Enforce HTTPS**. The certificate can take up to an
   hour to issue.
 

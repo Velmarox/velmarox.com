@@ -2,8 +2,15 @@ VELMAROX.COM - CHANGELOG
 Versioning scheme: v#.#.#-[stage] (semver)
 Patch = fixes | Minor = new content (patch resets) | Major 0 until launch (v1.0.0)
 Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0.0 gold
-The current version lives in <meta name="version"> in index.html and in the latest entry here.
+The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
+
+v0.2.0-alpha (2026-10-11)
+- Redesign: dark purple base with drifting colour blobs, rainbow gradient logo that bursts confetti on click,
+  scrolling word ticker, sticker-style project cards (colour per card, tilt, hard shadow), Bricolage Grotesque font.
+- Cards and about box pop in on scroll; all motion off under prefers-reduced-motion.
+- Site moved into docs/ to match the GitHub Pages source folder (was serving an empty /docs).
+- Fixed: empty-state box no longer shows when projects exist.
 
 v0.1.0-alpha (2026-10-11)
 - Initial release: one-page projects hub (hero, project grid with tag filters, about, footer).
