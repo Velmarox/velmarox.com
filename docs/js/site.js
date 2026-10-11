@@ -41,6 +41,7 @@
   }
   function badges(g) {
     var out = [];
+    if (g.flag) out.push('<span class="tag warn">' + esc(g.flag) + '</span>');
     if (recent(g.released)) out.push('<span class="tag y">New</span>');
     else if (recent(g.updated)) out.push('<span class="tag solid">Updated</span>');
     if (g.status === 'wip') out.push('<span class="tag">In dev</span>');
@@ -48,6 +49,7 @@
     return out.length ? '<div class="badge-row">' + out.join('') + '</div>' : '';
   }
   function statusTag(g) {
+    if (g.status === 'live' && !g.play) return '<span class="tag">Desktop game</span>';
     if (g.status === 'live') return '<span class="tag">Free to play</span>';
     if (g.status === 'wip') return '<span class="tag">In the workshop</span>';
     return '<span class="tag dim">Idea</span>';
@@ -261,9 +263,9 @@
         '<div class="hero-fade"><div class="slide-no"><b>' + String(i + 1).padStart(2, '0') + '</b> / ' + String(feat.length).padStart(2, '0') + ' &nbsp;FEATURED</div>' +
         '<h1 class="hero-title"><span class="l1">' + esc(l1) + '</span>' + (l2 ? '<span class="l2">' + esc(l2) + '</span>' : '') + '</h1>' +
         '<p class="hero-sub">' + esc(g.tagline || '') + '</p>' +
-        '<div class="hero-meta">' + statusTag(g) + genreTags(g) + '</div>' +
+        '<div class="hero-meta">' + (g.flag ? '<span class="tag warn">' + esc(g.flag) + '</span>' : '') + statusTag(g) + genreTags(g) + '</div>' +
         '<div class="hero-actions">' +
-          (playable(g) ? '<a class="btn big" href="' + esc(g.play) + '">Play now</a>' : '<a class="btn big" href="' + gameUrl(g) + '">' + (g.status === 'live' ? 'Play now' : 'See game') + '</a>') +
+          (playable(g) ? '<a class="btn big" href="' + esc(g.play) + '">Play now</a>' : '<a class="btn big" href="' + gameUrl(g) + '">' + (g.download ? 'Get it' : g.status === 'live' ? 'Play now' : 'See game') + '</a>') +
           '<a class="btn ghost big" href="' + gameUrl(g) + '">Details</a></div></div>';
       $('#hero-img').innerHTML = img(g.banner || g.thumb, g.title, 'Image');
       $('#hero-screen').href = gameUrl(g);
@@ -316,7 +318,7 @@
     more = more.slice(0, 4);
 
     var rows = [
-      ['Status', g.status === 'live' ? 'Playable' : g.status === 'wip' ? 'In development' + (g.progress != null ? ' (' + g.progress + '%)' : '') : 'Idea'],
+      ['Status', g.status === 'live' ? (g.play ? 'Playable' : 'Released (desktop)') : g.status === 'wip' ? 'In development' + (g.progress != null ? ' (' + g.progress + '%)' : '') : 'Idea'],
       ['Genre', (g.genres || []).map(catName).join(', ')],
       ['Controls', g.controls], ['Platforms', g.platforms], ['Session', g.session],
       ['Version', g.version], ['Released', date(g.released)], ['Updated', date(g.updated)]
@@ -327,6 +329,8 @@
     main.innerHTML =
       '<div class="wrap">' +
       '<div class="page-head" style="padding-bottom:0"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/games/">Games</a><span>/</span>' + esc(g.title) + '</div></div>' +
+      (g.warning ? '<aside class="warning" role="note"><div class="warning-in"><div class="warning-mark" aria-hidden="true">!</div><div>' +
+        '<h2>' + esc(g.warning.title || 'Warning') + '</h2><p>' + esc(g.warning.text || '') + '</p></div></div></aside>' : '') +
       '<div class="game-top"><div>' +
         '<div class="game-id">' + (g.icon ? '<div class="game-icon"><div>' + img(g.icon, '') + '</div></div>' : '') +
           '<div><h1>' + esc(g.title) + '</h1>' + (g.tagline ? '<p>' + esc(g.tagline) + '</p>' : '') +
@@ -337,10 +341,16 @@
         }).join('') + '</div>' : '') +
       '</div><aside>' +
         '<div class="panel details"><div class="panel-in">' +
-          '<div class="play-box">' + (playable(g)
+          '<div class="play-box">' + (g.download && !playable(g)
+            ? (g.download.url
+              ? '<a class="btn big" href="' + esc(g.download.url) + '" rel="noopener">' + esc(g.download.label || 'Download') + '</a>'
+              : '<a class="btn big" aria-disabled="true">' + esc(g.download.label || 'Download') + '</a>') +
+              (g.download.note ? '<small>' + esc(g.download.note) + '</small>' : '')
+            : playable(g)
             ? '<a class="btn big" href="' + esc(g.play) + '">Play now</a>' +
+              (g.download && g.download.url ? '<a class="btn ghost" style="margin-top:10px" href="' + esc(g.download.url) + '" rel="noopener">' + esc(g.download.label || 'Download') + '</a>' : '') +
               (g.links || []).map(function (l) { return '<a class="btn ghost" style="margin-top:10px" href="' + esc(l.url) + '">' + esc(l.label) + '</a>'; }).join('') +
-              '<small>Free · runs in your browser</small>'
+              '<small>' + (g.download && g.download.note ? esc(g.download.note) : 'Free · runs in your browser') + '</small>'
             : '<a class="btn big" aria-disabled="true">' + (g.status === 'live' ? 'Play now' : 'Coming soon') + '</a><small>' + (g.status === 'live' ? 'Link not set yet' : 'Not playable yet') + '</small>') +
           '</div><dl>' + rows.map(function (r) { return '<div class="d"><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' +
         '</div></div>' +

@@ -88,6 +88,14 @@ The four games came from the `pixel-den` repo (velmaroxie.web.app) and live here
 
 When a game is rebuilt, copy its build into `play/` again and re-apply those two edits.
 
+Clack Attack (from the `clack-attack` repo) is the web half of an Electron app: copy `Current Version/Table`,
+`App.js`, `Clack.css` and `Clack_Attack.html` (renamed `index.html`) into `games/clack-attack/play/`, then
+re-add the VRX badge block at the bottom of that `index.html`.
+
+PokéDungeon (from `PokeDungeon`) is a desktop Python game, so it has a page but no `play/` folder. To offer a
+download, upload the share zip somewhere public (a GitHub release on a public repo, itch.io ...) and put the
+link in its `download.url` in games.js. Keep its `warning` block.
+
 Elo's Hoard accounts (and the shared leaderboard in Keno and Safari Time) sign in against the
 `elos-hoard` Firebase project, which only accepts sign-ins from its authorised domains. Add
 `velmarox.com` in Firebase console > elos-hoard > Authentication > Settings > Authorised domains,

@@ -1,0 +1,34 @@
+CLACK ATTACK - CHANGELOG
+Versioning scheme: v[Major].[Minor].[Patch] - app versioning. No pre-release stage tags.
+Patch = fixes | Minor = new content (patch resets) | Major = a release that changes how this is used
+The number says which release you are on, not how far it is from a 1.0.
+The top entry here is the app's version: Build_Exe.mjs and Release.mjs both read it.
+Archived (outgoing-version) copies live in ../_version_archive/, never in this build folder.
+
+v1.3.0 (2026-10-09)
+- Forest Druid gets its own painted tray (Table/Trays/Forest_Druid.jpg): a mossy forest floor with fallen leaves,
+  mushrooms and dappled light, in a wooden frame wrapped in ivy. Every tray theme now has artwork.
+- Archived to _version_archive/Clack_Attack_v1.2.1/: Table/Scripts/Dice_Themes.js, CHANGELOG.txt
+
+v1.2.1 (2026-10-09)
+- Fix: clicking the update "!" closed the app but never swapped in the new exe. On Windows a detached PowerShell
+  has no console and quits at once, so the swap now runs from a small Swap.ps1 that cmd's start launches.
+- If you're on 1.2.0, download 1.2.1 by hand once; updates work by themselves from then on.
+- Archived to _version_archive/Clack_Attack_v1.2.0/: App_Main.cjs, CHANGELOG.txt
+
+v1.2.0 (2026-10-09)
+- New painted dice trays: 14 tray themes now use new artwork (Table/Trays/), and the dice walls sit at each frame's
+  inner edge.
+- Three new trays: Green Felt, Magenta Felt and Nineties.
+- Forest Druid has no new picture yet, so it keeps its drawn tray.
+- Archived to _version_archive/Clack_Attack_v1.1.0/: Table/Scripts/Dice_Themes.js, Table/Scripts/Dice_Tray.js, CHANGELOG.txt
+
+v1.1.0 (2026-10-09)
+- Updates itself: checks github.com/Velmarox/clack-attack-releases when it opens and every 30 minutes, fetches a
+  newer Clack_Attack.exe in the background, and shows a blinking "!" at the top right. One click swaps the exe and
+  reopens it.
+- Release.mjs publishes a built exe as a GitHub release (the version comes from this file).
+- Archived to _version_archive/Clack_Attack_v1.0.0/: App_Main.cjs, App_Preload.cjs, App.js, Clack.css, Build_Exe.mjs
+
+v1.0.0 (2026-10-09)
+- Initial release: the Warrior Codex's 3D dice, tray themes, roll bar and log as a portable exe.

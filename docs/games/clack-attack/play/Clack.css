@@ -1,0 +1,64 @@
+/* Clack Attack: the colours and sizes the Codex's Table styles expect (its dark theme), and the window's layout. */
+:root {
+  --bg: #080B17; --bg2: #0E1428; --panel: #121A32; --panel2: #18213F; --panel-2: #18213F; --field: rgba(8,11,23,0.55);
+  --line: rgba(200,210,255,0.14); --line2: rgba(200,210,255,0.28);
+  --text: #E4E6F2; --muted: #A9AECB; --dim: #7F86A8; --head: #F2EBD3;
+  --accent: #E8B04B; --accent2: #E8B04B; --accent-line: #E8B04B; --accent-soft: rgba(232,176,75,0.14); --on-accent: #0E1428;
+  --sel: rgba(242,235,211,0.12); --shadow: 0 2px 14px rgba(0,0,0,0.45);
+  --f-head: 'Marcellus SC', Georgia, serif; --f-sc: 'Marcellus SC', Georgia, serif; --f-body: 'Segoe UI', system-ui, sans-serif;
+  --me: #E8B04B; --log-font: 'Segoe UI', system-ui, sans-serif; --log-scale: 1;
+  --ts: 1;
+  --fs-2xs: 11px; --fs-xs: 12px; --fs-sm: 13px; --fs-md: 14px; --fs-base: 15px; --fs-body: 17px; --fs-lg: 18px; --fs-xl: 28px;
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+  --radius: 0; --ctl-h: 30px; --ctl-h-sm: 24px; --track: 1.3px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { background: radial-gradient(ellipse 90% 70% at 30% 0%, var(--bg2) 0%, var(--bg) 70%) fixed var(--bg); color: var(--text); font: 14px/1.4 'Segoe UI', system-ui, sans-serif; display: flex; flex-direction: column; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+input.sw { appearance: none; -webkit-appearance: none; width: 34px; height: 18px; margin: 0; flex: none; position: relative; cursor: pointer; border: 1px solid var(--line2); background: var(--bg2); border-radius: 0; }
+input.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; background: var(--dim); transition: left .12s; }
+input.sw:checked { background: color-mix(in srgb, var(--accent) 18%, transparent); border-color: var(--accent); }
+input.sw:checked::after { left: 18px; background: var(--accent); }
+
+/* the top bar */
+.top { flex: none; display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: rgba(14,20,40,0.82); border-bottom: 1px solid var(--line); z-index: 5; }
+.top .brand { font: 400 var(--fs-md) var(--f-sc); letter-spacing: 1.5px; text-transform: uppercase; color: var(--head); margin-right: 6px; }
+.top .grow { flex: 1; }
+.top select, .top button { background: transparent; border: 1px solid var(--line); padding: 3px 8px; font-size: var(--fs-sm); }
+.top select option { background: var(--bg2); }
+.top button:hover, .top select:hover { border-color: var(--accent); }
+.top button[aria-pressed="true"], .top button.on { border-color: var(--accent); color: var(--accent); }
+.top select { max-width: 170px; }
+/* v1.1.0: the update "!" at the far right of the bar; it blinks until you click it */
+.top button.update-bang { width: 26px; height: 26px; padding: 0; border-radius: 50%; border-color: var(--accent); background: var(--accent); color: var(--on-accent); font: 700 16px/1 'Segoe UI', system-ui, sans-serif; animation: bang-blink 1.1s ease-in-out infinite; }
+.top button.update-bang:hover { animation-play-state: paused; box-shadow: 0 0 0 3px var(--accent-soft); }
+.top button.update-bang.installing { animation: none; opacity: .55; cursor: progress; }
+@keyframes bang-blink { 0%, 100% { opacity: 1; box-shadow: 0 0 10px 2px rgba(232,176,75,0.7); } 50% { opacity: .25; box-shadow: none; } }
+
+/* the stage: the tray, and the roll bar and log beside it */
+.stage { flex: 1; min-height: 0; display: flex; }
+.tray-area { flex: 1; min-width: 0; position: relative; }
+.tray-area .idle { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--dim); pointer-events: none; padding: 20px; transition: opacity .3s; }
+.tray-area .idle p { margin: 4px 0; }
+.tray-area .idle .big { font-size: 16px; color: var(--muted); }
+.tray-area.rolling .idle { opacity: 0; }
+.side { flex: none; width: 380px; display: flex; flex-direction: column; border-left: 1px solid var(--line); background: rgba(14,20,40,0.55); min-height: 0; }
+.roller { flex: none; display: flex; flex-direction: column; gap: 8px; padding: 10px; border-bottom: 1px solid var(--line); }
+.roller .quick-dice { display: flex; flex-wrap: wrap; gap: 4px; }
+.roller .result { min-height: 46px; }
+.logbox { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.loghead { flex: none; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.loghead b { flex: 1; font: 400 var(--fs-xs) var(--f-sc); letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent2); }
+.logbox .log { flex: 1; min-height: 0; }
+.entry .when { color: var(--muted); font-size: var(--fs-2xs); white-space: nowrap; padding-top: 3px; }
+
+/* the Dice look drawer: over the roll bar and the log, so the tray stays in view for Test throw */
+.look-drawer { position: fixed; top: 0; bottom: 0; right: 0; width: min(520px, 60vw); z-index: 120; display: flex; padding-top: 38px; }
+.rp .look.settings2 { width: 100%; height: 100%; max-height: none; border-width: 0 0 0 1px; }
+.look-drawer .smain { flex: 1; min-height: 0; }
+.rp.rp-toasts { z-index: 200; }
+
+@media (max-width: 900px) { .side { width: 320px; } }

@@ -5,6 +5,17 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.6.0-alpha (2026-10-11)
+- Added Clack Attack (from the clack-attack repo, v1.3.0): the web build of the 3D dice roller is playable at
+  games/clack-attack/play/, with a link to the Windows app on clack-attack-releases. Screenshots of four trays.
+  Electron-only files (App_Main, App_Preload, Build_Exe, Release) left out; the VRX badge sits bottom-left so it
+  does not cover the app's title.
+- Added PokéDungeon (from the PokeDungeon repo, v1.23.0) as a desktop game page: big hazard-striped
+  "Unofficial fan game" disclaimer, a Fan game badge on its cards and in the banner, no download yet
+  (the build is a ~285 MB local zip and the repo is private), screenshot placeholder until real ones exist.
+- Game data gains download, flag and warning fields. Desktop-only games read "Desktop game" / "Released (desktop)".
+- New categories: Tools, Roguelike.
+
 v0.5.0-alpha (2026-10-11)
 - Branded VRX Games: the VRX logo, recoloured to the site palette (white -> electric yellow, blue -> crimson),
   replaces the text logo in the header and footer. Page titles read "| VRX Games".
