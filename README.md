@@ -5,39 +5,57 @@ Personal projects hub. Static site, no build step, hosted on GitHub Pages at
 
 ## Layout
 
-GitHub Pages publishes the `docs/` folder. Everything the website serves lives there;
-README and CHANGELOG stay at the top and are not published.
+GitHub Pages publishes the `docs/` folder. README and CHANGELOG stay at the top and are not published.
 
 ```
 docs/
-  index.html        the one page: hero, ticker, projects, about
-  404.html          shown for any missing URL
-  css/site.css      styles: dark purple base, drifting colour blobs, sticker-style cards, square corners only
-  js/projects.js    THE PROJECT LIST: edit this to add, change or remove projects
-  js/site.js        renders the cards and filter buttons, scroll-in animation
-  assets/           favicon.svg and any images
-  CNAME             tells GitHub Pages the custom domain (velmarox.com)
-  .nojekyll         serves files as-is, no Jekyll processing
+  index.html              home: featured banner, trending, new releases, latest posts, workshop
+  games/index.html        all games; ?cat=<key> filters by category (the Games dropdown links here)
+  games/<slug>/           one folder per game: index.html + that game's images
+  games/_template/        copy this to start a new game page
+  blog/index.html         all posts
+  blog/<slug>/            one folder per post: the post text lives in its index.html
+  blog/_template/         copy this to start a new post
+  404.html
+  css/site.css            the look: black, crimson, electric yellow, cut corners, hazard stripes
+  js/data/games.js        THE GAME LIST: every card, category and game page is built from it
+  js/data/posts.js        THE BLOG LIST: titles, dates, tags, excerpts
+  js/site.js              builds the header, dropdown, footer and every page from the two lists
+  assets/favicon.svg
+  CNAME, .nojekyll
 ```
 
-Animations switch off for visitors whose device is set to reduce motion.
+Header and footer are added by `site.js`, so every page gets the same nav automatically.
 
-## Adding a project
+## Adding a game
 
-Open `docs/js/projects.js` and add an entry inside `window.PROJECTS = [ ... ]`:
+1. Open `docs/js/data/games.js` and add an entry. The comment at the top lists every field.
+2. Copy `docs/games/_template/` to `docs/games/<slug>/` and change `data-slug="CHANGE-ME"` to the slug.
+3. Drop the images into that folder and reference them, e.g. `thumb: '/games/<slug>/thumb.jpg'`.
 
-```js
-{ title: "My Game", blurb: "One or two sentences.", tags: ["game"], url: "https://...", status: "live" },
-```
+| Image  | Size      | Where it shows |
+|--------|-----------|----------------|
+| icon   | 256x256   | card corner, game page header |
+| thumb  | 640x360   | cards |
+| banner | 1600x900  | home banner (featured games), game page |
+| shots  | 16:9      | game page gallery |
 
-`status` is `live`, `wip` or `idea`. Leave out `url` for something not online yet.
-Filter buttons appear on their own once the projects use more than one tag.
+Missing images show a placeholder frame. Categories in the dropdown come from the games' `genres`;
+add new category names to `CATEGORIES` at the top of games.js.
 
-Commit and push to `main`. GitHub Pages republishes in about a minute.
+## Writing a blog post
+
+1. Add an entry at the top of `docs/js/data/posts.js` (title, date, tag, excerpt; `game` to link it to a game).
+2. Copy `docs/blog/_template/` to `docs/blog/<slug>/`, set `data-slug`, write the post inside `<article>`.
+
+## Removing the samples
+
+Entries with `sample: true` are placeholders, and while any exist a striped "Preview" bar shows under
+the header. Delete them from both lists and delete their `games/sample-*` and `blog/sample-*` folders.
 
 ## Versioning
 
-Bump `<meta name="version">` in `docs/index.html` and add a `CHANGELOG.txt` entry with
+Bump `<meta name="version">` in every page (`grep -rl 'name="version"' docs`) and add a `CHANGELOG.txt` entry with
 every release (patch = fixes, minor = new content). Git history keeps the old versions.
 
 ## Keep the anonymous sites separate

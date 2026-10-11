@@ -1,104 +1,361 @@
 (function () {
-  var list = document.getElementById('project-list');
-  var empty = document.getElementById('project-empty');
-  var filters = document.querySelector('.filters');
-  var projects = window.PROJECTS || [];
-  var labels = { live: 'Live', wip: 'In progress', idea: 'Idea' };
+  var GAMES = window.GAMES || [];
+  var POSTS = (window.POSTS || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+  var CATS = window.CATEGORIES || {};
+  var body = document.body;
+  var page = body.dataset.page;
+  var slug = body.dataset.slug;
   var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var DAY = 864e5;
 
-  document.getElementById('year').textContent = new Date().getFullYear();
-
-  // ---- project cards ----
-  function card(p) {
-    var li = document.createElement('li');
-    li.className = 'card pop';
-    li.dataset.tags = (p.tags || []).join(' ');
-    var inner = document.createElement(p.url ? 'a' : 'div');
-    inner.className = 'card-inner';
-    if (p.url) {
-      inner.href = p.url;
-      var go = document.createElement('span');
-      go.className = 'go';
-      go.setAttribute('aria-hidden', 'true');
-      go.textContent = '↗';
-      inner.appendChild(go);
-    }
-
-    if (p.status) {
-      var s = document.createElement('span');
-      s.className = 'status';
-      s.textContent = labels[p.status] || p.status;
-      inner.appendChild(s);
-    }
-
-    var h = document.createElement('h3');
-    h.textContent = p.title;
-    if (p.status) h.style.marginTop = '12px';
-    inner.appendChild(h);
-
-    var b = document.createElement('p');
-    b.textContent = p.blurb || '';
-    inner.appendChild(b);
-
-    if (p.tags && p.tags.length) {
-      var t = document.createElement('p');
-      t.className = 'tags';
-      p.tags.forEach(function (tag) {
-        var chip = document.createElement('span');
-        chip.textContent = tag;
-        t.appendChild(chip);
-      });
-      inner.appendChild(t);
-    }
-    li.appendChild(inner);
-    return li;
-  }
-
-  function show(tag) {
-    Array.prototype.forEach.call(list.children, function (li) {
-      li.hidden = tag !== 'all' && li.dataset.tags.split(' ').indexOf(tag) === -1;
-    });
-    Array.prototype.forEach.call(filters.children, function (btn) {
-      btn.setAttribute('aria-pressed', btn.dataset.tag === tag);
+  // ---------- helpers ----------
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function catName(k) { return CATS[k] || (k.charAt(0).toUpperCase() + k.slice(1)); }
+  function date(d) {
+    if (!d) return '';
+    var t = new Date(d + 'T12:00:00');
+    return t.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function recent(d) { return d && (Date.now() - new Date(d + 'T12:00:00')) < 30 * DAY; }
+  function gameUrl(g) { return '/games/' + g.slug + '/'; }
+  function postUrl(p) { return '/blog/' + p.slug + '/'; }
+  function findGame(s) { return GAMES.filter(function (g) { return g.slug === s; })[0]; }
+  function playable(g) { return g.status === 'live' && g.play && g.play !== '#'; }
+  function img(src, alt, label) {
+    return src
+      ? '<img src="' + esc(src) + '" alt="' + esc(alt || '') + '" loading="lazy">'
+      : '<div class="ph" aria-hidden="true">' + esc(label || 'Image') + '<small>placeholder</small></div>';
+  }
+  function badges(g) {
+    var out = [];
+    if (recent(g.released)) out.push('<span class="tag y">New</span>');
+    else if (recent(g.updated)) out.push('<span class="tag solid">Updated</span>');
+    if (g.status === 'wip') out.push('<span class="tag">In dev</span>');
+    if (g.status === 'idea') out.push('<span class="tag dim">Idea</span>');
+    return out.length ? '<div class="badge-row">' + out.join('') + '</div>' : '';
+  }
+  function statusTag(g) {
+    if (g.status === 'live') return '<span class="tag">Free to play</span>';
+    if (g.status === 'wip') return '<span class="tag">In the workshop</span>';
+    return '<span class="tag dim">Idea</span>';
+  }
+  function genreTags(g) {
+    return (g.genres || []).map(function (k) { return '<span class="tag dim">' + esc(catName(k)) + '</span>'; }).join('');
+  }
+  function secHead(title, more, red) {
+    return '<div class="sec-head"><h2' + (red ? ' class="red"' : '') + '>' + esc(title) + '</h2>' +
+      '<span class="pips"><i></i><i></i><i></i></span><span class="rule"></span>' +
+      (more ? '<a class="more" href="' + more[1] + '">' + esc(more[0]) + ' &rsaquo;</a>' : '') + '</div>';
+  }
 
-  if (!projects.length) {
-    empty.hidden = false;
-  } else {
-    projects.forEach(function (p) { list.appendChild(card(p)); });
-    var tags = [];
-    projects.forEach(function (p) {
-      (p.tags || []).forEach(function (t) { if (tags.indexOf(t) === -1) tags.push(t); });
-    });
-    if (tags.length > 1) {
-      ['all'].concat(tags).forEach(function (t) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.dataset.tag = t;
-        btn.textContent = t === 'all' ? 'All' : t;
-        btn.addEventListener('click', function () { show(t); });
-        filters.appendChild(btn);
-      });
-      show('all');
+  // ---------- cards ----------
+  function gameCard(g) {
+    return '<li><a class="card" href="' + gameUrl(g) + '"><div class="card-in">' +
+      '<div class="card-img">' + img(g.thumb, g.title, 'Card') + badges(g) +
+      (g.icon ? '<div class="card-icon">' + img(g.icon, '') + '</div>' : '') + '</div>' +
+      '<div class="card-body">' + statusTag(g) +
+      '<h3>' + esc(g.title) + '</h3><div class="tags">' + genreTags(g) + '</div>' +
+      (g.tagline ? '<p class="line">' + esc(g.tagline) + '</p>' : '') +
+      '</div></div></a></li>';
+  }
+  function postCard(p) {
+    var g = p.game && findGame(p.game);
+    return '<li><a class="card post-card" href="' + postUrl(p) + '"><div class="card-in">' +
+      '<div class="card-img">' + img(p.cover, p.title, 'Cover') +
+      '<div class="badge-row"><span class="tag solid">' + esc(p.tag || 'Post') + '</span>' +
+      (g ? '<span class="tag">' + esc(g.title) + '</span>' : '') + '</div></div>' +
+      '<div class="card-body"><span class="date">' + date(p.date) + '</span>' +
+      '<h3>' + esc(p.title) + '</h3>' +
+      (p.excerpt ? '<p class="ex">' + esc(p.excerpt) + '</p>' : '') +
+      '</div></div></a></li>';
+  }
+  function postRow(p, i) {
+    var g = p.game && findGame(p.game);
+    var ico = g && g.icon ? img(g.icon, '') : String(i + 1).padStart(2, '0');
+    return '<a class="row" href="' + postUrl(p) + '"><span class="row-ico">' + ico + '</span>' +
+      '<span><b>' + esc(p.title) + '</b><small>' + esc(p.tag || 'Post') + ' · ' + date(p.date) + '</small></span>' +
+      (recent(p.date) ? '<span class="live' + (i % 2 ? ' y' : '') + '">New</span>' : '<span></span>') + '</a>';
+  }
+  function workshopRow(g, i) {
+    return '<a class="row" href="' + gameUrl(g) + '"><span class="row-ico">' + (g.icon ? img(g.icon, '') : esc(g.title.charAt(0))) + '</span>' +
+      '<span><b>' + esc(g.title) + '</b><small>' + esc((g.genres || []).map(catName).join(' · ')) + '</small>' +
+      (g.progress != null ? '<div class="meter" title="' + g.progress + '%"><i style="width:' + Math.max(0, Math.min(100, g.progress)) + '%"></i></div>' : '') +
+      '</span><span class="live' + (i % 2 ? ' y' : '') + '">' + (g.progress != null ? g.progress + '%' : 'WIP') + '</span></a>';
+  }
+
+  // ---------- header / footer ----------
+  function categoryCounts() {
+    var counts = {};
+    GAMES.forEach(function (g) { (g.genres || []).forEach(function (k) { counts[k] = (counts[k] || 0) + 1; }); });
+    return Object.keys(counts).sort(function (a, b) { return catName(a).localeCompare(catName(b)); })
+      .map(function (k) { return [k, counts[k]]; });
+  }
+  function playNowTarget() {
+    var f = GAMES.filter(function (g) { return g.featured && g.status === 'live'; })[0] ||
+            GAMES.filter(function (g) { return g.status === 'live'; })[0];
+    return f ? gameUrl(f) : '/games/';
+  }
+  function chrome() {
+    var cur = page === 'game' ? 'games' : page === 'post' ? 'blog' : page;
+    function a(key, href, label) { return '<a href="' + href + '"' + (cur === key ? ' aria-current="page"' : '') + '>' + label + '</a>'; }
+    var cats = categoryCounts().map(function (c) {
+      return '<a href="/games/?cat=' + c[0] + '">' + esc(catName(c[0])) + ' <small>' + c[1] + '</small></a>';
+    }).join('');
+    var head = document.createElement('header');
+    head.className = 'site-head';
+    head.innerHTML =
+      '<div class="wrap head-in">' +
+        '<a class="logo" href="/" aria-label="Velmarox home"><span>Velmarox</span><span>Games</span></a>' +
+        '<button class="menu-btn" type="button" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>' +
+        '<nav class="nav" aria-label="Main">' +
+          a('home', '/', 'Home') +
+          '<div class="drop"><button type="button" aria-expanded="false"' + (cur === 'games' ? ' aria-current="page"' : '') + '>Games <i class="caret"></i></button>' +
+            '<div class="drop-menu"><a href="/games/">All games <small>' + GAMES.length + '</small></a><div class="sep"></div>' + cats + '</div></div>' +
+          a('blog', '/blog/', 'Blog') +
+          '<a class="btn yellow mobile-cta" href="' + playNowTarget() + '">Play now</a>' +
+        '</nav>' +
+        '<div class="head-cta"><a class="btn yellow" href="' + playNowTarget() + '">Play now</a></div>' +
+      '</div>';
+    body.insertBefore(head, body.firstChild);
+
+    if (GAMES.some(function (g) { return g.sample; }) || POSTS.some(function (p) { return p.sample; })) {
+      var bar = document.createElement('div');
+      bar.className = 'sample-bar';
+      bar.textContent = 'Preview: games and posts marked sample are placeholders';
+      body.insertBefore(bar, head.nextSibling);
     }
+
+    var menuBtn = $('.menu-btn', head);
+    menuBtn.addEventListener('click', function () {
+      var open = head.classList.toggle('open');
+      menuBtn.setAttribute('aria-expanded', open);
+    });
+    var drop = $('.drop', head);
+    var dropBtn = $('button', drop);
+    dropBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = drop.classList.toggle('open');
+      dropBtn.setAttribute('aria-expanded', open);
+    });
+    document.addEventListener('click', function (e) {
+      if (!drop.contains(e.target)) { drop.classList.remove('open'); dropBtn.setAttribute('aria-expanded', 'false'); }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { drop.classList.remove('open'); dropBtn.setAttribute('aria-expanded', 'false'); }
+    });
+
+    var foot = document.createElement('footer');
+    foot.className = 'site-foot';
+    foot.innerHTML =
+      '<div class="hazard"></div>' +
+      '<div class="wrap foot-in">' +
+        '<div><a class="logo" href="/"><span>Velmarox</span><span>Games</span></a>' +
+        '<p>Games, experiments and devlogs. Made by one person, for fun.</p></div>' +
+        '<div><h4>Games</h4><ul><li><a href="/games/">All games</a></li>' +
+          categoryCounts().slice(0, 5).map(function (c) { return '<li><a href="/games/?cat=' + c[0] + '">' + esc(catName(c[0])) + '</a></li>'; }).join('') +
+        '</ul></div>' +
+        '<div><h4>Site</h4><ul><li><a href="/">Home</a></li><li><a href="/blog/">Blog</a></li></ul></div>' +
+      '</div>' +
+      '<div class="wrap foot-base"><span>&copy; ' + new Date().getFullYear() + ' Velmarox</span><span>velmarox.com</span></div>';
+    body.appendChild(foot);
   }
 
-  // ---- pop things in as they scroll into view ----
-  document.querySelectorAll('.about-card, .empty').forEach(function (el) { el.classList.add('pop'); });
-  var pops = document.querySelectorAll('.pop');
-  if ('IntersectionObserver' in window && !calm) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en, i) {
-        if (en.isIntersecting) {
-          en.target.style.transitionDelay = (i * 70) + 'ms';
-          en.target.classList.add('in');
-          io.unobserve(en.target);
-        }
-      });
-    }, { threshold: 0.15 });
-    pops.forEach(function (el) { io.observe(el); });
-  } else {
-    pops.forEach(function (el) { el.classList.add('in'); });
+  // ---------- home ----------
+  function home() {
+    var main = $('main');
+    var feat = GAMES.filter(function (g) { return g.featured; });
+    if (!feat.length) feat = GAMES.slice(0, 3);
+    var trending = GAMES.filter(function (g) { return g.trending; }).slice(0, 6);
+    var fresh = GAMES.filter(function (g) { return g.released; })
+      .sort(function (a, b) { return a.released < b.released ? 1 : -1; }).slice(0, 6);
+    var wip = GAMES.filter(function (g) { return g.status === 'wip'; });
+
+    var html = '';
+    if (feat.length) {
+      html += '<section class="hero"><div class="wrap hero-grid">' +
+        '<div class="hero-text" id="hero-text"></div>' +
+        '<div class="screen-wrap"><span class="num" id="hero-num"></span><span class="hazard hz-top"></span>' +
+          '<a class="screen" id="hero-screen" href="#"><div class="screen-in"><span class="hatch-tl"></span><span class="hatch-br"></span><div id="hero-img"></div></div></a>' +
+          '<span class="hazard hz-bot"></span><span class="cross c1"></span><span class="cross c2"></span></div>' +
+        '<div class="dots" role="tablist" aria-label="Featured games">' +
+          feat.map(function (g, i) { return '<button type="button" role="tab" aria-label="' + esc(g.title) + '" data-i="' + i + '"></button>'; }).join('') +
+        '</div></div>' +
+        '<div class="bars wrap" aria-hidden="true"><span class="on"></span><span class="on"></span><span></span></div></section>';
+    }
+    html += '<div class="wrap home-grid"><div>';
+    html += '<section class="sec">' + secHead('Trending now', ['All games', '/games/']) +
+      (trending.length ? '<ul class="cards">' + trending.map(gameCard).join('') + '</ul>' : '<p class="empty-note">Nothing here yet.</p>') + '</section>';
+    html += '<section class="sec">' + secHead('New releases', null, true) +
+      (fresh.length ? '<ul class="cards">' + fresh.map(gameCard).join('') + '</ul>' : '<p class="empty-note">Nothing released yet.</p>') + '</section>';
+    html += '</div><aside class="sec">' +
+      secHead('Latest posts', ['Blog', '/blog/']) +
+      '<div class="panel"><div class="panel-in">' + (POSTS.length ? POSTS.slice(0, 5).map(postRow).join('') : '<p class="empty-note">No posts yet.</p>') + '</div></div>' +
+      (wip.length ? secHead('In the workshop', null, true) + '<div class="panel"><div class="panel-in">' + wip.map(workshopRow).join('') + '</div></div>' : '') +
+      '</aside></div>';
+    if (POSTS.length) {
+      html += '<section class="sec wrap">' + secHead('From the blog', ['All posts', '/blog/']) +
+        '<ul class="posts">' + POSTS.slice(0, 3).map(postCard).join('') + '</ul></section>';
+    }
+    main.innerHTML = html;
+
+    if (!feat.length) return;
+    var i = 0, timer;
+    var dots = main.querySelectorAll('.dots button');
+    function show(n) {
+      i = (n + feat.length) % feat.length;
+      var g = feat[i];
+      var words = g.title.toUpperCase().split(' ');
+      var l1 = words.length > 1 ? words.slice(0, Math.ceil(words.length / 2)).join(' ') : words[0];
+      var l2 = words.length > 1 ? words.slice(Math.ceil(words.length / 2)).join(' ') : '';
+      $('#hero-text').innerHTML =
+        '<div class="hero-fade"><div class="slide-no"><b>' + String(i + 1).padStart(2, '0') + '</b> / ' + String(feat.length).padStart(2, '0') + ' &nbsp;FEATURED</div>' +
+        '<h1 class="hero-title"><span class="l1">' + esc(l1) + '</span>' + (l2 ? '<span class="l2">' + esc(l2) + '</span>' : '') + '</h1>' +
+        '<p class="hero-sub">' + esc(g.tagline || '') + '</p>' +
+        '<div class="hero-meta">' + statusTag(g) + genreTags(g) + '</div>' +
+        '<div class="hero-actions">' +
+          (playable(g) ? '<a class="btn big" href="' + esc(g.play) + '">Play now</a>' : '<a class="btn big" href="' + gameUrl(g) + '">' + (g.status === 'live' ? 'Play now' : 'See game') + '</a>') +
+          '<a class="btn ghost big" href="' + gameUrl(g) + '">Details</a></div></div>';
+      $('#hero-img').innerHTML = img(g.banner || g.thumb, g.title, 'Image');
+      $('#hero-screen').href = gameUrl(g);
+      $('#hero-num').textContent = String(i + 1).padStart(2, '0');
+      dots.forEach(function (d, k) { d.setAttribute('aria-current', k === i); });
+    }
+    function auto() { if (!calm && feat.length > 1) { clearInterval(timer); timer = setInterval(function () { show(i + 1); }, 6500); } }
+    dots.forEach(function (d) { d.addEventListener('click', function () { show(+d.dataset.i); auto(); }); });
+    var hero = $('.hero');
+    hero.addEventListener('mouseenter', function () { clearInterval(timer); });
+    hero.addEventListener('mouseleave', auto);
+    show(0); auto();
   }
+
+  // ---------- games list ----------
+  function games() {
+    var main = $('main');
+    var cat = new URLSearchParams(location.search).get('cat');
+    if (cat && !GAMES.some(function (g) { return (g.genres || []).indexOf(cat) > -1; })) cat = null;
+    var list = GAMES.filter(function (g) { return !cat || (g.genres || []).indexOf(cat) > -1; });
+    var order = { live: 0, wip: 1, idea: 2 };
+    list.sort(function (a, b) { return (order[a.status] || 0) - (order[b.status] || 0) || ((b.updated || b.released || '') > (a.updated || a.released || '') ? 1 : -1); });
+    document.title = (cat ? catName(cat) + ' games' : 'All games') + ' | Velmarox';
+    main.innerHTML =
+      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Games</div>' +
+      '<h1>' + (cat ? esc(catName(cat)) + ' <em>games</em>' : 'All <em>games</em>') + '</h1>' +
+      '<p>' + list.length + ' game' + (list.length === 1 ? '' : 's') + (cat ? ' in this category.' : ', from finished to half-built.') + '</p></div>' +
+      '<nav class="chips" aria-label="Categories"><a class="chip" href="/games/"' + (!cat ? ' aria-current="true"' : '') + '>All <small>' + GAMES.length + '</small></a>' +
+        categoryCounts().map(function (c) {
+          return '<a class="chip" href="/games/?cat=' + c[0] + '"' + (cat === c[0] ? ' aria-current="true"' : '') + '>' + esc(catName(c[0])) + ' <small>' + c[1] + '</small></a>';
+        }).join('') + '</nav>' +
+      '<section class="sec">' + (list.length ? '<ul class="cards">' + list.map(gameCard).join('') + '</ul>' : '<p class="empty-note">No games here yet.</p>') + '</section></div>';
+  }
+
+  // ---------- single game ----------
+  function game() {
+    var main = $('main');
+    var g = findGame(slug);
+    if (!g) {
+      main.innerHTML = '<div class="wrap page-head"><h1>Game <em>not found</em></h1><p>This folder has no entry in games.js yet. <a href="/games/">All games</a></p></div>';
+      return;
+    }
+    document.title = g.title + ' | Velmarox';
+    var shots = (g.shots && g.shots.length) ? g.shots : [g.banner || g.thumb || null];
+    var related = POSTS.filter(function (p) { return p.game === g.slug; });
+    var more = GAMES.filter(function (x) {
+      return x.slug !== g.slug && (x.genres || []).some(function (k) { return (g.genres || []).indexOf(k) > -1; });
+    });
+    if (more.length < 3) more = more.concat(GAMES.filter(function (x) { return x.slug !== g.slug && more.indexOf(x) < 0; }));
+    more = more.slice(0, 4);
+
+    var rows = [
+      ['Status', g.status === 'live' ? 'Playable' : g.status === 'wip' ? 'In development' + (g.progress != null ? ' (' + g.progress + '%)' : '') : 'Idea'],
+      ['Genre', (g.genres || []).map(catName).join(', ')],
+      ['Controls', g.controls], ['Platforms', g.platforms], ['Session', g.session],
+      ['Version', g.version], ['Released', date(g.released)], ['Updated', date(g.updated)]
+    ].filter(function (r) { return r[1]; });
+
+    var aboutHtml = (g.about || '').split(/\n\s*\n/).filter(Boolean).map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('');
+
+    main.innerHTML =
+      '<div class="wrap">' +
+      '<div class="page-head" style="padding-bottom:0"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/games/">Games</a><span>/</span>' + esc(g.title) + '</div></div>' +
+      '<div class="game-top"><div>' +
+        '<div class="game-id"><div class="game-icon"><div>' + img(g.icon, '', 'Icon') + '</div></div>' +
+          '<div><h1>' + esc(g.title) + '</h1>' + (g.tagline ? '<p>' + esc(g.tagline) + '</p>' : '') +
+          '<div class="tags">' + statusTag(g) + genreTags(g) + '</div></div></div>' +
+        '<div class="screen-wrap"><div class="screen"><div class="screen-in"><span class="hatch-tl"></span><span class="hatch-br"></span><div id="shot">' + img(shots[0], g.title + ' screenshot', 'Screenshot') + '</div></div></div></div>' +
+        (shots.length > 1 ? '<div class="gallery-thumbs">' + shots.map(function (s, k) {
+          return '<button type="button" data-k="' + k + '" aria-label="Screenshot ' + (k + 1) + '"' + (k ? '' : ' aria-current="true"') + '>' + img(s, '') + '</button>';
+        }).join('') + '</div>' : '') +
+      '</div><aside>' +
+        '<div class="panel details"><div class="panel-in">' +
+          '<div class="play-box">' + (playable(g)
+            ? '<a class="btn big" href="' + esc(g.play) + '">Play now</a><small>Free · runs in your browser</small>'
+            : '<a class="btn big" aria-disabled="true">' + (g.status === 'live' ? 'Play now' : 'Coming soon') + '</a><small>' + (g.status === 'live' ? 'Link not set yet' : 'Not playable yet') + '</small>') +
+          '</div><dl>' + rows.map(function (r) { return '<div class="d"><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' +
+        '</div></div>' +
+      '</aside></div>' +
+      '<div class="two sec">' +
+        '<section>' + secHead('About') + '<div class="prose">' + (aboutHtml || '<p>No description yet.</p>') + '</div>' +
+          (g.howto && g.howto.length ? '<div style="margin-top:28px">' + secHead('How to play', null, true) + '<ol class="steps">' + g.howto.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol></div>' : '') +
+        '</section>' +
+        '<section>' + secHead('Devlog') +
+          (g.log && g.log.length ? '<ul class="log">' + g.log.map(function (l) { return '<li><time>' + date(l.date) + '</time><span>' + esc(l.text) + '</span></li>'; }).join('') + '</ul>' : '<p class="empty-note">No updates yet.</p>') +
+          (related.length ? '<div style="margin-top:28px">' + secHead('Posts', null, true) + '<div class="panel"><div class="panel-in">' + related.map(postRow).join('') + '</div></div></div>' : '') +
+        '</section>' +
+      '</div>' +
+      (more.length ? '<section class="sec">' + secHead('More games', ['All games', '/games/']) + '<ul class="cards">' + more.map(gameCard).join('') + '</ul></section>' : '') +
+      '</div>';
+
+    main.querySelectorAll('.gallery-thumbs button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        $('#shot').innerHTML = img(shots[+b.dataset.k], g.title + ' screenshot', 'Screenshot');
+        main.querySelectorAll('.gallery-thumbs button').forEach(function (x) { x.setAttribute('aria-current', x === b); });
+      });
+    });
+  }
+
+  // ---------- blog list ----------
+  function blog() {
+    $('main').innerHTML =
+      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Blog</div>' +
+      '<h1>The <em>blog</em></h1><p>Devlogs, updates and whatever else is on my mind.</p></div>' +
+      '<section class="sec">' + (POSTS.length ? '<ul class="posts">' + POSTS.map(postCard).join('') + '</ul>' : '<p class="empty-note">No posts yet.</p>') + '</section></div>';
+  }
+
+  // ---------- single post (content lives in the page's <article>) ----------
+  function post() {
+    var main = $('main');
+    var article = $('#post-content');
+    var p = POSTS.filter(function (x) { return x.slug === slug; })[0] || {};
+    var g = p.game && findGame(p.game);
+    if (p.title) document.title = p.title + ' | Velmarox';
+    var idx = POSTS.indexOf(p);
+    var others = POSTS.filter(function (x) { return x !== p; }).slice(0, 3);
+    var wrap = document.createElement('div');
+    wrap.className = 'wrap';
+    wrap.innerHTML =
+      '<header class="post-head"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/blog/">Blog</a></div>' +
+        '<div class="tags"><span class="tag solid">' + esc(p.tag || 'Post') + '</span>' + (g ? '<a class="tag" href="' + gameUrl(g) + '">' + esc(g.title) + '</a>' : '') + '</div>' +
+        '<h1>' + esc(p.title || document.title) + '</h1>' +
+        '<div class="post-meta"><span>' + date(p.date) + '</span></div></header>' +
+      (p.cover ? '<div class="post-cover screen"><div class="screen-in">' + img(p.cover, '') + '</div></div>' : '') +
+      '<div class="post-body"></div>' +
+      (others.length ? '<section class="sec">' + secHead('More posts', ['All posts', '/blog/']) + '<ul class="posts">' + others.map(postCard).join('') + '</ul></section>' : '');
+    article.classList.add('prose');
+    $('.post-body', wrap).appendChild(article);
+    main.appendChild(wrap);
+    void idx;
+  }
+
+  function notFound() {
+    $('main').innerHTML = '<div class="wrap page-head"><div class="crumbs"><a href="/">Home</a></div><h1>Lost <em>signal</em></h1>' +
+      '<p>Nothing lives at this address.</p><p style="margin-top:22px"><a class="btn" href="/">Back home</a> &nbsp; <a class="btn ghost" href="/games/">All games</a></p></div>';
+  }
+
+  chrome();
+  ({ home: home, games: games, game: game, blog: blog, post: post, '404': notFound }[page] || function () {})();
 })();
