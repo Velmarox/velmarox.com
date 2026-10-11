@@ -1,0 +1,131 @@
+{
+ "cellPad": 0,
+ "anims": {
+  "idle": {
+   "file": "assets/sprites/animal/idle.png",
+   "frames": 4,
+   "fw": 25,
+   "fh": 53,
+   "ax": 13.0,
+   "ay": 50,
+   "src": "Animal Idle Spritesheet.png"
+  },
+  "stance": {
+   "file": "assets/sprites/animal/stance.png",
+   "frames": 6,
+   "fw": 22,
+   "fh": 47,
+   "ax": 11.5,
+   "ay": 47,
+   "src": "animalidlefight Spritesheet.png"
+  },
+  "walk": {
+   "file": "assets/sprites/animal/walk.png",
+   "frames": 6,
+   "fw": 27,
+   "fh": 48,
+   "ax": 12.8,
+   "ay": 48,
+   "src": "Animalwalk Spritesheet.png"
+  },
+  "run": {
+   "file": "assets/sprites/animal/run.png",
+   "frames": 6,
+   "fw": 30,
+   "fh": 49,
+   "ax": 14.6,
+   "ay": 49,
+   "src": "Animalruns Spritesheet.png"
+  },
+  "kick": {
+   "file": "assets/sprites/animal/kick.png",
+   "frames": 5,
+   "fw": 40,
+   "fh": 48,
+   "ax": 18.5,
+   "ay": 48,
+   "src": "animalkick Spritesheet.png"
+  },
+  "spinkick": {
+   "file": "assets/sprites/animal/spinkick.png",
+   "frames": 10,
+   "fw": 50,
+   "fh": 48,
+   "ax": 11.5,
+   "ay": 48,
+   "src": "AnimalSpinKick Spritesheet.png"
+  },
+  "punch_low": {
+   "file": "assets/sprites/animal/punch_low.png",
+   "frames": 3,
+   "fw": 33,
+   "fh": 41,
+   "ax": 12.0,
+   "ay": 41,
+   "src": "Animalkneelpunch Spritesheet.png"
+  },
+  "crouch": {
+   "file": "assets/sprites/animal/crouch.png",
+   "frames": 5,
+   "fw": 20,
+   "fh": 49,
+   "ax": 8.5,
+   "ay": 49,
+   "src": "AnimalKneel Spritesheet.png"
+  },
+  "crouch_stance": {
+   "file": "assets/sprites/animal/crouch_stance.png",
+   "frames": 6,
+   "fw": 25,
+   "fh": 53,
+   "ax": 12.0,
+   "ay": 43,
+   "src": "Animalkneelidlefight Spritesheet.png"
+  },
+  "jump": {
+   "file": "assets/sprites/animal/jump.png",
+   "frames": 6,
+   "fw": 27,
+   "fh": 58,
+   "ax": 15.5,
+   "ay": 58,
+   "src": "AnimalJump Spritesheet.png"
+  },
+  "hurt": {
+   "file": "assets/sprites/animal/hurt.png",
+   "frames": 6,
+   "fw": 32,
+   "fh": 49,
+   "ax": 19.5,
+   "ay": 49,
+   "src": "AnimalOof Spritesheet.png"
+  },
+  "stunned": {
+   "file": "assets/sprites/animal/stunned.png",
+   "frames": 4,
+   "fw": 22,
+   "fh": 53,
+   "ax": 11.1,
+   "ay": 53,
+   "src": "AnimalStunned Spritesheet.png"
+  },
+  "death": {
+   "file": "assets/sprites/animal/death.png",
+   "frames": 6,
+   "fw": 47,
+   "fh": 49,
+   "ax": 38.5,
+   "ay": 49,
+   "src": "Animal Death Spritesheet.png"
+  },
+  "getup": {
+   "file": "assets/sprites/animal/getup.png",
+   "frames": 5,
+   "fw": 20,
+   "fh": 49,
+   "ax": 8.5,
+   "ay": 49,
+   "src": "AnimalGetUp Spritesheet.png"
+  }
+ }
+}

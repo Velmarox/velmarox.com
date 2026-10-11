@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!-- Browser runner for verify.js, for when Node isn't handy.
+     `node game/verify.js` is the real one -- it also checks data.js against the
+     source JSON and against rtp_252.csv, which a browser can't read. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Wyrmhoard Keno — harness</title>
+<style>
+body{background:#0b0908;color:#d8cbb8;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;
+  margin:0;padding:22px}
+h1{font:600 14px/1 "Iowan Old Style",Georgia,serif;letter-spacing:.22em;text-transform:uppercase;
+  color:#e8b44a;margin:0 0 4px}
+p.n{color:#8b7d6b;margin:0 0 16px;font-size:11px;letter-spacing:.1em}
+button{font:inherit;background:#4a3413;color:#f3dca6;border:1px solid #7a5a22;border-radius:3px;
+  padding:7px 14px;cursor:pointer;letter-spacing:.14em;text-transform:uppercase}
+button:disabled{opacity:.4;cursor:default}
+select{font:inherit;background:#1d1711;color:#d8cbb8;border:1px solid #3a2f24;padding:6px;border-radius:3px}
+pre{white-space:pre-wrap;margin:18px 0 0;padding:14px;background:#120e0b;border:1px solid #2b231c;
+  border-radius:4px}
+.pass{color:#8fd08a}.fail{color:#e0705a}
+</style>
+</head>
+<body>
+<h1>Wyrmhoard Keno — harness</h1>
+<p class="n">Same resolveRound() the machine pays from. For the data.js-vs-JSON and
+rtp_252.csv checks, run <code>node game/verify.js</code> instead.</p>
+<button id="go">Run</button>
+<select id="draws">
+  <option value="200000">200,000 draws (fast)</option>
+  <option value="2000000" selected>2,000,000 draws</option>
+  <option value="10000000">10,000,000 draws (slow)</option>
+</select>
+<pre id="out">not run yet</pre>
+
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="verify.js"></script>
+<script>
+document.getElementById('go').onclick = function () {
+  var btn = this, out = document.getElementById('out');
+  btn.disabled = true; out.textContent = 'running…';
+  setTimeout(function () {
+    var t0 = performance.now();
+    var r = WyrmVerify.run({ mcDraws: +document.getElementById('draws').value });
+    out.textContent = r.text + '\n\n(' + ((performance.now() - t0) / 1000).toFixed(1) + 's)';
+    out.className = r.fails ? 'fail' : 'pass';
+    btn.disabled = false;
+  }, 30);
+};
+</script>
+
+<!-- VRX Games badge: links back to the site. Fixed, small, stays out of the game's way. -->
+<style>
+.vrx-badge{position:fixed;left:10px;top:10px;z-index:2147483000;display:block;width:88px;opacity:.72;transition:opacity .15s}
+.vrx-badge:hover{opacity:1}
+.vrx-badge img{display:block;width:100%;height:auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+@media (max-width:640px){.vrx-badge{width:64px;left:6px;top:6px}}
+</style>
+<a class="vrx-badge" href="../" aria-label="Back to the game page"><picture><source srcset="/assets/brand/vrx-badge.webp" type="image/webp"><img src="/assets/brand/vrx-badge.png" width="180" height="85" alt="VRX Games" decoding="async"></picture></a>
+</body>
+</html>

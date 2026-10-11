@@ -145,7 +145,7 @@
     head.className = 'site-head';
     head.innerHTML =
       '<div class="wrap head-in">' +
-        '<a class="logo" href="/" aria-label="Velmarox home"><span>Velmarox</span><span>Games</span></a>' +
+        '<a class="logo" href="/" aria-label="VRX Games home"><picture><source srcset="/assets/brand/vrx-games.webp" type="image/webp"><img src="/assets/brand/vrx-games.png" width="520" height="245" alt="VRX Games"></picture></a>' +
         '<button class="menu-btn" type="button" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>' +
         '<nav class="nav" aria-label="Main">' +
           a('home', '/', 'Home') +
@@ -192,7 +192,7 @@
     foot.innerHTML =
       '<div class="hazard"></div>' +
       '<div class="wrap foot-in">' +
-        '<div><a class="logo" href="/"><span>Velmarox</span><span>Games</span></a>' +
+        '<div>' + '<a class="logo" href="/" aria-label="VRX Games home"><picture><source srcset="/assets/brand/vrx-games.webp" type="image/webp"><img src="/assets/brand/vrx-games.png" width="520" height="245" alt="VRX Games"></picture></a>' +
         '<p>Games, experiments and devlogs. Made by one person, for fun.</p></div>' +
         '<div><h4>Games</h4><ul><li><a href="/games/">All games</a></li>' +
           categoryCounts().slice(0, 5).map(function (c) { return '<li><a href="/games/?cat=' + c[0] + '">' + esc(catName(c[0])) + '</a></li>'; }).join('') +
@@ -286,7 +286,7 @@
     var list = GAMES.filter(function (g) { return !cat || (g.genres || []).indexOf(cat) > -1; });
     var order = { live: 0, wip: 1, idea: 2 };
     list.sort(function (a, b) { return (order[a.status] || 0) - (order[b.status] || 0) || ((b.updated || b.released || '') > (a.updated || a.released || '') ? 1 : -1); });
-    document.title = (cat ? catName(cat) + ' games' : 'All games') + ' | Velmarox';
+    document.title = (cat ? catName(cat) + ' games' : 'All games') + ' | VRX Games';
     main.innerHTML =
       '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Games</div>' +
       '<h1>' + (cat ? esc(catName(cat)) + ' <em>games</em>' : 'All <em>games</em>') + '</h1>' +
@@ -306,7 +306,7 @@
       main.innerHTML = '<div class="wrap page-head"><h1>Game <em>not found</em></h1><p>This folder has no entry in games.js yet. <a href="/games/">All games</a></p></div>';
       return;
     }
-    document.title = g.title + ' | Velmarox';
+    document.title = g.title + ' | VRX Games';
     var shots = (g.shots && g.shots.length) ? g.shots : [g.banner || g.thumb || null];
     var related = POSTS.filter(function (p) { return p.game === g.slug; });
     var more = GAMES.filter(function (x) {
@@ -328,7 +328,7 @@
       '<div class="wrap">' +
       '<div class="page-head" style="padding-bottom:0"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/games/">Games</a><span>/</span>' + esc(g.title) + '</div></div>' +
       '<div class="game-top"><div>' +
-        '<div class="game-id"><div class="game-icon"><div>' + img(g.icon, '', 'Icon') + '</div></div>' +
+        '<div class="game-id">' + (g.icon ? '<div class="game-icon"><div>' + img(g.icon, '') + '</div></div>' : '') +
           '<div><h1>' + esc(g.title) + '</h1>' + (g.tagline ? '<p>' + esc(g.tagline) + '</p>' : '') +
           '<div class="tags">' + statusTag(g) + genreTags(g) + '</div></div></div>' +
         '<div class="screen-wrap"><div class="screen"><div class="screen-in"><span class="hatch-tl"></span><span class="hatch-br"></span><div id="shot">' + img(shots[0], g.title + ' screenshot', 'Screenshot') + '</div></div></div></div>' +
@@ -338,7 +338,9 @@
       '</div><aside>' +
         '<div class="panel details"><div class="panel-in">' +
           '<div class="play-box">' + (playable(g)
-            ? '<a class="btn big" href="' + esc(g.play) + '">Play now</a><small>Free · runs in your browser</small>'
+            ? '<a class="btn big" href="' + esc(g.play) + '">Play now</a>' +
+              (g.links || []).map(function (l) { return '<a class="btn ghost" style="margin-top:10px" href="' + esc(l.url) + '">' + esc(l.label) + '</a>'; }).join('') +
+              '<small>Free · runs in your browser</small>'
             : '<a class="btn big" aria-disabled="true">' + (g.status === 'live' ? 'Play now' : 'Coming soon') + '</a><small>' + (g.status === 'live' ? 'Link not set yet' : 'Not playable yet') + '</small>') +
           '</div><dl>' + rows.map(function (r) { return '<div class="d"><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' +
         '</div></div>' +
@@ -406,7 +408,7 @@
     var article = $('#post-content');
     var t = THREADS.filter(function (x) { return x.slug === slug; })[0] || {};
     var g = t.game && findGame(t.game);
-    if (t.title) document.title = t.title + ' | Community | Velmarox';
+    if (t.title) document.title = t.title + ' | Community | VRX Games';
     var wrap = document.createElement('div');
     wrap.className = 'wrap';
     wrap.innerHTML =
@@ -471,7 +473,7 @@
     var article = $('#post-content');
     var p = POSTS.filter(function (x) { return x.slug === slug; })[0] || {};
     var g = p.game && findGame(p.game);
-    if (p.title) document.title = p.title + ' | Velmarox';
+    if (p.title) document.title = p.title + ' | VRX Games';
     var idx = POSTS.indexOf(p);
     var isNews = p.type === 'news';
     var others = (isNews ? NEWS : BLOG).filter(function (x) { return x !== p; }).slice(0, 3);

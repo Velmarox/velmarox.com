@@ -36,8 +36,8 @@ window.POSTS = [
     excerpt: 'Placeholder post. This is where blog posts show up, newest first.'
   },
   {
-    slug: 'sample-neon-drift-1-1', sample: true,
-    title: 'Neon Drift 1.1: night track', date: '2026-10-09', tag: 'Update', game: 'sample-neon-drift',
+    slug: 'sample-devlog', sample: true,
+    title: 'Devlog placeholder', date: '2026-10-09', tag: 'Devlog', game: 'animalism',
     excerpt: 'Placeholder post tied to a game. It also appears on that game\'s page.'
   }
 ];

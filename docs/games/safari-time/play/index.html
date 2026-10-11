@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Safari Time</title>
+<meta name="description" content="Safari Time - a 5-reel, 10-line video slot with expanding wilds and sticky-wild free games.">
+<style>
+  :root {
+    --gold: #f2c14e;
+    --gold-dark: #b8860b;
+    --gold-light: #ffe89a;
+    --cream: #f6ecd2;
+    --cream-dark: #d9c79a;
+    --bark: #3a2412;
+    --bark-dark: #1d1108;
+    --sunset: #c1440e;
+    --sky: #1b0f06;
+    --win: #ffd54a;
+    --text: #fff7e0;
+    --muted: #cdb98a;
+    /* The cell is the one size everything scales from. Phones: bound by
+       width (five cells across). Desktop: bound by height, so the machine
+       fills the screen instead of sitting as a postage stamp in the middle. */
+    --cell: clamp(52px, min(15.5vw, calc((100vh - 370px) / 3)), 200px);
+    --gap: clamp(3px, calc(var(--cell) * .05), 9px);
+    --ui: clamp(12px, calc(var(--cell) * .13), 24px);     /* base UI font */
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; min-height: 100%;
+    background: radial-gradient(1200px 600px at 50% -10%, #6b3413 0%, #2b1608 45%, #120903 100%) fixed;
+    color: var(--text);
+    font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+    -webkit-user-select: none; user-select: none;
+    touch-action: manipulation;
+  }
+  body { display: flex; flex-direction: column; align-items: center; padding: 10px 8px 24px; }
+
+  h1 {
+    margin: 4px 0 6px;
+    font: 900 clamp(26px, calc(var(--cell) * .34), 64px)/1 Georgia, "Times New Roman", serif;
+    letter-spacing: 0.06em;
+    background: linear-gradient(180deg, #fff2b0 0%, var(--gold) 45%, #a56a00 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 2px 0 #4a2a00) drop-shadow(0 4px 8px rgba(0,0,0,.6));
+  }
+
+  /* ---------- machine frame ---------- */
+  .machine {
+    width: 100%; max-width: calc(var(--cell) * 5 + var(--gap) * 4 + 44px);
+    background: linear-gradient(180deg, #5a3517, #2f1a09);
+    border: 4px solid var(--gold-dark);
+    border-radius: 18px;
+    box-shadow: 0 0 0 3px #2a1707, 0 20px 50px rgba(0,0,0,.7), inset 0 0 40px rgba(0,0,0,.5);
+    padding: calc(var(--gap) * 2) calc(var(--gap) * 2) var(--gap);
+    position: relative;
+  }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    min-height: 38px; padding: 0 6px 8px; gap: 6px; flex-wrap: wrap;
+    font-weight: 800; letter-spacing: .04em; font-size: clamp(12px, calc(var(--cell) * .11), 20px);
+    color: var(--gold-light);
+  }
+  .topbar .badge {
+    padding: 4px 12px; border-radius: 999px;
+    background: rgba(0,0,0,.35); border: 1px solid var(--gold-dark);
+  }
+  .topbar .fg { color: #ffb14a; animation: pulse 1.2s ease-in-out infinite; }
+  .topbar .right { display: flex; gap: 6px; align-items: center; }
+  .topbar .mute {
+    padding: 4px 10px; border-radius: 999px; font-size: clamp(15px, calc(var(--cell) * .12), 24px); line-height: 1;
+    min-height: 32px;
+    background: rgba(0,0,0,.35); border: 1px solid var(--gold-dark); color: var(--gold-light);
+    box-shadow: none;
+  }
+  .topbar .mute:active { transform: none; }
+  .topbar .mute[hidden] { display: none; }
+  .topbar .mute.off { opacity: .45; text-decoration: line-through; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
+
+  .window {
+    position: relative;
+    display: grid; grid-template-columns: repeat(5, var(--cell)); gap: var(--gap);
+    padding: var(--gap);
+    background: #120a03;
+    border: 3px solid var(--gold-dark); border-radius: 10px;
+    box-shadow: inset 0 0 30px rgba(0,0,0,.9);
+  }
+  .reel {
+    position: relative; height: calc(var(--cell) * 3 + var(--gap) * 2); overflow: hidden;
+    background: linear-gradient(180deg, #2b1a0a, #16100a 50%, #2b1a0a);
+    border-radius: 6px;
+  }
+  .strip { display: flex; flex-direction: column; gap: var(--gap); will-change: transform; }
+  .strip.blur { filter: blur(1.6px); }
+  /* Continuous roll while a reel is spinning: the strip holds one block of
+     cells twice, and the animation scrolls exactly one block, so it loops
+     seamlessly until the landing sequence takes over. It runs from the
+     negative offset back to 0 so the symbols travel DOWN, like a real reel. */
+  @keyframes reelroll { from { transform: translateY(var(--roll)); } to { transform: translateY(0); } }
+  .strip.rolling { animation: reelroll 400ms linear infinite; }
+  .reel.locked::after {
+    content: ""; position: absolute; inset: 0; border-radius: 6px; pointer-events: none;
+    box-shadow: inset 0 0 0 3px var(--gold), inset 0 0 22px rgba(255, 210, 80, .55);
+    animation: lockglow 1.4s ease-in-out infinite;
+  }
+  @keyframes lockglow { 0%,100% { opacity: .75 } 50% { opacity: 1 } }
+
+  /* ---------- symbols ---------- */
+  .cell {
+    width: var(--cell); height: var(--cell); flex: 0 0 var(--cell);
+    border-radius: 8px; position: relative; overflow: hidden;
+    background: linear-gradient(160deg, var(--cream) 0%, var(--cream-dark) 100%);
+    border: 2px solid #8a6a2a;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.35), inset 0 -6px 12px rgba(0,0,0,.15);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cell .glyph { font-size: calc(var(--cell) * .58); line-height: 1; }
+  .cell .letter {
+    font: 900 calc(var(--cell) * .66)/1 Georgia, "Times New Roman", serif;
+    background: linear-gradient(180deg, #fff2b0, var(--gold) 50%, #a56a00);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 2px 0 #4a2a00);
+  }
+  .cell.wild {
+    background: radial-gradient(circle at 50% 30%, #fff1a8 0%, #ffb700 35%, #c1440e 100%);
+    border-color: #ffe089;
+    box-shadow: 0 0 18px rgba(255, 190, 40, .8), inset 0 0 12px rgba(255,255,255,.5);
+  }
+  .cell.wild .word {
+    font: 900 calc(var(--cell) * .32)/1 Impact, "Arial Black", sans-serif;
+    color: #fff8d0; letter-spacing: .04em;
+    text-shadow: 0 2px 0 #7a3200, 0 0 12px #ffcc33;
+    transform: rotate(-8deg);
+  }
+  .cell.africa {
+    background: radial-gradient(circle at 50% 40%, #ffe27a 0%, #d9932c 40%, #5a2d0c 100%);
+    border-color: #ffd36b;
+    box-shadow: 0 0 16px rgba(255, 200, 80, .7);
+  }
+  .cell.africa .medal {
+    width: 82%; height: 82%; border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #ffd76a, #b8600f 70%, #4a2308);
+    border: 3px solid #ffe6a0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: inset 0 0 12px rgba(0,0,0,.5);
+  }
+  .cell.africa .medal .glyph { font-size: calc(var(--cell) * .34); }
+  .cell.africa .medal .word {
+    font: 900 calc(var(--cell) * .16)/1 Impact, "Arial Black", sans-serif;
+    color: #fff3c0; letter-spacing: .08em; text-shadow: 0 1px 0 #5a2d0c;
+  }
+  .cell.hit { animation: hit .6s ease-in-out infinite alternate; z-index: 2; }
+  @keyframes hit {
+    from { box-shadow: 0 0 0 3px var(--win), 0 0 14px rgba(255,213,74,.8); transform: scale(1); }
+    to   { box-shadow: 0 0 0 4px #fff, 0 0 26px rgba(255,213,74,1); transform: scale(1.04); }
+  }
+  .cell.dim { filter: brightness(.55); }
+  .cell.expand { animation: expand .45s ease-out; }
+  @keyframes expand { 0% { transform: scaleY(.2); filter: brightness(2.5) } 100% { transform: scaleY(1); filter: brightness(1) } }
+
+  /* ---------- winlines overlay ---------- */
+  svg.lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+  svg.lines polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  svg.lines .full { stroke: rgba(255,213,74,.35); stroke-width: 6; }
+  svg.lines .part { stroke: var(--win); stroke-width: 9; filter: drop-shadow(0 0 6px #ffd54a); }
+
+  /* ---------- message bar ---------- */
+  .msg {
+    margin: calc(var(--gap) * 1.6) 0 var(--gap); min-height: clamp(34px, calc(var(--cell) * .28), 56px);
+    display: flex; align-items: center; justify-content: center;
+    background: #0b0603; border: 2px solid var(--gold-dark); border-radius: 8px;
+    font: 800 clamp(13px, calc(var(--cell) * .15), 28px)/1 "Trebuchet MS", sans-serif; letter-spacing: .04em;
+    color: var(--gold-light); text-transform: uppercase; text-align: center; padding: 0 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .msg.win { color: var(--win); text-shadow: 0 0 10px rgba(255,213,74,.7); }
+
+  /* ---------- meters + controls ---------- */
+  .meters { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1.3fr; gap: var(--gap); }
+  .meter {
+    background: #0b0603; border: 2px solid var(--gold-dark); border-radius: 8px;
+    padding: calc(var(--gap) * .8) 6px; text-align: center; min-width: 0;
+  }
+  .meter .label { font-size: clamp(9px, calc(var(--cell) * .075), 14px); letter-spacing: .12em; color: var(--muted); font-weight: 700; }
+  .meter .value { font: 800 clamp(15px, calc(var(--cell) * .2), 40px)/1.2 "Trebuchet MS", sans-serif; color: var(--gold-light); white-space: nowrap; }
+  .meter.winm .value { color: var(--win); }
+
+  .controls { display: grid; grid-template-columns: 1fr 1fr 1fr 1.6fr; gap: var(--gap); margin-top: var(--gap); }
+  button {
+    font: 800 var(--ui)/1 "Trebuchet MS", sans-serif; letter-spacing: .05em; text-transform: uppercase;
+    color: #2a1707; border: 0; border-radius: 10px; padding: clamp(12px, calc(var(--cell) * .1), 20px) 6px; cursor: pointer;
+    min-height: 44px;                                   /* comfortable touch target */
+    background: linear-gradient(180deg, #ffe89a, #d9a520 60%, #a56a00);
+    box-shadow: 0 4px 0 #6a4200, 0 6px 12px rgba(0,0,0,.5);
+    transition: transform .05s, filter .1s;
+  }
+  button:active { transform: translateY(3px); box-shadow: 0 1px 0 #6a4200; }
+  button:disabled { filter: grayscale(.7) brightness(.6); cursor: default; transform: none; }
+  button.spin {
+    background: linear-gradient(180deg, #a8f27a, #3fb43a 60%, #1c6d1a); color: #06210a;
+    box-shadow: 0 4px 0 #0d3d0c, 0 6px 12px rgba(0,0,0,.5); font-size: clamp(15px, calc(var(--cell) * .17), 32px);
+  }
+  button.spin.stop { background: linear-gradient(180deg, #ffb3a0, #d8452a 60%, #8a1e0c); color: #fff3e8; box-shadow: 0 4px 0 #4a0f04; }
+  button.auto.on { background: linear-gradient(180deg, #9fdcff, #2f8bd8 60%, #164f8a); color: #06192b; }
+  .bet { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 4px; }
+  .bet .v { display: flex; align-items: center; justify-content: center; background: #0b0603; border: 2px solid var(--gold-dark); border-radius: 8px; color: var(--gold-light); font-weight: 800; font-size: var(--ui); }
+
+  .footer { margin-top: var(--gap); font-size: clamp(11px, calc(var(--cell) * .07), 15px); color: var(--muted); text-align: center; line-height: 1.5; max-width: 900px; }
+  .footer b { color: var(--gold-light); }
+
+  /* ---------- overlays ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.72); display: flex; align-items: center; justify-content: center;
+    z-index: 50; padding: 14px;
+  }
+  .overlay[hidden] { display: none; }
+  .card {
+    background: linear-gradient(180deg, #4a2a10, #1f1107); border: 3px solid var(--gold); border-radius: 16px;
+    padding: 22px 18px; max-width: min(760px, 96vw); width: 100%; max-height: 92vh; overflow: auto; text-align: center;
+    box-shadow: 0 0 60px rgba(255,190,60,.35);
+  }
+  .card h2 { margin: 0 0 8px; font: 900 clamp(24px, 6vw, 40px)/1.1 Georgia, serif; color: var(--gold-light); text-shadow: 0 2px 0 #4a2a00; }
+  .card .big { font: 900 clamp(34px, 10vw, 64px)/1.1 "Trebuchet MS", sans-serif; color: var(--win); text-shadow: 0 0 20px rgba(255,213,74,.8); margin: 8px 0 14px; }
+  .card p { color: var(--text); margin: 6px 0; font-size: clamp(14px, 1.6vw, 18px); }
+  .card .sub { color: var(--muted); font-size: clamp(13px, 1.4vw, 16px); }
+
+  .paytable { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; text-align: left; }
+  .pt {
+    background: rgba(0,0,0,.35); border: 1px solid var(--gold-dark); border-radius: 8px; padding: 6px; display: flex; gap: 8px; align-items: center;
+  }
+  .pt .cell { --cell: clamp(44px, 5.5vw, 72px); flex: 0 0 var(--cell); }
+  .pt .pays { font-size: clamp(12px, 1.3vw, 16px); line-height: 1.4; color: var(--gold-light); }
+  .pt .pays b { color: var(--muted); font-weight: 700; margin-right: 4px; }
+  .rules { text-align: left; font-size: clamp(13px, 1.4vw, 16px); line-height: 1.55; color: var(--text); }
+  .rules li { margin: 4px 0; }
+  .linesgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 10px 0; }
+  .mini { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: rgba(0,0,0,.4); padding: 4px; border-radius: 6px; border: 1px solid var(--gold-dark); }
+  .mini i { display: block; aspect-ratio: 1; background: #3a2412; border-radius: 2px; }
+  .mini i.on { background: var(--win); }
+  .mini .n { grid-column: 1 / -1; text-align: center; font-size: 11px; color: var(--muted); }
+  @media (max-width: 480px) { .paytable { grid-template-columns: repeat(2, 1fr); } .linesgrid { grid-template-columns: repeat(5, 1fr); gap: 4px; } }
+  /* Phone landscape: little height, so let the page scroll rather than shrink the reels to nothing. */
+  @media (max-height: 520px) { :root { --cell: clamp(52px, 15.5vw, 96px); } body { padding-top: 4px; } h1 { margin: 0 0 4px; } }
+</style>
+</head>
+<body>
+  <h1>SAFARI TIME</h1>
+
+  <div class="machine" id="machine">
+    <div class="topbar">
+      <span class="badge" id="modeBadge">10 LINES &middot; PAYS LEFT TO RIGHT</span>
+      <span class="right">
+        <span class="badge" id="fsBadge" hidden></span>
+        <button class="mute" id="muteBgmBtn" hidden aria-label="Toggle music" title="Music on/off">🎵</button>
+        <button class="mute" id="muteBtn" hidden aria-label="Toggle sound effects" title="Sound effects on/off">🔊</button>
+      </span>
+    </div>
+
+    <div class="window" id="window">
+      <div class="reel" id="reel0"><div class="strip"></div></div>
+      <div class="reel" id="reel1"><div class="strip"></div></div>
+      <div class="reel" id="reel2"><div class="strip"></div></div>
+      <div class="reel" id="reel3"><div class="strip"></div></div>
+      <div class="reel" id="reel4"><div class="strip"></div></div>
+      <svg class="lines" id="lines" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="msg" id="msg">GOOD LUCK</div>
+
+    <div class="meters">
+      <div class="meter"><div class="label">CREDITS</div><div class="value" id="credits">$0.00</div></div>
+      <div class="meter"><div class="label">LINES</div><div class="value">10</div></div>
+      <div class="meter"><div class="label">BET</div><div class="value" id="betMeter">$0.50</div></div>
+      <div class="meter winm"><div class="label">WIN</div><div class="value" id="winMeter">$0.00</div></div>
+    </div>
+
+    <div class="controls">
+      <button id="helpBtn">Pays / Help</button>
+      <div class="bet">
+        <button id="betDown" aria-label="Bet down">&minus;</button>
+        <div class="v" id="betLabel">$0.50</div>
+        <button id="betUp" aria-label="Bet up">+</button>
+      </div>
+      <button id="autoBtn" class="auto">Auto</button>
+      <button id="spinBtn" class="spin">Play</button>
+    </div>
+
+    <div class="footer">
+      Demo credits only &middot; <span id="rtpNote"></span> &middot; Max bet $2.00 &middot; Max payout <b>$800</b> per play
+      &middot; <a href="#" id="addCredits" style="color:var(--gold-light)">Add $20</a>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="card" id="card"></div>
+  </div>
+
+  <script src="gamedata.js"></script>
+  <script type="module" src="casino-ledger.js"></script>
+  <script>
+  (() => {
+    "use strict";
+    const D = window.SAFARI_TIME;
+    if (!D) { document.getElementById("msg").textContent = "GAMEDATA.JS MISSING - RUN python -m engine.export"; return; }
+    const ID = D.ids;
+    const REELS = D.reels, ROWS = D.rows, STOPS = D.stops;
+    const CAP = D.maxPayoutCents;
+
+    // ---------------------------------------------------------------- utils
+    const $ = (id) => document.getElementById(id);
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const money = (c) => "$" + (c / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Unbiased stop selection from the crypto RNG: reject the tail of the
+    // 32-bit range that does not divide evenly by STOPS.
+    const LIMIT = 4294967296 - (4294967296 % STOPS);
+    const buf = new Uint32Array(1);
+    // QA hook: open with ?debug and push stop indices onto ST.queue to force
+    // outcomes (they are consumed reel by reel, base spin first). Never active
+    // without the query flag.
+    const DEBUG = /[?&]debug\b/.test(location.search);
+    if (DEBUG) window.ST = { queue: [], data: D };
+    function cryptoStop() {
+      for (;;) {
+        crypto.getRandomValues(buf);
+        if (buf[0] < LIMIT) return buf[0] % STOPS;
+      }
+    }
+    // Outcome-determining stops. The reel animation's filler symbols use
+    // cryptoStop() directly so they never eat from the debug queue.
+    function randStop() {
+      if (DEBUG && window.ST.queue.length) return window.ST.queue.shift();
+      return cryptoStop();
+    }
+
+    // ---------------------------------------------------------------- symbols
+    const EMOJI = { [ID.GIRAFFE]: "🦒", [ID.ZEBRA]: "🦓", [ID.RHINO]: "🦏", [ID.ELEPHANT]: "🐘", [ID.LION]: "🦁" };
+    const NAME = (s) => D.symbols[String(s)];
+    // Symbol art present on disk, listed by engine/export.py. Anything missing
+    // falls back to the CSS tile, and nothing is requested that is not there.
+    const artReady = D.art || {};
+
+    function probeArt() {
+      const jobs = Object.values(artReady).map((src) => new Promise((res) => {
+        const img = new Image();
+        img.onload = res; img.onerror = res; img.src = src;
+      }));
+      return Promise.all(jobs);
+    }
+
+    function makeCell(sym) {
+      const el = document.createElement("div");
+      el.className = "cell";
+      el.dataset.sym = sym;
+      if (artReady[sym]) {
+        const img = document.createElement("img");
+        img.src = artReady[sym]; img.alt = NAME(sym); img.draggable = false;
+        el.appendChild(img);
+        if (sym === ID.WILD) el.classList.add("wild");
+        if (sym === ID.AFRICA) el.classList.add("africa");
+        return el;
+      }
+      if (sym === ID.WILD) {
+        el.classList.add("wild");
+        el.innerHTML = '<span class="word">WILD</span>';
+      } else if (sym === ID.AFRICA) {
+        el.classList.add("africa");
+        el.innerHTML = '<div class="medal"><span class="glyph">🌍</span><span class="word">BONUS</span></div>';
+      } else if (sym <= ID.A) {
+        el.innerHTML = `<span class="letter">${NAME(sym)}</span>`;
+      } else {
+        el.innerHTML = `<span class="glyph">${EMOJI[sym]}</span>`;
+      }
+      return el;
+    }
+
+    // ---------------------------------------------------------------- audio
+    // Web Audio: every clip is decoded once into a buffer, so effects overlap
+    // freely and the music loops gaplessly. Browsers keep the context
+    // suspended until a user gesture, so nothing sounds before the first tap.
+    const AUDIO = D.audio || {};                 // name -> path, from engine/export.py
+    const BGM_VOL = 0.32, SFX_VOL = 0.8;
+    const ANIMAL_SFX = {
+      [ID.LION]: "lion_roar", [ID.ELEPHANT]: "elephant_noise",
+      [ID.GIRAFFE]: "giraffe_noise", [ID.RHINO]: "rhinos_bellow",
+    };
+    // Two independent buses so the music and the slot sounds can be muted
+    // separately: every effect feeds `sfxBus`, the music loop feeds `musicBus`.
+    const audio = { ctx: null, sfxBus: null, musicBus: null, buffers: {}, bgm: null, bgmName: null,
+                    mutedSfx: false, mutedBgm: false, unlocked: false };
+
+    function audioInit() {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx || !Object.keys(AUDIO).length) return;
+      try { audio.ctx = new Ctx(); } catch (e) { return; }
+      audio.sfxBus = audio.ctx.createGain();
+      audio.musicBus = audio.ctx.createGain();
+      audio.sfxBus.connect(audio.ctx.destination);
+      audio.musicBus.connect(audio.ctx.destination);
+      try {
+        audio.mutedSfx = localStorage.getItem("st.muted") === "1";
+        audio.mutedBgm = localStorage.getItem("st.mutedBgm") === "1";
+      } catch (e) {}
+      audio.sfxBus.gain.value = audio.mutedSfx ? 0 : 1;
+      audio.musicBus.gain.value = audio.mutedBgm ? 0 : 1;
+      for (const [name, src] of Object.entries(AUDIO)) {
+        fetch(src).then((r) => r.arrayBuffer()).then((b) => audio.ctx.decodeAudioData(b))
+          .then((buf) => { audio.buffers[name] = buf; if (audio.bgmName === name && !audio.bgm) bgm(name); })
+          .catch(() => {});
+      }
+      $("muteBtn").hidden = false;
+      $("muteBgmBtn").hidden = false;
+      renderMute();
+      // Keep the music going: if the context gets suspended, try to resume
+      // when the page is visible again; a tap always works (see audioUnlock).
+      audio.ctx.onstatechange = () => { if (audio.unlocked && audio.ctx.state === "running") ensureBgm(); };
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && audio.unlocked && audio.ctx.state !== "running") audio.ctx.resume().catch(() => {});
+      });
+      if (DEBUG) window.ST.audio = audio;
+    }
+    function audioUnlock() {
+      if (!audio.ctx) return;
+      if (audio.unlocked) {
+        // The browser can suspend the context later (tab switch, focus loss,
+        // iOS interruption); the next tap brings it back and the loop resumes.
+        if (audio.ctx.state !== "running") audio.ctx.resume().then(ensureBgm).catch(() => {});
+        return;
+      }
+      audio.unlocked = true;
+      audio.ctx.resume().then(() => bgm(audio.bgmName || "normal_game_bgm"));
+    }
+    function ensureBgm() {
+      if (audio.bgmName && !audio.bgm) bgm(audio.bgmName);
+    }
+    function loopBounds(buf) {
+      // Trim the encoder's leading/trailing silence so the loop point is tight.
+      const data = buf.getChannelData(0);
+      const thr = 0.004;
+      let a = 0, b = data.length - 1;
+      while (a < b && Math.abs(data[a]) < thr) a++;
+      while (b > a && Math.abs(data[b]) < thr) b--;
+      return [a / buf.sampleRate, (b + 1) / buf.sampleRate];
+    }
+    function sfx(name, vol = SFX_VOL, loop = false, rate = 1) {
+      const buf = audio.ctx && audio.unlocked && audio.buffers[name];
+      if (!buf) return null;
+      const src = audio.ctx.createBufferSource();
+      src.buffer = buf; src.loop = loop;
+      src.playbackRate.value = rate;             // 2^(semitones/12); a whole step is 2^(2/12)
+      const g = audio.ctx.createGain(); g.gain.value = vol;
+      src.connect(g).connect(audio.sfxBus);
+      src.start();
+      return { stop() { try { src.stop(); } catch (e) {} } };
+    }
+    function bgm(name) {
+      if (!audio.ctx) return;
+      audio.bgmName = name;
+      const buf = audio.unlocked && audio.buffers[name];
+      if (audio.bgm && audio.bgm.name === name) return;
+      if (audio.bgm) {                            // fade the old track out
+        const old = audio.bgm; audio.bgm = null;
+        const t = audio.ctx.currentTime;
+        old.g.gain.setValueAtTime(old.g.gain.value, t);
+        old.g.gain.linearRampToValueAtTime(0, t + 0.6);
+        setTimeout(() => { try { old.src.stop(); } catch (e) {} }, 700);
+      }
+      if (!buf) return;                           // starts when decoded / unlocked
+      const src = audio.ctx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const [ls, le] = loopBounds(buf);
+      src.loopStart = ls; src.loopEnd = le;
+      const g = audio.ctx.createGain();
+      const t = audio.ctx.currentTime;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(BGM_VOL, t + 0.8);
+      src.connect(g).connect(audio.musicBus);
+      src.start(0, ls);
+      // A looping source never ends on its own; if it somehow does, and it is
+      // still the current track, start it again.
+      src.onended = () => { if (audio.bgm && audio.bgm.src === src) { audio.bgm = null; ensureBgm(); } };
+      audio.bgm = { src, g, name };
+    }
+    function renderMute() {
+      $("muteBtn").textContent = audio.mutedSfx ? "🔇" : "🔊";
+      $("muteBtn").classList.toggle("off", audio.mutedSfx);
+      $("muteBgmBtn").classList.toggle("off", audio.mutedBgm);
+    }
+    function toggleMute() {
+      audio.mutedSfx = !audio.mutedSfx;
+      if (audio.sfxBus) audio.sfxBus.gain.value = audio.mutedSfx ? 0 : 1;
+      try { localStorage.setItem("st.muted", audio.mutedSfx ? "1" : "0"); } catch (e) {}
+      renderMute();
+    }
+    function toggleMuteBgm() {
+      audio.mutedBgm = !audio.mutedBgm;
+      if (audio.musicBus) audio.musicBus.gain.value = audio.mutedBgm ? 0 : 1;
+      try { localStorage.setItem("st.mutedBgm", audio.mutedBgm ? "1" : "0"); } catch (e) {}
+      renderMute();
+    }
+
+    // ---------------------------------------------------------------- maths (mirrors engine/game.py)
+    const windowAt = (strip, stop) => Array.from({ length: ROWS }, (_, r) => strip[(stop + r) % STOPS]);
+
+    function expandWilds(grid) {
+      return grid.map((col) => col.includes(ID.WILD) ? Array(ROWS).fill(ID.WILD) : col.slice());
+    }
+    function applySticky(grid, sticky) {
+      return grid.map((col, r) => sticky.has(r) ? Array(ROWS).fill(ID.WILD) : col.slice());
+    }
+    function countScatters(grid) {
+      return grid.reduce((n, col) => n + col.filter((s) => s === ID.AFRICA).length, 0);
+    }
+    function linePay(sym, chain) {
+      return chain < D.minChain ? 0 : D.paytable[String(sym)][chain - D.minChain];
+    }
+    function scanOrder() {
+      const o = Array.from({ length: REELS }, (_, i) => i);
+      return D.payDirection === "left" ? o : o.reverse();
+    }
+    function evaluateLine(grid, payline, order) {
+      const cells = order.map((i) => grid[payline[i][0]][payline[i][1]]);
+      let best = { sym: null, chain: 0, mult: 0 };
+      for (const sym of D.paySymbols) {
+        let chain = 0;
+        for (const c of cells) { if (c === sym || c === ID.WILD) chain++; else break; }
+        const mult = linePay(sym, chain);
+        if (mult > best.mult) best = { sym, chain, mult };
+      }
+      return best;
+    }
+    function evaluateLines(grid, lineBet) {
+      const dirs = D.payDirection === "both" ? ["left", "right"] : [D.payDirection];
+      const wins = [];
+      let total = 0;
+      D.paylines.forEach((payline, idx) => {
+        let best = { sym: null, chain: 0, mult: 0, order: null };
+        for (const dir of dirs) {
+          const o = Array.from({ length: REELS }, (_, i) => i);
+          if (dir !== "left") o.reverse();
+          const r = evaluateLine(grid, payline, o);
+          if (r.mult > best.mult) best = { ...r, order: o };
+        }
+        if (best.mult > 0) {
+          const cells = best.order.slice(0, best.chain).map((i) => payline[i]);
+          const cents = best.mult * lineBet;
+          total += cents;
+          wins.push({ line: idx + 1, sym: best.sym, chain: best.chain, cents, cells, payline });
+        }
+      });
+      return { total, wins };
+    }
+
+    // ---------------------------------------------------------------- state
+    const state = {
+      credits: 0, betIdx: 0, busy: false, auto: false,
+      grid: null, sticky: new Set(), roundWin: 0,
+      rolling: false, stopRequested: false, stopWaiters: [],
+    };
+    // PLAY becomes STOP while the reels roll; pressing it lands the rest fast.
+    function requestStop() {
+      state.stopRequested = true;
+      state.stopWaiters.splice(0).forEach((resolve) => resolve());
+    }
+    function waitStop() {
+      return new Promise((resolve) => { if (state.stopRequested) resolve(); else state.stopWaiters.push(resolve); });
+    }
+    function cancelAuto() {
+      state.auto = false;
+      $("autoBtn").classList.remove("on");
+      renderSpinButton();
+    }
+    function renderSpinButton() {
+      const b = $("spinBtn");
+      const stop = state.rolling || state.auto;
+      b.textContent = stop ? "Stop" : "Play";
+      b.classList.toggle("stop", stop);
+      b.disabled = stop ? false : state.busy;
+    }
+    const betCents = () => D.betLevelsCents[state.betIdx];
+    const lineBet = () => betCents() / D.lines;
+
+    function load() {
+      try {
+        const c = parseInt(localStorage.getItem("st.credits"), 10);
+        state.credits = Number.isFinite(c) ? c : 10000;
+        const b = parseInt(localStorage.getItem("st.bet"), 10);
+        state.betIdx = Number.isFinite(b) && b >= 0 && b < D.betLevelsCents.length ? b : 0;
+      } catch (e) { state.credits = 10000; }
+    }
+    function save() {
+      try { localStorage.setItem("st.credits", state.credits); localStorage.setItem("st.bet", state.betIdx); } catch (e) {}
+    }
+
+    // ---------------------------------------------------------------- render
+    const reels = Array.from({ length: REELS }, (_, i) => $("reel" + i));
+    const msgEl = $("msg"), linesSvg = $("lines");
+
+    function setMsg(text, win = false) { msgEl.textContent = text; msgEl.classList.toggle("win", win); }
+    function renderMeters() {
+      $("credits").textContent = money(state.credits);
+      $("betMeter").textContent = money(betCents());
+      $("betLabel").textContent = money(betCents());
+      $("winMeter").textContent = money(state.roundWin);
+      $("betDown").disabled = state.busy || state.betIdx === 0;
+      $("betUp").disabled = state.busy || state.betIdx === D.betLevelsCents.length - 1;
+      $("helpBtn").disabled = state.busy;
+    }
+    function renderStatic(grid) {
+      reels.forEach((reel, i) => {
+        const strip = reel.querySelector(".strip");
+        strip.style.transition = "none"; strip.style.transform = "translateY(0)";
+        strip.classList.remove("blur");
+        strip.replaceChildren(...grid[i].map(makeCell));
+        reel.classList.toggle("locked", state.sticky.has(i));
+      });
+    }
+    function cellEl(reel, row) { return reels[reel].querySelectorAll(".strip > .cell")[row]; }
+    function clearHighlights() {
+      document.querySelectorAll("#window .cell").forEach((c) => c.classList.remove("hit", "dim"));
+      linesSvg.replaceChildren();
+    }
+    function cellCenter(reel, row) {
+      // viewBox units: 100 per cell width/height incl. gap fraction. Compute from layout.
+      const w = $("window").getBoundingClientRect();
+      const c = cellEl(reel, row).getBoundingClientRect();
+      return [c.left - w.left + c.width / 2, c.top - w.top + c.height / 2];
+    }
+    function drawLine(win) {
+      const w = $("window").getBoundingClientRect();
+      linesSvg.setAttribute("viewBox", `0 0 ${w.width} ${w.height}`);
+      const full = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      full.setAttribute("class", "full");
+      full.setAttribute("points", win.payline.map(([r, c]) => cellCenter(r, c).join(",")).join(" "));
+      const part = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      part.setAttribute("class", "part");
+      part.setAttribute("points", win.cells.map(([r, c]) => cellCenter(r, c).join(",")).join(" "));
+      linesSvg.replaceChildren(full, part);
+    }
+    function highlight(win) {
+      clearHighlights();
+      const hot = new Set(win.cells.map(([r, c]) => r + ":" + c));
+      for (let r = 0; r < REELS; r++) for (let c = 0; c < ROWS; c++) {
+        cellEl(r, c).classList.toggle(hot.has(r + ":" + c) ? "hit" : "dim", true);
+      }
+      drawLine(win);
+    }
+
+    // ---------------------------------------------------------------- spin animation
+    // Press PLAY: every reel rolls. Reel 1 lands, and each following reel keeps
+    // rolling until half a second after the previous landing. Pressing STOP
+    // snaps every reel still rolling onto its result at once.
+    const FIRST_LAND_MS = 800;     // reel 1 lands this long after PLAY
+    const LAND_INTERVAL_MS = 500;  // each next reel lands this long after the previous one
+    const LAND_MS = 360;           // the settle: last cells decelerating into place
+    const ROLL_BLOCK = 10;         // cells per loop of the continuous roll
+    const WHOLE_STEP = Math.pow(2, 2 / 12);
+    const SCATTERS_TO_TRIGGER = 3;
+
+    function startRoll(i, strip, step) {
+      // One block of random cells, twice over, scrolled by exactly one block.
+      const block = Array.from({ length: ROLL_BLOCK }, () => strip[cryptoStop()]);
+      const el = reels[i].querySelector(".strip");
+      el.style.transition = "none";
+      el.style.transform = `translateY(${-ROLL_BLOCK * step}px)`;   // where the loop starts
+      el.style.setProperty("--roll", `${-ROLL_BLOCK * step}px`);
+      el.replaceChildren(...[...block, ...block].map(makeCell));
+      el.classList.add("blur", "rolling");
+    }
+
+    function snapReel(i, finalWindow) {
+      const el = reels[i].querySelector(".strip");
+      el.classList.remove("rolling", "blur");
+      el.style.transition = "none";
+      el.style.transform = "translateY(0)";
+      el.replaceChildren(...finalWindow.map(makeCell));
+    }
+
+    async function landReel(i, strip, finalWindow, step, dur) {
+      const el = reels[i].querySelector(".strip");
+      // Swap the loop for a landing run: lead cell, the final window, then a
+      // few fillers - and glide from the fillers up onto the final window.
+      const fillers = Array.from({ length: 6 }, () => strip[cryptoStop()]);
+      const seq = [strip[cryptoStop()], ...finalWindow, ...fillers];
+      el.classList.remove("rolling");
+      el.style.transition = "none";
+      el.replaceChildren(...seq.map(makeCell));
+      el.style.transform = `translateY(${-(seq.length - ROWS) * step}px)`;
+      void el.offsetHeight;                            // commit start position
+      el.style.transition = `transform ${dur}ms cubic-bezier(.18,.82,.28,1.09)`;
+      el.style.transform = `translateY(${-step}px)`;
+      await Promise.race([sleep(dur + 30), waitStop()]);   // STOP cuts the settle short too
+      el.classList.remove("blur");
+      el.style.transition = "none";
+      el.style.transform = "translateY(0)";
+      el.replaceChildren(...finalWindow.map(makeCell));
+    }
+
+    async function spinReels(strips, prevGrid, finalGrid, lockedReels) {
+      const cellH = reels[0].querySelector(".cell")?.getBoundingClientRect().height
+        || parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell"));
+      const gap = parseFloat(getComputedStyle($("window")).gap) || 4;
+      const step = cellH + gap;
+      state.rolling = true; state.stopRequested = false;
+      renderSpinButton();
+      sfx("spins_start");
+      sfx("indiv_reel_spin", 0.55);
+
+      const active = [];
+      for (let i = 0; i < REELS; i++) if (!lockedReels.has(i)) active.push(i);
+      active.forEach((i) => startRoll(i, strips[i], step));
+
+      const t0 = performance.now();
+      let landAt = FIRST_LAND_MS;                      // scheduled settle time of the next reel
+      let africaHits = 0;
+      for (let k = 0; k < active.length; k++) {
+        const i = active[k];
+        if (!state.stopRequested) {
+          const wait = t0 + landAt - LAND_MS - performance.now();
+          if (wait > 0) await Promise.race([sleep(wait), waitStop()]);
+        }
+        const fast = state.stopRequested;
+        if (fast) snapReel(i, finalGrid[i]);
+        else await landReel(i, strips[i], finalGrid[i], step, LAND_MS);
+        if (!fast || i === active[active.length - 1]) sfx(i === REELS - 1 ? "reel_stop" : "reel_stop_click", 0.7);
+
+        if (finalGrid[i].includes(ID.AFRICA)) {
+          africaHits++;
+          // Only sound off while the bonus is still reachable: the Africa seen so
+          // far plus every reel still to land must be able to make three.
+          const reelsLeft = REELS - 1 - i;
+          if (africaHits + reelsLeft >= SCATTERS_TO_TRIGGER) {
+            sfx("africa_symbol", 0.9, false, Math.pow(WHOLE_STEP, africaHits - 1));
+          }
+        }
+        landAt += LAND_INTERVAL_MS;
+      }
+      state.rolling = false;
+      renderSpinButton();
+    }
+
+    async function animateExpansion(raw, grid) {
+      let any = false;
+      for (let i = 0; i < REELS; i++) {
+        if (raw[i].includes(ID.WILD) && !state.sticky.has(i)) {
+          any = true;
+          const strip = reels[i].querySelector(".strip");
+          strip.replaceChildren(...grid[i].map((s) => { const c = makeCell(s); c.classList.add("expand"); return c; }));
+        }
+      }
+      if (any) { sfx("sticky_wild"); await sleep(500); }
+    }
+
+    // Win presentation runs in the background: the round hands control back
+    // to the player WIN_HOLD_MS after the reels land, and the line cycle keeps
+    // playing until it finishes or the next spin cancels it.
+    const WIN_HOLD_MS = 300;
+    let presentToken = 0;
+    function cancelPresentation() { presentToken++; clearHighlights(); }
+    async function presentWins(wins, total, quick) {
+      if (!wins.length) return;
+      const token = ++presentToken;
+      const live = () => token === presentToken;
+      const per = quick ? 650 : 1100;
+      setMsg(`WIN ${money(total)}`, true);
+      sfx(total >= betCents() * 5 ? "med_win" : "small_win");
+      for (let pass = 0; pass < (quick ? 1 : 2); pass++) {
+        for (const w of wins) {
+          if (!live()) return;
+          highlight(w);
+          if (pass === 0 && ANIMAL_SFX[w.sym]) sfx(ANIMAL_SFX[w.sym], 0.65);
+          setMsg(`LINE ${w.line} · ${NAME(w.sym).toUpperCase()} × ${w.chain} · ${money(w.cents)}`, true);
+          await sleep(per);
+        }
+      }
+      if (!live()) return;
+      clearHighlights();
+      setMsg(`WIN ${money(total)}`, true);
+    }
+
+    function showCard(html) {
+      $("card").innerHTML = html;
+      $("overlay").hidden = false;
+    }
+    function hideCard() { $("overlay").hidden = true; }
+    function waitDismiss(ms) {
+      return new Promise((res) => {
+        let doneFlag = false;
+        const finish = () => { if (doneFlag) return; doneFlag = true; $("overlay").removeEventListener("click", finish); hideCard(); res(); };
+        $("overlay").addEventListener("click", finish);
+        if (ms) setTimeout(finish, ms);
+      });
+    }
+
+    function addWin(cents) {
+      // Regulatory ceiling applies to the whole play (base + feature).
+      const room = Math.max(0, CAP - state.roundWin);
+      const paid = Math.min(cents, room);
+      state.roundWin += paid;
+      renderMeters();
+      return paid < cents;   // true if the cap bit
+    }
+
+    // ---------------------------------------------------------------- round flow
+    async function playRound() {
+      if (state.busy || !state.grid) return;
+      const bet = betCents();
+      if (state.credits < bet) {
+        setMsg("INSUFFICIENT CREDITS");
+        cancelAuto();
+        return;
+      }
+      try {
+        await runRound(bet);
+      } catch (err) {
+        console.error(err);
+        setMsg("MALFUNCTION - PLAY VOID");
+        state.credits += bet; save();          // refund the wager on any script fault
+        hideCard();
+      } finally {
+        state.busy = false; state.rolling = false; state.sticky = new Set();
+        reels.forEach((r) => r.classList.remove("locked"));
+        $("fsBadge").hidden = true;
+        renderMeters();
+        renderSpinButton();
+      }
+      if (state.auto && state.credits >= betCents()) { await sleep(700); if (state.auto) playRound(); }
+      else if (state.auto) { cancelAuto(); setMsg("INSUFFICIENT CREDITS"); }
+    }
+
+    async function runRound(bet) {
+      state.busy = true; state.roundWin = 0; state.sticky = new Set();
+      state.credits -= bet; save(); renderMeters(); cancelPresentation();
+      renderSpinButton();
+      setMsg("GOOD LUCK");
+
+      // ---- base spin
+      const stops = Array.from({ length: REELS }, randStop);
+      const raw = stops.map((s, i) => windowAt(D.baseStrips[i], s));
+      await spinReels(D.baseStrips, state.grid, raw, new Set());
+      const scatters = countScatters(raw);
+      const grid = expandWilds(raw);
+      await animateExpansion(raw, grid);
+      state.grid = grid;
+
+      const { total, wins } = evaluateLines(grid, lineBet());
+      let capped = false;
+      if (total) capped = addWin(total) || capped;
+      // Sound + first winning line, then the player gets the button back while
+      // the line cycle carries on behind them.
+      if (wins.length) { presentWins(wins, total, false); await sleep(scatters >= SCATTERS_TO_TRIGGER ? 1200 : WIN_HOLD_MS); }
+
+      // ---- free games
+      if (scatters >= SCATTERS_TO_TRIGGER) {
+        const key = String(Math.min(scatters, 5));
+        const n = D.freeSpins[key];
+        // The trigger itself pays: total bet x number of free games awarded.
+        const prize = (D.scatterPay[key] || 0) * bet;
+        // Flash the scatters.
+        cancelPresentation();
+        for (let r = 0; r < REELS; r++) for (let c = 0; c < ROWS; c++) {
+          cellEl(r, c).classList.add(raw[r][c] === ID.AFRICA ? "hit" : "dim");
+        }
+        if (prize) capped = addWin(prize) || capped;
+        setMsg(prize ? `BONUS TRIGGERED! ${money(prize)}` : "BONUS TRIGGERED!", true);
+        sfx("bonus_triggered");
+        await sleep(1200);
+        clearHighlights();
+        showCard(`<h2>BONUS TRIGGERED</h2><div class="big">${n} FREE GAMES</div>
+                  <p>${scatters} Africa symbols anywhere on the reels.${prize ? `<br>Bonus prize <b>${money(prize)}</b> (${n} × ${money(bet)} bet).` : ""}</p>
+                  <p class="sub">Wilds expand and <b>stay wild</b> for the rest of the feature.<br>Tap to start.</p>`);
+        await waitDismiss(4000);
+        capped = (await runFreeGames(n)) || capped;
+      }
+
+      // ---- settle
+      if (capped) {
+        setMsg(`MAX PAYOUT ${money(CAP)} REACHED`, true);
+        await sleep(1500);
+      }
+      state.credits += state.roundWin; save();
+      // Casino ledger: one line per settled play to the shared ledgers/safari document,
+      // read by the casino console on the portfolio. Dollars; the cell is the bet level.
+      if (window.CasinoLedger) CasinoLedger.report('safari', {
+        bet: bet / 100, paid: state.roundWin / 100, bonus: scatters >= SCATTERS_TO_TRIGGER ? 1 : 0,
+        cell: 'b' + bet });
+      if (state.roundWin >= bet * 25) {
+        sfx("lion_roar");
+        showCard(`<h2>BIG WIN!</h2><div class="big">${money(state.roundWin)}</div><p class="sub">Tap to continue</p>`);
+        await waitDismiss(3500);
+      }
+      // A running presentation owns the message bar; only speak if there is none.
+      if (!wins.length || scatters >= SCATTERS_TO_TRIGGER) setMsg(state.roundWin ? `WIN ${money(state.roundWin)}` : "GOOD LUCK", state.roundWin > 0);
+    }
+
+    async function runFreeGames(total) {
+      let remaining = total, played = 0, awarded = total, capped = false;
+      let featureWin = 0;
+      const badge = $("fsBadge");
+      badge.hidden = false;
+      $("modeBadge").textContent = "FREE GAMES · WILDS STAY";
+      bgm("bonus_games_bgm");
+      while (remaining > 0) {
+        remaining--; played++;
+        badge.innerHTML = `<span class="fg">FREE GAME ${played} OF ${awarded}</span>`;
+        setMsg(`FREE GAME ${played} OF ${awarded}`);
+        await sleep(450);
+        const stops = Array.from({ length: REELS }, randStop);
+        const raw = stops.map((s, i) => windowAt(D.featureStrips[i], s));
+        const scatters = countScatters(raw);
+        // Locked reels stay on screen as full Wild columns; the others spin.
+        await spinReels(D.featureStrips, state.grid, raw, state.sticky);
+        const newSticky = new Set(state.sticky);
+        for (const r of D.featureWildReels) if (raw[r].includes(ID.WILD)) newSticky.add(r);
+        const grid = applySticky(expandWilds(raw), newSticky);
+        await animateExpansion(raw, grid);
+        // Newly locked reels light up.
+        for (const r of newSticky) if (!state.sticky.has(r)) { reels[r].classList.add("locked"); }
+        state.sticky = newSticky;
+        state.grid = grid;
+
+        const { total: t, wins } = evaluateLines(grid, lineBet());
+        if (t) { capped = addWin(t) || capped; featureWin += t; }
+        // Free games keep moving: show the wins briefly, the next spin cancels the rest.
+        if (wins.length) { presentWins(wins, t, true); await sleep(Math.min(1400, 400 + 450 * wins.length)); cancelPresentation(); }
+        if (D.retrigger && scatters >= 3 && awarded + D.freeSpins[String(Math.min(scatters, 5))] <= D.maxFreeSpins) {
+          const extra = D.freeSpins[String(Math.min(scatters, 5))];
+          remaining += extra; awarded += extra;
+          setMsg(`${extra} MORE FREE GAMES!`, true); await sleep(1000);
+        }
+        if (!t) await sleep(250);
+      }
+      badge.hidden = true;
+      $("modeBadge").textContent = "10 LINES · PAYS " + (D.payDirection === "left" ? "LEFT TO RIGHT" : "RIGHT TO LEFT");
+      reels.forEach((r) => r.classList.remove("locked"));
+      state.sticky = new Set();
+      bgm("normal_game_bgm");
+      cancelPresentation();
+      showCard(`<h2>FREE GAMES COMPLETE</h2><div class="big">${money(Math.min(featureWin, CAP))}</div>
+                <p class="sub">${awarded} free games played · tap to continue</p>`);
+      await waitDismiss(4000);
+      return capped;
+    }
+
+    // ---------------------------------------------------------------- help / paytable
+    function helpHtml() {
+      const lb = lineBet();
+      const rows = D.paySymbols.slice().reverse().map((s) => {
+        const p = D.paytable[String(s)];
+        const cell = makeCell(s).outerHTML;
+        return `<div class="pt">${cell}<div class="pays">
+          <b>5</b>${money(p[2] * lb)}<br><b>4</b>${money(p[1] * lb)}<br><b>3</b>${money(p[0] * lb)}</div></div>`;
+      }).join("");
+      const wild = `<div class="pt">${makeCell(ID.WILD).outerHTML}<div class="pays">Substitutes for all<br>except Africa.<br>Expands the reel.</div></div>`;
+      const bet = betCents();
+      const africa = `<div class="pt">${makeCell(ID.AFRICA).outerHTML}<div class="pays">${[3, 4, 5].map((k) => {
+        const n = D.freeSpins[String(k)], prize = (D.scatterPay[String(k)] || 0) * bet;
+        return `<b>${k}</b>${n} free games${prize ? ` + ${money(prize)}` : ""}`;
+      }).join("<br>")}</div></div>`;
+      const lines = D.paylines.map((pl, i) => {
+        const on = new Set(pl.map(([r, c]) => c * 5 + r));
+        let cells = "";
+        for (let c = 0; c < ROWS; c++) for (let r = 0; r < REELS; r++) cells += `<i class="${on.has(c * 5 + r) ? "on" : ""}"></i>`;
+        return `<div class="mini">${cells}<span class="n">${i + 1}</span></div>`;
+      }).join("");
+      const dir = D.payDirection === "left" ? "left to right, starting from reel 1" : "right to left, starting from reel 5";
+      const rtp = D.rtp && D.rtp.total ? `${(D.rtp.total * 100).toFixed(2)}%` : "see par sheet";
+      return `<h2>PAYS &amp; HELP</h2>
+        <p class="sub">Pays shown for the current bet (${money(betCents())} = ${money(lb)} per line). Line wins are multiplied by the line bet.</p>
+        <div class="paytable">${rows}${wild}${africa}</div>
+        <ul class="rules">
+          <li>All 10 lines are always played. Wins pay on adjacent reels ${dir}, 3 or more of a kind, highest win per line only.</li>
+          <li><b>WILD</b> substitutes for every symbol except Africa and lands only on reels 2, 3 and 4. When a Wild lands anywhere on a reel it expands to cover that whole reel before wins are paid. A Wild never shares a reel with an Africa.</li>
+          <li><b>AFRICA</b> is a scatter: 3, 4 or 5 anywhere on the reels award 10, 15 or 20 <b>Free Games</b> at the triggering bet, plus a bonus prize of the total bet times the number of free games (10×, 15× or 20× bet). Only one Africa can land on a reel at a time.</li>
+          <li>Reels land one at a time. Press <b>STOP</b> while they roll to land them straight away.</li>
+          <li>During Free Games, each Wild that lands expands its reel and <b>stays wild</b> for the rest of the feature.${D.retrigger ? " Free Games can be retriggered." : " Free Games cannot be retriggered."}</li>
+          <li>Maximum payout per play is <b>${money(CAP)}</b>, including Free Games. Bets: ${D.betLevelsCents.map(money).join(", ")}.</li>
+          <li>Theoretical return to player: <b>${rtp}</b>. Malfunction voids all pays and plays.</li>
+        </ul>
+        <div class="linesgrid">${lines}</div>
+        <p class="sub">Tap anywhere to close</p>`;
+    }
+
+    // ---------------------------------------------------------------- wire up
+    $("spinBtn").addEventListener("click", () => {
+      if (state.rolling) { requestStop(); if (state.auto) cancelAuto(); return; }
+      if (state.auto) { cancelAuto(); return; }
+      playRound();
+    });
+    $("autoBtn").addEventListener("click", () => {
+      state.auto = !state.auto;
+      $("autoBtn").classList.toggle("on", state.auto);
+      renderSpinButton();
+      if (state.auto && !state.busy) playRound();
+    });
+    $("betDown").addEventListener("click", () => { if (!state.busy && state.betIdx > 0) { state.betIdx--; save(); renderMeters(); } });
+    $("betUp").addEventListener("click", () => { if (!state.busy && state.betIdx < D.betLevelsCents.length - 1) { state.betIdx++; save(); renderMeters(); } });
+    $("helpBtn").addEventListener("click", () => { if (!state.busy) { showCard(helpHtml()); waitDismiss(0); } });
+    $("addCredits").addEventListener("click", (e) => { e.preventDefault(); state.credits += 2000; save(); renderMeters(); setMsg("$20.00 ADDED"); });
+    $("muteBtn").addEventListener("click", (e) => { e.stopPropagation(); toggleMute(); });
+    $("muteBgmBtn").addEventListener("click", (e) => { e.stopPropagation(); toggleMuteBgm(); });
+    // Browsers only let audio start after a gesture; the first tap or key anywhere unlocks it.
+    window.addEventListener("pointerdown", audioUnlock, { capture: true });
+    window.addEventListener("keydown", audioUnlock, { capture: true });
+    window.addEventListener("keydown", (e) => { if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); $("spinBtn").click(); } });
+    window.addEventListener("resize", () => { if (!state.busy) clearHighlights(); });
+
+    // First frame: a neutral board pulled from the real strips. Play stays
+    // disabled until the art probe settles so a round can never start early.
+    $("spinBtn").disabled = true;
+    probeArt().then(() => {
+      $("spinBtn").disabled = false;
+      load();
+      audioInit();
+      state.grid = D.baseStrips.map((s) => windowAt(s, randStop()).map((x) => (x === ID.WILD || x === ID.AFRICA) ? ID.A : x));
+      renderStatic(state.grid);
+      renderMeters();
+      $("modeBadge").textContent = "10 LINES · PAYS " + (D.payDirection === "left" ? "LEFT TO RIGHT" : "RIGHT TO LEFT");
+      const rtp = D.rtp && D.rtp.total ? `RTP ${(D.rtp.total * 100).toFixed(2)}%` : "RTP: see par sheet";
+      $("rtpNote").textContent = rtp + " · Bonus 1 in " + (D.rtp && D.rtp.triggerOneIn ? Math.round(D.rtp.triggerOneIn) : "?");
+    });
+  })();
+  </script>
+
+<!-- VRX Games badge: links back to the site. Fixed, small, stays out of the game's way. -->
+<style>
+.vrx-badge{position:fixed;left:10px;top:10px;z-index:2147483000;display:block;width:88px;opacity:.72;transition:opacity .15s}
+.vrx-badge:hover{opacity:1}
+.vrx-badge img{display:block;width:100%;height:auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+@media (max-width:640px){.vrx-badge{width:64px;left:6px;top:6px}}
+</style>
+<a class="vrx-badge" href="../" aria-label="Back to the game page"><picture><source srcset="/assets/brand/vrx-badge.webp" type="image/webp"><img src="/assets/brand/vrx-badge.png" width="180" height="85" alt="VRX Games" decoding="async"></picture></a>
+</body>
+</html>

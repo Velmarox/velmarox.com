@@ -23,7 +23,7 @@ window.PRODUCTS = [
   },
   {
     slug: 'sample-neon-drift-ost', sample: true,
-    title: 'Neon Drift soundtrack', kind: 'Soundtrack', price: '$4.99', status: 'available', game: 'sample-neon-drift',
+    title: 'Animalism soundtrack', kind: 'Soundtrack', price: '$4.99', status: 'available', game: 'animalism',
     blurb: 'Placeholder product. Twelve tracks, MP3 and FLAC.', link: '#'
   },
   {
@@ -38,7 +38,7 @@ window.PRODUCTS = [
   },
   {
     slug: 'sample-hoard-tee', sample: true,
-    title: 'Hoard Keeper tee', kind: 'Merch', price: '$24.00', status: 'sold-out', game: 'sample-hoard-keeper',
+    title: 'Wyrmhoard tee', kind: 'Merch', price: '$24.00', status: 'sold-out', game: 'keno',
     blurb: 'Placeholder product. Gold dragon on black.', link: '#'
   }
 ];

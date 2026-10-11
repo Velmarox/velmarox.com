@@ -1,0 +1,2105 @@
+<!DOCTYPE html>
+<!-- WYRMHOARD KENO -- prototype machine.
+     Route-machine layout: paytable / trigger / bonus panels across the top, the
+     80-square board centre, symbol rail right, meters and the button bar along
+     the bottom.  Square cells, X for a drawn miss, HIT for a caught spot.
+     Art is from the Kenney-style pack in game/assets/ plus the four pieces
+     game/prepassets.py derives from it.
+     Outcome logic lives in engine.js.  Paytables live in data.js, generated from
+     the JSON.  No pay value is typed into this file. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+  <meta name="version" content="v0.29.0-alpha">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wyrmhoard Keno</title>
+<style>
+:root{
+  --ink:#080605; --panel:#120d0a; --glass:#0d0a08;
+  --edge:#6b4f1e; --edge2:#c9992f;
+  --gold:#f0c357; --gold2:#ffe6a4; --dim:#8d7a5e; --text:#e2d5bd;
+  --jade:#6fb2a6; --ember:#e0642c;
+  --cell:#171310; --cellline:#312820;
+}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;min-height:100%;
+  background:
+    radial-gradient(120% 90% at 50% -10%,rgba(60,42,18,.42) 0%,rgba(5,4,3,.92) 62%),
+    url(assets/bg_runes.jpg) center/cover fixed,
+    #050403;
+  color:var(--text);font:13px/1.35 "Trebuchet MS",Verdana,sans-serif;
+  display:flex;align-items:flex-start;justify-content:center;padding:14px;
+  -webkit-font-smoothing:antialiased;
+}
+img{display:block}
+/* An author `display:` beats the UA sheet's [hidden]{display:none}, so an element
+   hidden with el.hidden stays laid out and keeps its auto margins. That is how the
+   empty bonus panel went on claiming half the overlay and pushing the live one off
+   the bottom of a short window. */
+[hidden]{display:none!important}
+
+/* ------------------------------------------------------------- cabinet */
+/* THE CABINET FITS THE WINDOW.
+   Ten square cells across makes the board 1.25:1, and a desktop window is nearer 2:1,
+   so sizing the board off the WIDTH makes it taller than the screen every time -- which
+   is why this used to need zooming out to 90%. Two things follow from that:
+
+   1. the cell is bounded by HEIGHT as well as width, so the whole cabinet always fits;
+   2. the width that frees up goes to the side columns, which is where the three panels
+      that used to sit in a row above the board now live. That row cost 185px of height
+      for nothing -- the space beside the board was empty anyway.
+
+   --chrome is everything that is not the board: marquee, meters, buttons, paddings.
+   Measured, not guessed; if a row is added to the cabinet this is the number to change. */
+.cab{width:min(1460px,100%);position:relative;margin:auto;
+  --chrome:356px;
+  --cellh:calc((100dvh - var(--chrome) - 28px) / 8);
+  --cellw:calc((min(1460px,100vw) - 630px) / 10);
+  --cell:clamp(34px, min(var(--cellh), var(--cellw)), 84px)}
+.marquee{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px}
+.marquee h1{margin:0;font:800 30px/1 "Trebuchet MS",sans-serif;letter-spacing:.06em;
+  background:linear-gradient(180deg,#fff3cf 0%,var(--gold) 46%,#a5731a 68%,#ffe6a4 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 0 #3a2607) drop-shadow(0 0 14px rgba(240,195,87,.25))}
+.marquee small{font:700 11px/1 sans-serif;letter-spacing:.5em;color:var(--dim);
+  text-transform:uppercase;align-self:flex-end;padding-bottom:4px}
+.marquee img{width:44px;height:44px;filter:drop-shadow(0 0 10px rgba(224,100,44,.5))}
+
+.screen{
+  border:3px solid var(--edge2);border-radius:10px;padding:8px;
+  background:
+    linear-gradient(180deg,rgba(120,86,26,.30),rgba(0,0,0,0)) ,
+    url(assets/honeycomb_thick.png) 0 0/54px 54px,
+    #0a0806;
+  box-shadow:0 0 0 2px #2b1e09, 0 22px 60px rgba(0,0,0,.75),
+             inset 0 0 90px rgba(0,0,0,.9);
+}
+.inner{background:var(--ink);border:1px solid #2a2118;border-radius:6px;padding:10px;
+  position:relative;overflow:hidden}
+
+/* FREE GAMES change the room. The background swap is the whole signal that the rules
+   are different now -- the multiplier space only exists in here, and nothing costs
+   anything. It is a class on the cabinet so every panel inside inherits the mood. */
+.cab.inbonus .inner{
+  background:
+    linear-gradient(180deg,rgba(150,52,10,.38),rgba(24,7,2,.62) 70%),
+    url(assets/bg_fire.jpg) center/cover;
+}
+/* the board goes warm too, or the swap reads as a wallpaper change and nothing else */
+/* The bonus room repaints the board -- but ONLY the cells that have no state of their
+   own. `.cab.inbonus .cell` is three classes and outranks `.cell.pick` at two, so
+   without the :not() list it painted over the player's own marked numbers and they
+   vanished the moment the feature started. The override that was meant to save them
+   named `.on`, which is not a class this board uses. */
+.cab.inbonus .cell:not(.pick):not(.hit):not(.miss){
+  border:1px solid #6b3416;background:linear-gradient(180deg,#2a1408,#160a04)}
+.cab.inbonus .cell.pick:not(.hit):not(.miss){border:1px solid #ffb072;
+  background:linear-gradient(180deg,#6b4a12,#33240a);
+  box-shadow:0 0 9px rgba(255,176,114,.35)}
+.cab.inbonus .rail,.cab.inbonus .count{background:rgba(30,10,3,.66)}
+.cab.inbonus .screen{border-color:#c0692a;box-shadow:0 0 0 2px #5b2a0c,
+  0 22px 60px rgba(0,0,0,.75), inset 0 0 90px rgba(0,0,0,.85), 0 0 34px rgba(224,100,44,.35)}
+.cab.inbonus .glass{border-color:#6d3a16;background:rgba(28,10,3,.72)}
+
+/* the free-games panel: dim out of a bonus, alight inside one */
+.fg{display:flex;align-items:center;justify-content:space-around;height:100%;gap:8px;
+  text-align:center;opacity:.4;transition:opacity .3s}
+.fg.live{opacity:1}
+.fg b{display:block;font:800 22px/1 sans-serif;color:var(--gold)}
+.trig b.hot{color:#ffb072}
+.fg .mult b{color:#ffb072;transition:transform .2s,color .2s}
+.fg .mult.up b{transform:scale(1.42);color:#fff3cf}
+.fg span{font:700 8.5px/1 sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.fg p{margin:0;font-size:11px;color:var(--dim);line-height:1.5;max-width:210px}
+
+/* the choose-one screen. Same tiles as the old piles, three or four across. */
+/* Centred, not pinned 30px under the heading. The lair used to be a gradient and it did
+   not matter where in it the tiles sat; it is a painted cavern now, and a row of tiles
+   hugging the top of one leaves the whole floor empty underneath. */
+.choice{display:grid;gap:18px;margin:auto;width:100%;max-width:640px}
+/* n3/n4/n5 -- showPick writes 'choice n' + layout.length, and FIVE is reachable: the
+   all-five-chests Hoard Bonus deals five tiles. There was no .n5 rule, so the biggest
+   award in the game laid its tiles out in a single column down the cavern. */
+.choice.n3{grid-template-columns:repeat(3,1fr)}
+.choice.n4{grid-template-columns:repeat(4,1fr)}
+.choice.n5{grid-template-columns:repeat(5,1fr)}
+.choice .pick{aspect-ratio:.92;border:2px solid #3a2c1a;border-radius:8px;cursor:pointer;
+  position:relative;background:radial-gradient(70% 70% at 50% 88%,#241a0d,#0b0805);
+  transition:transform .16s,border-color .16s,opacity .3s;display:flex;
+  align-items:center;justify-content:center}
+.choice .pick img{width:66%;transition:opacity .2s}
+/* The egg tiles carry the painted egg-in-nest plate, which is a 1.26:1 landscape and
+   would sit in the tile like a postage stamp at the icon width. It bleeds to the tile
+   edges and sits ON the floor instead, with the bottom kept clear for the label. */
+.choice .pick.nest{align-items:flex-end;padding-bottom:14%;overflow:hidden}
+.choice .pick.nest img{width:112%;max-width:none;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.6))}
+.choice .pick.nest:hover:not(.done) img{filter:drop-shadow(0 6px 14px rgba(240,195,87,.4))}
+.choice .pick:hover:not(.done){transform:translateY(-4px);border-color:var(--gold)}
+.choice .pick.done{cursor:default}
+.choice .pick.mine{border-color:#e5c063;background:radial-gradient(80% 80% at 50% 92%,#8a6516,#2c1f08);
+  box-shadow:0 0 26px rgba(240,195,87,.5)}
+.choice .pick.other{opacity:.3}
+.choice .pick em{position:absolute;inset:auto 0 0 0;font-style:normal;
+  font:800 20px/1.9 sans-serif;color:var(--gold);text-shadow:0 2px 6px #000}
+.choice .pick.mine em{color:#fff3cf;font-size:24px}
+
+/* the free-games start screen: how many, and who is pressing the button */
+.fgstart{margin:26px auto auto;text-align:center;max-width:520px}
+.fgstart .count{font:800 68px/1 sans-serif;color:var(--gold);
+  text-shadow:0 0 30px rgba(240,195,87,.45);letter-spacing:.02em}
+.fgstart .lab{font:700 12px/1 sans-serif;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--gold2);margin-top:6px}
+.fgstart .ask{margin:22px 0 12px;font-size:12.5px;color:var(--dim)}
+.fgstart .row{display:flex;gap:12px;justify-content:center}
+.fgstart button{flex:1;max-width:190px;padding:13px 10px;font-size:13px}
+.fgstart button b{display:block;font-size:14px;margin-bottom:3px;color:var(--gold)}
+.fgstart button span{font-weight:400;font-size:10.5px;color:var(--dim);letter-spacing:.02em}
+
+
+/* --------------------------------------------------------- top panels */
+/* The side columns are pinned to the BOARD's height, and everything in them is sized
+   off the same --cell. Left to themselves they set the height of the row instead: at
+   1280x720 the right column's own content floor was 586px against a 374px board, and
+   the cabinet overflowed by 223px with the board nowhere near the constraint. */
+.side{display:flex;flex-direction:column;gap:8px;min-width:0;
+  height:calc(var(--cell) * 8 + 28px);
+  /* The column is pinned to the board's height and its content does not always fit in
+     that -- at 1100x800 it wanted 583px in a 396px column. Unclipped, the surplus was
+     painted straight over the meters row underneath. */
+  overflow:hidden}
+.side .glass{min-height:0;overflow:hidden}
+/* 17vw/20vw only reach their 268/320 maximum at about 1600px, so every window smaller
+   than that got NARROW columns -- and a narrow column is a tall one, because the prose
+   in the trigger panel simply wraps more. Widening the ramp is what actually fixes the
+   overflow; --chrome is 630 to match. */
+.side.left{width:clamp(190px,18vw,268px)}
+.side.right{width:clamp(215px,24vw,320px)}
+.side .glass{flex:0 0 auto}
+/* If something still has to give, it is the trigger RULES -- reference prose, and the
+   help screen has all of it. The free-games meter and the symbol rail are live state
+   and keep their full height. */
+.side.right>.glass:first-child{flex:1 1 auto;min-height:0}
+.glass{border:2px solid var(--edge);border-radius:6px;background:
+  linear-gradient(180deg,rgba(255,225,160,.06),rgba(0,0,0,.35)),var(--glass);
+  padding:7px 9px;box-shadow:inset 0 0 24px rgba(0,0,0,.85)}
+.glass h2{margin:0 0 5px;font:700 10px/1 sans-serif;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--dim);text-align:center}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.pt{font-size:12px}
+.pt th{font:700 9px/1 sans-serif;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;
+  padding-bottom:3px;text-align:left}
+.pt th:last-child{text-align:right}
+.pt td{padding:1px 0;color:var(--gold)}
+.pt td:first-child{color:var(--text);width:38%}
+.pt td:last-child{text-align:right}
+.pt tr.live td{background:rgba(240,195,87,.16);color:#fff;box-shadow:inset 2px 0 0 var(--gold)}
+.pt tr.zero td:first-child{color:var(--dim)}
+#paytable.dim{opacity:.35}
+
+/* centre panel: the trigger */
+.trig{display:flex;align-items:center;justify-content:center;
+  gap:clamp(5px,calc(var(--cell)*.16),14px);height:100%}
+.trig .eggs{display:flex;gap:5px}
+.trig .eggs img{width:clamp(13px,calc(var(--cell)*.32),24px);
+  height:clamp(13px,calc(var(--cell)*.32),24px);opacity:.85}
+.trig p{margin:0;font-size:clamp(8px,calc(var(--cell)*.148),11.5px);color:var(--dim);
+  max-width:300px;line-height:1.4}
+.trig b{color:var(--gold2);font-size:13px}
+.trig .big{font:800 21px/1 sans-serif;color:var(--gold);letter-spacing:.02em}
+
+/* right panel: the depth ladder, banded like a bonus table */
+.lad{font-size:11px}
+.lad td{padding:0 3px;line-height:1.5}
+.lad td:first-child{color:var(--dim);width:52%}
+.lad td:last-child{text-align:right;color:var(--gold);font-variant-numeric:tabular-nums}
+.lad tr.hi td:last-child{color:var(--gold2);font-weight:700}
+.lad tr.top td{background:rgba(224,100,44,.18);box-shadow:inset 2px 0 0 var(--ember)}
+.lad tr.top td:last-child{color:#ffd9a0;font-weight:700}
+
+/* ------------------------------------------------------------- middle */
+.mid{display:grid;grid-template-columns:auto auto auto;gap:12px;
+  align-items:stretch;justify-content:center}
+
+/* Cindermaw counting, as one piece of art. The strip is 290x1271, so the column is
+   sized to its aspect rather than the other way round -- crop a dragon and it stops
+   being a dragon. The caption is baked into the art; there is no CSS label. */
+/* the strip is 290x1271, so it takes whatever height is left in the column and its
+   width follows the aspect -- crop a dragon and it stops being a dragon */
+.stage{border:2px solid var(--edge);border-radius:6px;flex:1 1 auto;min-height:0;
+  position:relative;
+  overflow:hidden;background:url(assets/stage_cindermaw.jpg) center top/cover no-repeat,#0a0705;
+  box-shadow:inset 0 0 26px rgba(0,0,0,.75)}
+.stage::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(70% 26% at 50% 92%,rgba(224,100,44,.30),transparent 70%);
+  animation:flick 2.6s ease-in-out infinite}
+@keyframes flick{0%,100%{opacity:.55}50%{opacity:.95}}
+
+/* the board */
+.grid{display:grid;grid-template-columns:repeat(10,var(--cell));gap:4px;
+  justify-content:center}
+.cell{position:relative;width:var(--cell);aspect-ratio:1;
+  border:1px solid var(--cellline);border-radius:3px;
+  background:linear-gradient(180deg,#1d1811,#100c09);
+  display:flex;align-items:center;justify-content:center;
+  font:600 14px/1 "Trebuchet MS",sans-serif;font-variant-numeric:tabular-nums;
+  color:#8a7960;cursor:pointer;user-select:none;
+  transition:background .1s,border-color .1s,color .1s}
+.cell:hover:not(.locked){border-color:var(--edge2);color:var(--gold2)}
+.cell.pick{background:linear-gradient(180deg,#4a3510,#241a09);border-color:var(--edge2);
+  color:var(--gold2);box-shadow:inset 0 0 0 1px rgba(240,195,87,.35),0 0 8px rgba(240,195,87,.2)}
+/* a drawn miss is a coin that landed dull side up: the reference marks it X */
+.cell.miss{background:linear-gradient(180deg,#241f19,#151210);border-color:#3d3529;color:#5f564a}
+.cell.miss .x{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font:700 20px/1 sans-serif;color:#efe6d6;opacity:.92;text-shadow:0 1px 2px #000}
+/* A hit lands gold side up and says so. The square used to go gold ITSELF, which left
+   nowhere for a gold coin to sit -- so the well is dark and warm now and the COIN is the
+   bright thing in it. Same read at a glance, and the coin is doing the work. */
+.cell.hit{background:radial-gradient(72% 72% at 50% 42%,#5c3f11,#20160a 78%);
+  border-color:#ffe6a4;color:#3a2705;
+  box-shadow:0 0 16px rgba(240,195,87,.6),inset 0 0 0 1px rgba(255,242,206,.55)}
+.cell.hit .x{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;
+  font:800 11px/1 sans-serif;letter-spacing:.06em;color:#3a2705;
+  text-shadow:0 1px 0 rgba(255,240,200,.55)}
+/* THE COIN UNDER THE NUMBER.
+   Every square is a coin lying in the well, and the numeral is struck on its face --
+   which is the whole conceit of the machine and was the one place the board was not
+   saying it. The colourway tracks the numeral, because they are the same object:
+       unmarked   bronze numeral   bronze coin, sunk and dim
+       marked     gold numeral     gold coin, lit
+       a miss     no numeral       the bronze gone grey, small, the X over it
+       a hit      no numeral       the RUNED face, full brightness, HIT over it
+   One layer, three background-images, cross-faded -- no src ever changes on a repaint.
+   The faces are the painted coins from Docs/art_src, installed here at v0.22.0-alpha:
+   struck FACE ON, with a broad blank field in the middle, which is the only reason a
+   numeral can sit on one and still be read. The flat 3/4 sprites they replace were
+   drawn tilted on the diagonal, and a diagonal ellipse behind a two-digit number is a
+   mess however you light it. 60-ASSET-MANIFEST.md 8 called this swap in advance. */
+.cell .coin{position:absolute;inset:5%;z-index:0;pointer-events:none;
+  background:url(assets/coin_bronze.png) center/contain no-repeat;
+  opacity:.7;filter:brightness(.72) saturate(.95);
+  transition:opacity .12s,filter .12s}
+.cell:hover:not(.locked) .coin{opacity:.88;filter:brightness(.95) saturate(1)}
+/* opaque, not .9 -- at any less the cell's own gold gradient bleeds through the coin
+   and turns it olive, which is the one colour a gold coin must not be */
+.cell.pick .coin{background-image:url(assets/coin_gold.png);
+  opacity:1;filter:brightness(.6) saturate(1.05)}
+/* Drawn, the coin stops being a backdrop and becomes the result: the numeral goes and
+   the coin is the whole square. A hit is the runed face at full brightness, a miss is
+   the same bronze gone grey and small -- so the board reads from across a room, well
+   before the X and the HIT are legible. */
+.cell.miss .coin{inset:13%;opacity:.72;filter:grayscale(.95) brightness(1.25)}
+.cell.hit .coin{background-image:url(assets/coin_rune.png);inset:1%;
+  opacity:1;filter:drop-shadow(0 0 6px rgba(255,214,120,.6));
+  animation:coinflip .26s cubic-bezier(.2,1.4,.4,1)}
+@keyframes coinflip{from{transform:rotate(-26deg) scale(.5)}to{transform:none}}
+.cell .num{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center}
+.cell.hit .num,.cell.miss .num{opacity:0}
+/* The board numbers are the Kibyra numeral sprites, bronze until you mark the
+   square and gold after. Both colourways sit in the DOM and cross-fade, which is
+   cheaper than swapping twenty src attributes on every repaint. */
+.num .dg{display:flex;gap:1px;height:100%;align-items:center;justify-content:center;
+  transition:opacity .12s}
+.num .dg.gold{position:absolute;left:0;top:0;right:0;bottom:0;opacity:0}
+.cell.pick .num .dg.gold{opacity:1}
+.cell.pick .num .dg.bronze{opacity:0}
+/* Sized off the CELL, not the font: the numerals should fill the square the way a
+   route-machine board does, not sit in it like body text. */
+.num i{display:block;height:64%;aspect-ratio:.63;background-position:center;
+  background-repeat:no-repeat;background-size:contain}
+/* The numerals sit on a coin now, so they need to lift OFF it: a hard little shadow
+   under every glyph. Bronze on bronze and gold on gold are both low-contrast pairings
+   by nature -- the shadow, not the tint, is what keeps the board legible. */
+.num i{filter:drop-shadow(0 1px 1px rgba(0,0,0,.85))}
+/* the bronze set is dark by design; lift it so an unmarked square still reads */
+.num .dg.bronze i{filter:brightness(1.62) saturate(1.15) drop-shadow(0 1px 1px rgba(0,0,0,.9))}
+.cell:hover:not(.locked) .num .dg.bronze i{filter:brightness(2) saturate(1.2) drop-shadow(0 1px 2px rgba(0,0,0,.9))}
+.num .dg.gold i{filter:brightness(1.06) drop-shadow(0 1px 2px rgba(0,0,0,.85))}
+/* The two symbol sets. Eggs multiply the base win when all three come out;
+   chests open the pick round. Six reserved squares, never on a picked number
+   and never on each other. docs/21-TWO-FEATURE-PRICING.md */
+.cell .egg{position:absolute;inset:8%;background:url(assets/sym_egg.png) center/contain no-repeat;
+  filter:drop-shadow(0 0 6px rgba(111,178,166,.55));z-index:2}
+.cell.hatch .egg{background-image:url(assets/sym_egg_hatched.png);
+  filter:drop-shadow(0 0 12px rgba(224,100,44,.9))}
+.cell .chest{position:absolute;inset:10%;background:url(assets/sym_chest.png) center/contain no-repeat;
+  filter:drop-shadow(0 0 6px rgba(224,100,44,.45));z-index:2}
+.cell .xsym{position:absolute;inset:9%;background:url(assets/sym_x.png) center/contain no-repeat;
+  z-index:2;pointer-events:none}
+.cell.xlit .xsym{background-image:url(assets/sym_x_lit.png);
+  filter:drop-shadow(0 0 8px rgba(255,200,110,.85))}
+.cell.opened .chest{background-image:url(assets/sym_chest_open.png);
+  filter:drop-shadow(0 0 12px rgba(240,195,87,.95))}
+.cell.drop{animation:drop .2s cubic-bezier(.2,1.5,.4,1)}
+@keyframes drop{from{transform:translateY(-13px) scale(.8);opacity:.15}to{transform:none;opacity:1}}
+/* THE REVEL. When a trigger opens, the draw stops and the symbols that did it pulse --
+   three beats, and the board holds still around them. It has to sit AFTER .drop in the
+   sheet: both rules set `animation` at the same specificity, so source order is what
+   decides, and land() strips .drop when it adds this so the two cannot fight over the
+   transform mid-pulse. z-index lifts the pulsing square above its neighbours, or the
+   scale-up is clipped by the cells either side of it. */
+.cell.revel{animation:revel .44s ease-in-out 3;z-index:4}
+@keyframes revel{
+  0%,100%{transform:none;filter:none}
+  50%{transform:scale(1.16);
+      filter:brightness(1.5) drop-shadow(0 0 13px rgba(255,214,120,.95))}}
+/* the rail slot for the same symbol answers it, so the eye is told twice */
+.rail .slot.revel{animation:railrevel .44s ease-in-out 3}
+@keyframes railrevel{
+  0%,100%{transform:none}
+  50%{transform:scale(1.22);box-shadow:0 0 16px rgba(255,214,120,.9)}}
+.cell.locked{cursor:default}
+
+.count{display:flex;justify-content:space-between;align-items:center;margin-top:8px;
+  font:700 clamp(8px,calc(var(--cell)*.15),11px)/1 sans-serif;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--dim)}
+.count b{color:var(--gold2);font-size:15px;margin-left:6px}
+.say{flex:1;text-align:center;letter-spacing:.10em;color:var(--text);
+  font-size:clamp(9px,calc(var(--cell)*.165),12px);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px}
+.say i{font-style:normal;color:var(--gold);font-size:15px;margin-left:10px;
+  font-variant-numeric:tabular-nums}
+
+/* the symbol rail, right */
+.rail{border:2px solid var(--edge);border-radius:6px;background:
+  linear-gradient(180deg,rgba(255,225,160,.05),rgba(0,0,0,.4)),var(--glass);
+  padding:9px 6px;flex:1 1 auto;min-height:0;
+  /* justify-content was space-around when the hoard-pot tally shared this panel with the
+     symbol columns. With the pot gone there is one child, and space-around left it sitting
+     high with the slack below it -- where the pot meter used to be. Centred. */
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.rail h2{margin:0 0 2px;font:700 9px/1 sans-serif;letter-spacing:.16em;color:var(--dim);
+  text-transform:uppercase;text-align:center}
+/* two sets, two columns: eggs multiply, chests open the round */
+.symcols{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%}
+.symcols>div{display:flex;flex-direction:column;align-items:center;gap:5px}
+.rail .slot{width:calc(var(--cell)*.58);height:calc(var(--cell)*.52);
+  position:relative;border:1px solid #2d2419;border-radius:5px;
+  background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center}
+.rail .slot img{width:calc(var(--cell)*.40);height:calc(var(--cell)*.40);
+  opacity:.45;transition:opacity .2s,transform .2s}
+.symcols>div{gap:4px}
+.rail .slot.chest.on{border-color:var(--gold);box-shadow:0 0 14px rgba(240,195,87,.55)}
+.rail .slot.on{border-color:var(--ember);box-shadow:0 0 14px rgba(224,100,44,.5)}
+.rail .slot.on img{opacity:1;transform:scale(1.12)}
+
+/* -------------------------------------------------------------- meters */
+.meters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:8px}
+.meter{border:2px solid var(--edge);border-radius:6px;background:var(--glass);padding:6px 9px;
+  box-shadow:inset 0 0 22px rgba(0,0,0,.8)}
+.meter span{font:700 8.5px/1 sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.meter b{display:block;font:800 22px/1.1 sans-serif;color:#7fe07f;font-variant-numeric:tabular-nums}
+.meter.win b{color:var(--gold)}
+.meter.right{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.meter.right div{text-align:right}
+.meter.right b{font-size:18px;color:var(--gold2)}
+.payback{flex:1}
+/* The payback meter sits inside Kibyra's line-bar frame at its native 176x46 --
+   the dragon head on the right end distorts under any non-uniform scale, so the
+   box is fixed rather than fluid.  The channel inset is measured from the art:
+   the solid rails are rows 18-21 and 32-35, so the hollow is y 22..31, x 8..166.
+   docs/60-ASSET-MANIFEST.md section 15. */
+.paybar{position:relative;width:176px;height:46px;margin:0 auto;
+  background:url(assets/ui/frame_bar.png) center/contain no-repeat;
+  image-rendering:pixelated}
+.paychan{position:absolute;left:4.6%;right:5.7%;top:47.9%;height:21.8%;
+  overflow:hidden;border-radius:2px;background:#0b0907}
+.paybar i{display:block;height:100%;background:linear-gradient(90deg,#6d5220,var(--gold));
+  box-shadow:0 0 6px rgba(240,195,87,.45)}
+.pbrow{display:flex;justify-content:space-between;width:176px;margin:-4px auto 0;
+  font:700 8px/1 sans-serif;color:#5f5344}
+
+/* ------------------------------------------------------------- buttons */
+/* SEVEN buttons and the bet block, so eight tracks. repeat(8,1fr)+150px was nine, and
+   the spare one sat empty on the right of every bar. */
+.bar{display:grid;grid-template-columns:repeat(7,1fr) 150px;gap:6px;margin-top:11px}
+button{font:800 14px/1.15 "Trebuchet MS",sans-serif;letter-spacing:.05em;text-transform:uppercase;
+  color:#f6e9cb;cursor:pointer;padding:12px 4px;border-radius:7px;
+  border:2px solid #7a5a22;background:linear-gradient(180deg,#6a4d18 0%,#3a290d 52%,#241a09 100%);
+  box-shadow:0 3px 0 #161006,inset 0 1px 0 rgba(255,231,178,.3)}
+button:hover:not(:disabled){background:linear-gradient(180deg,#856019 0%,#4a340f 52%,#2c1f0a 100%)}
+button:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #161006}
+button:disabled{opacity:.36;cursor:default;box-shadow:0 3px 0 #161006}
+button small{display:block;font-size:10px;letter-spacing:.1em;color:#a6906a;margin-top:4px}
+/* Kibyra icon on a button face.  Sits above the label, dimmed until hover so the
+   bar still reads as text first -- docs/60-ASSET-MANIFEST.md section 15. */
+button .btnicon{display:block;width:20px;height:20px;margin:0 auto 4px;
+  image-rendering:pixelated;opacity:.82;transition:opacity .12s,transform .12s}
+button:hover:not(:disabled) .btnicon{opacity:1;transform:scale(1.08)}
+button:disabled .btnicon{opacity:.4}
+button.draw{border-color:#c9992f;background:linear-gradient(180deg,#c08c1e 0%,#7d5711 52%,#4a340c 100%);
+  color:#fff6dd;font-size:18px;letter-spacing:.08em}
+button.draw:hover:not(:disabled){background:linear-gradient(180deg,#e0a527 0%,#936614 52%,#573c0e 100%)}
+.denom{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:4px}
+.denom button{padding:6px 2px;font-size:12px;border-radius:5px}
+.denom .betnow{grid-column:1 / -1;display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--edge);border-radius:5px;background:rgba(0,0,0,.45);
+  font:800 19px/1 sans-serif;color:var(--gold2);font-variant-numeric:tabular-nums}
+.denom button.step{font-size:11px;letter-spacing:.02em}
+.denom button.step.on{border-color:var(--gold);color:#fff6dd;
+  background:linear-gradient(180deg,#c08c1e,#6b4a10)}
+
+/* ------------------------------------------------------------ the lair */
+/* THE LAIR IS A REAL PLACE NOW -- the empty nest on the lava shelf, under a scrim heavy
+   enough that the tiles and the type still win. It was a radial gradient pretending to
+   be a cave, and the painting for it was sitting finished in Docs/art_src the whole
+   time. The scrim LIFTS on .lit, so the moment the award lands the cavern comes up
+   behind it; that transition is the reason the scrim is a layer and not baked in. */
+.lair{position:absolute;inset:0;z-index:9;display:none;
+  background:linear-gradient(180deg,rgba(6,4,3,.80),rgba(8,4,2,.70) 55%,rgba(30,12,4,.62)),
+             url(assets/stage_nest.jpg) center/cover no-repeat,#060403;
+  transition:background .9s}
+.lair.lit{background:linear-gradient(180deg,rgba(10,5,2,.52),rgba(28,11,3,.38) 55%,rgba(60,24,6,.30)),
+          url(assets/stage_nest.jpg) center/cover no-repeat,#060403}
+.lair.on{display:grid;grid-template-columns:1fr 172px}
+.lairmain{max-height:100%}
+/* the painted plate already has its own lava, so this only warms the edges now */
+.lair .floor{position:absolute;inset:0;background:url(assets/lava.png) center/cover;
+  opacity:.14;mix-blend-mode:screen;pointer-events:none}
+.lair .beast{position:absolute;left:8%;right:26%;top:0;height:46%;pointer-events:none;
+  background:radial-gradient(48% 78% at 32% 100%,#241408 0%,transparent 72%),
+             radial-gradient(28% 58% at 66% 96%,#1d1006 0%,transparent 70%);filter:blur(3px)}
+.lair.lit .beast{background:radial-gradient(48% 78% at 32% 100%,#7a4a14 0%,transparent 74%),
+  radial-gradient(28% 58% at 66% 96%,#5e3410 0%,transparent 72%);transition:background 1.1s}
+.lairmain{padding:18px 20px;display:flex;flex-direction:column;position:relative;z-index:1}
+.lairhead{min-height:50px}
+.lairhead b{font:800 20px/1 sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.lairhead em{display:block;font-style:normal;font:700 11px/1 sans-serif;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--dim);margin-top:6px}
+.piles{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin:auto;width:100%;max-width:470px}
+.pile{aspect-ratio:1.2;border:2px solid #3a2c1a;border-radius:6px;cursor:pointer;position:relative;
+  background:linear-gradient(180deg,#241a10,#0e0906);overflow:hidden;
+  transition:transform .1s,border-color .12s,box-shadow .12s}
+.pile img{position:absolute;left:12%;right:12%;bottom:8%;width:76%;transition:opacity .18s}
+.pile:hover:not(.done){transform:translateY(-3px);border-color:var(--edge2)}
+.pile.coin{border-color:#e5c063;background:radial-gradient(80% 80% at 50% 96%,#8a6516,#2c1f08);
+  box-shadow:0 0 22px rgba(240,195,87,.3)}
+.pile.eye{border-color:#8c2d18;background:radial-gradient(60% 60% at 50% 50%,#2b0f07,#0a0503);
+  box-shadow:0 0 26px rgba(196,71,46,.45)}
+.pile.eye img{bottom:auto;top:14%;width:74%;left:13%}
+.pile.dim{opacity:.26}
+.ladpanel{border-left:2px solid var(--edge);padding:14px 12px;background:rgba(0,0,0,.5);
+  display:flex;flex-direction:column;position:relative;z-index:1}
+.ladpanel table{font-size:11px}
+.ladpanel td{padding:1px 0;color:var(--dim)}
+.ladpanel td:last-child{text-align:right;color:var(--gold);font-variant-numeric:tabular-nums}
+.ladpanel tr.at td{color:#fff;background:rgba(240,195,87,.2);font-weight:700}
+.ladpanel tr.past td{opacity:.45}
+.depth{margin-top:auto;text-align:right;padding-top:10px}
+.depth b{display:block;font:800 34px/1 sans-serif;color:var(--gold)}
+.depth em{display:block;font:700 12px/1.6 sans-serif;font-style:normal;color:#8fd08a;
+  letter-spacing:.06em;min-height:20px}
+.depth span{font:700 9px/1 sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+
+/* ---------------------------------------------------------------- help */
+.helpwrap{position:absolute;inset:0;z-index:12;display:none;background:rgba(4,3,2,.86);
+  align-items:center;justify-content:center;padding:20px}
+.helpwrap.on{display:flex}
+.helpcard{background:#100c08;border:2px solid var(--edge2);border-radius:8px;padding:16px 18px;
+  max-width:760px;width:100%;max-height:100%;overflow:auto}
+.helphead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.helphead b{font:800 13px/1 sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.helphead button{padding:7px 14px}
+.helpcols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.helpcols h3{margin:0 0 4px;font:700 9px/1 sans-serif;letter-spacing:.2em;color:var(--dim);
+  text-transform:uppercase}
+.bignum{margin:0;font:800 26px/1 sans-serif;color:var(--gold);font-variant-numeric:tabular-nums}
+.prose{margin:5px 0 12px;font-size:12px;line-height:1.55;color:#a2937c}
+.prose b{color:var(--text)}
+.helpcols table{font-size:11.5px}
+.helpcols td{padding:1px 0;border-bottom:1px solid #1d1710}
+.helpcols td:nth-child(2){text-align:right;color:var(--gold)}
+.helpcols td:nth-child(3){text-align:right;color:var(--dim);width:34%}
+.hpage{display:none}
+.hpage.on{display:block}
+.helpnav{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:14px;padding:10px 0 2px;border-top:1px solid #241d15;
+  position:sticky;bottom:-2px;background:#100c08}
+.helpnav button{padding:8px 16px}
+.hdots{display:flex;gap:7px}
+.hdots i{width:8px;height:8px;border-radius:50%;background:#3a2f22;display:block}
+.hdots i.on{background:var(--gold);box-shadow:0 0 7px rgba(240,195,87,.7)}
+.adminrow{display:flex;gap:7px;margin:8px 0}
+.adminrow button{flex:1;padding:9px 6px;font-size:12px}
+
+.testban{position:absolute;left:0;right:0;top:0;z-index:20;background:#7a2a16;color:#ffd9c9;
+  font:700 9px/1 sans-serif;letter-spacing:.2em;text-transform:uppercase;padding:4px;text-align:center}
+</style>
+</head>
+<body>
+<div class="cab" id="cab">
+
+  <div class="marquee">
+    <img src="assets/element_fire.png" alt="">
+    <h1>WYRMHOARD</h1><small>Keno</small>
+    <img src="assets/coin_gold.png" alt="">
+  </div>
+
+  <div class="screen"><div class="inner">
+
+    <!-- ---------------------------------------------------- top panels -->
+    <!-- -------------------------------------------------------- middle -->
+    <div class="mid">
+      <div class="side left">
+        <div class="glass">
+        <h2 id="ptname">Pays</h2>
+        <table class="pt"><thead><tr><th>Hit</th><th>Win</th></tr></thead>
+        <tbody id="paytable"></tbody></table>
+        </div>
+        <div class="stage" role="img" aria-label="Cindermaw is counting"></div>
+      </div>
+
+      <div>
+        <div class="grid" id="grid"></div>
+        <div class="count">
+          <div>Marked <b id="marked">0</b></div>
+          <div class="say" id="msg"></div>
+          <div>Hit <b id="hitn">0</b></div>
+        </div>
+      </div>
+
+      <div class="side right">
+        <div class="glass">
+        <h2>Eggs &amp; Chests</h2>
+        <div class="trig">
+        <div style="text-align:center">
+        <div class="eggs" id="trigeggs"></div>
+        <p style="font-size:10.5px;margin-top:3px" id="eggrule"></p>
+        </div>
+        <div style="text-align:center">
+        <div class="eggs" id="trigchests"></div>
+        <p style="font-size:10.5px;margin-top:3px" id="chestrule"></p>
+        <p style="font-size:9.5px;margin-top:4px;color:var(--gold2)" id="picklab"></p>
+        <p style="font-size:9px;margin-top:3px;color:var(--dim)" id="climblab"></p>
+        </div>
+        </div>
+        </div>
+        <div class="glass">
+        <h2 id="fgtitle">Free games</h2>
+        <div class="fg" id="fgbody">
+        <div><b id="fgleft">—</b><span id="fgleftlab">to go</span></div>
+        <div class="mult"><b id="fgmult">&times;1</b><span id="fgmultlab">this game</span></div>
+        <div><b id="fgwon">$0.00</b><span>won</span></div>
+        </div>
+        </div>
+      <div class="rail">
+        <div class="symcols">
+          <div><h2>Eggs</h2><div id="eggcol"></div></div>
+          <div><h2>Chests</h2><div id="chestcol"></div></div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- -------------------------------------------------------- meters -->
+    <div class="meters">
+      <div class="meter"><span>Credit balance</span><b id="credits">$0.00</b></div>
+      <div class="meter win"><span>Total win</span><b id="lastwin">$0.00</b></div>
+      <div class="meter right">
+        <div class="payback">
+          <span>Payback <em style="font-style:normal;color:#7fe07f" id="pbnum">—</em></span>
+          <div class="paybar"><span class="paychan"><i id="pbfill"></i></span></div>
+          <div class="pbrow"><span>80%</span><span>98%</span></div>
+        </div>
+        <div><span>Bet</span><b id="betamt">$0.00</b></div>
+      </div>
+    </div>
+
+    <!-- ---------------------------------------------------------- lair -->
+    <div class="lair" id="lair">
+      <div class="floor"></div><div class="beast"></div>
+      <div class="lairmain">
+        <div class="lairhead"><b id="lairmsg">The clutch hatches</b><em id="lairsub">Open one.</em></div>
+        <div class="choice" id="choice"></div>
+        <div class="fgstart" id="fgstart" hidden>
+          <div class="count" id="fgcount">0</div>
+          <div class="lab">free games</div>
+          <p class="ask">You deal each one.</p>
+          <div class="row">
+            <button id="fgplay"><b>Play</b><span>press Draw for every game</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="ladpanel">
+        <h2 style="margin:0 0 6px;font:700 9px/1 sans-serif;letter-spacing:.2em;color:var(--dim);text-transform:uppercase">Free games</h2>
+        <div class="depth"><b id="depthnum">0</b><span id="depthamt">to play</span>
+          <em id="depthadd">&nbsp;</em></div>
+      </div>
+    </div>
+
+    <!-- ---------------------------------------------------------- help -->
+    <div class="helpwrap" id="helpwrap">
+      <div class="helpcard">
+        <div class="helphead"><b id="helptitle">How to play</b>
+          <button id="helpx"><img class="btnicon" src="assets/ui/icon_close.png" alt="">Close</button></div>
+
+        <!-- 1 --------------------------------------------------- the basics -->
+        <div class="hpage on" data-page="1">
+          <div class="helpcols">
+            <div>
+              <h3>The game</h3>
+              <p class="prose">Mark between <b>four</b> and <b>ten</b> numbers on the board.
+                The machine then draws <b>twenty</b> numbers out of eighty. Every number you
+                marked that comes out is a <b>catch</b>.</p>
+              <h3>The table follows your marks</h3>
+              <p class="prose">There is no spot button. Mark a fifth number and you are
+                playing the five-spot table; unmark it and you are back on the four. The
+                <b>PAYS</b> panel always shows the table you would be paid from if you drew
+                right now. Below four marks there is no table, and <b>DRAW</b> stays dark.</p>
+              <h3>Your bet</h3>
+              <p class="prose"><b>BET +</b> and <b>&minus; BET</b> step the wager. The
+                <b>5&cent;</b> and <b>25&cent;</b> buttons choose how big a step is. Every
+                win on the table is shown in money at the bet you have set, so raising the
+                bet raises every line on the paytable with it.</p>
+            </div>
+            <div>
+              <h3>This game pays</h3>
+              <p class="bignum" id="hpays">—</p>
+              <p class="prose">Catch counts that pay at your current marks and bet.</p>
+              <table id="oddstab"></table>
+              <h3>Maximum award</h3>
+              <p class="bignum" id="maxaward">$800.00</p>
+              <p class="prose">Per game round, base win and features combined. If a round
+                would pay more than this, it pays this.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 ------------------------------------------------- eggs & chests -->
+        <div class="hpage" data-page="2">
+          <div class="helpcols">
+            <div>
+              <h3>Eggs — the short run</h3>
+              <p class="prose">Before the draw, <b id="hne">4</b> <b>eggs</b> are placed on
+                numbers you did <b>not</b> mark. Every egg that comes out hatches. Hatch
+                enough and a screen of covered eggs appears — <b>open one</b>, and it holds
+                your number of free games:</p>
+              <table id="heggtab"></table>
+              <p class="prose">The eggs sit on numbers you didn't take, so an egg coming
+                out is always a coin that missed your board. That is the trade.</p>
+              <h3>Chests — the long run, and the Hoard</h3>
+              <p class="prose"><b id="hnc">5</b> <b>chests</b> are placed the same way,
+                never on your numbers and never on an egg.</p>
+              <table id="hchesttab"></table>
+              <p class="prose">Land eggs and chests in the same game and you are awarded
+                both, added together.</p>
+            </div>
+            <div>
+              <h3>The Hoard Bonus</h3>
+              <p class="prose">Every chest out is the rarest thing on this machine, and
+                it is the one award that <b>cannot pay nothing</b>.
+                <b id="hpicktiles">4</b> chests come up; you open one; it holds
+                <b id="hpickrange">10× to 40×</b> your bet, in cash, and the smallest of
+                them is still <b id="hpickmin">10×</b>.<br><br>
+                What is inside each one is shuffled and <b>locked before you are shown
+                anything</b>, so every chest is equally likely to hold every amount —
+                there is no way to pick well and no way to pick badly. When you open one,
+                the others open too, so you can see it.</p>
+              <h3>Free games</h3>
+              <p class="prose">A free game deals the same ticket you were playing, at the
+                same bet, and costs nothing. The room changes while they run.<br><br>
+                A free game is a <b>full game</b>. The eggs and chests are still there, so
+                a free game can <b>win more free games</b> — the counter goes up in the
+                middle of a run — and it can open the <b>pick</b> just like a paid one.
+                That is why the eggs and chests are still worth watching once the feature
+                has started.</p>
+              <h3>The stack — free games only</h3>
+              <p class="prose">Once the free games start the eggs and chests stop being
+                triggers and start being <b>multipliers</b>, and a third symbol appears
+                that exists nowhere else — <b>the X</b>, a coin worth <b id="hxcoin">one
+                bet</b> the moment it is drawn.</p>
+              <table id="hstacktab"></table>
+              <p class="prose">The eggs and chests <b>multiply together</b>, and they
+                multiply the X's coin along with whatever you caught. Two chests short of
+                nothing is still nothing; three chests and the X on a round that caught
+                nothing is five bets, and every egg and every chest together is
+                <b id="hstacktop">&times;180</b>.<br><br>
+                The stack is whatever <b>that</b> draw put on the board. It does not
+                carry from one free game to the next — each one starts again.</p>
+              <h3>The maximum still applies</h3>
+              <p class="prose">A free game is a game round, so the
+                <b id="hmax2">$800.00</b> limit is on it too, and the pick lands on top of
+                whatever the round already paid.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 ---------------------------------------------------- the meters -->
+        <div class="hpage" data-page="3">
+          <div class="helpcols">
+            <div>
+              <h3>Payback</h3>
+              <p class="bignum" id="hpayback">—</p>
+              <p class="prose">The theoretical return of the exact game you have set up —
+                this bet, this many marks. It is the long-run share of everything wagered
+                that comes back as wins, and it already counts the eggs, the lair and the
+                maximum award.<br><br>
+                It moves when you change your bet or your number of marks, because those
+                are different games with different tables.<br><br>
+                <b>A bigger bet pays back more.</b> The return climbs with every step up
+                the bet ladder — from about <b>86%</b> at the smallest bet to about
+                <b>97%</b> at the largest. That is the same wager buying a better game,
+                not just bigger numbers, and this meter is where you can see it.</p>
+              <h3>Speed and sound</h3>
+              <p class="prose"><b>SPEED</b> sets how fast the coins land — slowest, slow,
+                normal, fast, turbo. Turbo drops the whole draw in about a quarter of a
+                second and lets the misses fall quiet, so only your hits speak.
+                <b>SOUND</b> steps through off, quiet, normal and loud. Both are
+                remembered, both are yours, and neither touches what anything pays.</p>
+            </div>
+            <div>
+              <h3>Meters</h3>
+              <p class="prose">Kept across sessions on this machine, the way a cabinet keeps
+                its hard meters.</p>
+              <table id="metertab"></table>
+              <p class="prose" style="margin-top:10px">Measured return is what has actually
+                come back so far. Over a short run it will sit well above or well below
+                theoretical — that gap is the game, and it closes only over a very large
+                number of plays.</p>
+              <button id="meterreset" style="margin-top:4px;padding:7px 12px">Reset meters</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 ------------------------------------------------------- admin -->
+        <div class="hpage" data-page="4">
+          <div class="helpcols">
+            <div>
+              <h3>Credits</h3>
+              <p class="bignum" id="admincredits">$0.00</p>
+              <p class="prose">Demo money. This panel exists so the machine can be played
+                for as long as you like without the credit meter getting in the way —
+                it adds credits and nothing else. <b>It cannot touch an outcome.</b>
+                What the game pays is decided by the paytable, the eggs and the chests,
+                none of which can see this panel or the meters.</p>
+              <div class="adminrow">
+                <button data-add="1000">+ $10</button>
+                <button data-add="5000">+ $50</button>
+                <button data-add="20000">+ $200</button>
+              </div>
+              <div class="adminrow">
+                <button id="adminset">Set to $40.00</button>
+                <button id="adminzero">Set to $0.00</button>
+              </div>
+            </div>
+            <div>
+              <h3>Meters</h3>
+              <table id="admintab"></table>
+              <p class="prose" style="margin-top:10px">The full set, with theoretical for
+                comparison, is on the previous page.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="helpnav">
+          <button id="hprev">&larr; Back</button>
+          <span class="hdots" id="hdots"></span>
+          <button id="hnext">Next &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+  </div></div>
+
+  <!-- ----------------------------------------------------- button bar -->
+  <div class="bar">
+    <button id="cashout">Cashout</button>
+    <button id="menu">Menu</button>
+    <button id="help"><img class="btnicon" src="assets/ui/icon_options.png" alt="">Info &amp;<br>Options</button>
+    <button id="speed">Speed<small id="speedlab">Normal</small></button>
+    <button id="sound"><img class="btnicon" id="soundicon" src="assets/ui/icon_vol_2.png" alt="">Sound<small id="soundlab">Normal</small></button>
+    <button id="clr">Clear</button>
+    <button class="draw" id="bet">Draw</button>
+    <div class="denom" id="denoms">
+      <div class="betnow" id="betnow">$0.25</div>
+      <button id="betdn">&minus; Bet</button>
+      <button id="betup">Bet +</button>
+      <button class="step" id="step5">5&cent; steps</button>
+      <button class="step" id="step25">25&cent; steps</button>
+    </div>
+  </div>
+</div>
+
+<script src="machine.js"></script>
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="audio.js"></script>
+<script type="module" src="casino-ledger.js"></script>
+<script>
+(function () {
+'use strict';
+// A keno machine that cannot read its paytable does not guess.
+if (!window.WyrmData || !window.Wyrm || !window.WyrmMachine) {
+  document.body.innerHTML = '<div style="color:#e0705a;font:700 14px/1.6 sans-serif;' +
+    'letter-spacing:.2em;text-transform:uppercase;padding:40px;text-align:center">' +
+    'The ledger is missing. Call someone.</div>';
+  return;
+}
+var D = window.WyrmData, W = window.Wyrm, M = window.WyrmMachine;
+
+/* Audio is optional and is deliberately NOT in the guard above.  A machine with
+   no audio.js, no output device, or a browser that refuses an AudioContext must
+   still deal keno -- every call on this shim is a no-op in that case.
+   docs/70-AUDIO.md. */
+var A = window.WyrmAudio || {
+  start: function () {}, resume: function () {}, play: function () {}, stopAll: function () {},
+  hit: function () {}, miss: function () {}, resetLadder: function () {},
+  cycle: function () { return { name: 'Off' }; }, levelName: function () { return 'Off'; },
+  muted: function () { return true; }
+};
+// Browsers will not start audio outside a gesture.  First touch anywhere arms it.
+['pointerdown', 'keydown'].forEach(function (ev) {
+  document.addEventListener(ev, function armAudio() {
+    A.start();
+    document.removeEventListener(ev, armAudio);
+  }, { capture: true });
+});
+
+/* ---------------------------------------------------------------- config */
+var TIER   = M.tier;
+var DENOMS = M.denominations;
+var ST     = D.bonus.structure;
+var NEGGS  = ST.eggs, NCHESTS = ST.chests, AWARDS = ST.awards;
+var NX = ST.x_symbols || 0, FREE_MULT = ST.free_mult || {};
+/* THE X IS A COIN (v0.26.0-alpha). Each X drawn in a free game is worth this many bets,
+   added to the catch win before the stack multiplies. It was a flat x2, and x2 of
+   nothing was nothing 84% of the time. docs/30-THE-STACK.md section 10. */
+var XCOIN = ST.x_coin || 0;
+/* THE RETRIGGER RUNG (v0.27.0-alpha): eggs out in a free game ADD games to the run.
+   Read through the resolver's own rule so the plate and the run cannot disagree. */
+var RETRIG = ST.free_retrigger || {};
+var K_FREE = ST.free_games_per_round_eff || ST.free_games_per_round;
+var FREE_CAP = ST.free_game_cap || 500;
+var WORDS = ['zero','one','two','three','four','five','six','seven','eight','nine','ten'];
+
+function placedFor(aw) { return aw.sym === 'egg' ? NEGGS : NCHESTS; }
+/* The bonus tiles get the big painted plates, not the little board symbols: the egg in
+   its nest for an egg award, the chest for a chest one. The 26px board sprite is the
+   right thing inside a cell and the wrong thing on a 150px tile. */
+function artFor(aw) { return aw.sym === 'egg' ? 'assets/pick_egg.png' : 'assets/sym_chest.png'; }
+function meanOf(a) { var t = 0, q; for (q = 0; q < a.length; q++) t += a[q]; return t / a.length; }
+function rangeOf(aw) {
+  return aw.values[0] + '\u2013' + aw.values[aw.values.length - 1];
+}
+/* Which awards an exact symbol count opens. -1 never matches, so passing it for one set
+   asks "what would the OTHER set pay on its own" -- used by the draw commentary. */
+function awardsFor(e, c) { return W.awardsFor(ST, e, c); }
+
+/* the cash amounts on offer at a given chest count, or [0] -- mirrors bonus6.cashFor */
+/* the stack a free game is paying, from the resolver's own rule -- never a second
+   guess at it. docs/30-THE-STACK.md. */
+function stackFor(e, c, x) { return W.stackFor(ST, e, c, x); }
+
+/* the rungs of one symbol, biggest first, for the panel and the help screen */
+function rungs(sym) {
+  var t = FREE_MULT[sym] || {}, out = [], k;
+  for (k in t) out.push([+k, t[k]]);
+  out.sort(function (a, b) { return b[0] - a[0]; });
+  return out;
+}
+
+/* the cash amounts on offer at a given chest count, or [0] -- mirrors bonus7.cashFor */
+/* P(exactly g_i of set i drawn | caught k of n), for any number of symbol sets.
+   Falling factorials, not C(80,20) -- same reason as everywhere else. */
+function jointP(n, k, groups) {
+  var tot = 0, m = 0, q, un = 80 - n, dr = 20 - k, ways = 1;
+  for (q = 0; q < groups.length; q++) { tot += groups[q][0]; m += groups[q][1]; }
+  if (m > dr || tot - m > un - dr || un < tot) return 0;
+  for (q = 0; q < groups.length; q++) ways *= W.combF(groups[q][0], groups[q][1]);
+  return ways * W.falling(dr, m) * W.falling(un - dr, tot - m) / W.falling(un, tot);
+}
+
+function cashFor(ci) {
+  var q;
+  for (q = 0; q < AWARDS.length; q++)
+    if (AWARDS[q].kind === 'cash' && AWARDS[q].sym === 'chest' && AWARDS[q].count === ci)
+      return AWARDS[q].values;
+  return [0];
+}
+
+/* FREE GAMES ARE DEALT BY HAND. There is no auto-roll any more (removed at
+   v0.21.0-alpha): every free game waits for the player to press Draw, the same button
+   they bet with. The pace is theirs, and it cannot touch an outcome -- every round is
+   resolved from the draw alone and the draw does not know who pressed the button. */
+var autoFree = false;
+/* THE SPEED LADDER, shifted up one rung at v0.22.0-alpha.
+   What used to be NORMAL is now SLOW: a full 3.6s draw is the pace you choose when you
+   want to watch it, not the pace you get by default. NORMAL is the old Fast, which is
+   the speed the draw was always most readable at, and TURBO is a dump -- the twenty
+   coins still land in order, they just land in about a quarter of a second, so it reads
+   as one motion rather than twenty events.
+       Slowest 1.35   Slow 1.00   Normal 0.55   Fast 0.28   Turbo 0.07
+   k multiplies every duration in ms(). Nothing here touches an outcome: the same draw
+   resolves the same way at every rung. */
+var SPEEDS = [{ n:'Slowest', k:1.35 }, { n:'Slow', k:1 }, { n:'Normal', k:0.55 },
+              { n:'Fast', k:0.28 }, { n:'Turbo', k:0.07, hush:true }];
+var SPEED_DEFAULT = 2;                             // Normal -- the old Fast
+var SPEED_KEY = 'wyrm.speed.v1';
+
+var qs = new URLSearchParams(location.search);
+var FORCE_BONUS = qs.get('bonus') === '1', FORCE_CLIP = qs.get('clip') === '1';
+if (FORCE_BONUS || FORCE_CLIP) {
+  var ban = document.createElement('div'); ban.className = 'testban';
+  ban.textContent = 'test mode — ' + (FORCE_CLIP ? 'forced over-cap round' : 'forced bonus');
+  document.querySelector('.inner').appendChild(ban);
+}
+
+/* ----------------------------------------------------------------- state */
+var rng = W.cryptoRng();
+var S = {
+  phase:'PICKING', denom:'0.25', spots:7, want:7, step:25, picks:[], credits:M.startCredits,
+  drawn:[], drawnSet:{}, eggs:[], chests:[], layout:null, depth:0, busy:false,
+  hoard:0, speed:SPEED_DEFAULT, timers:[], skip:null
+};
+/* Speed is remembered, the way the sound level and the free-game mode are. A player who
+   wants Turbo should not have to say so again on every reload. */
+try {
+  var sv = window.localStorage && window.localStorage.getItem(SPEED_KEY);
+  if (sv !== null && sv !== undefined && SPEEDS[+sv]) S.speed = +sv;
+} catch (e) {}
+var LEDGER = { rounds:0, bets:0, awards:0 },
+    LAST = { round:null, plate:'' };
+
+/* HARD METERS.
+ *
+ * Cumulative coin-in and coin-out, kept across sessions, the way a cabinet keeps
+ * its hard meters. Every real machine has these and a regulator reads them: they
+ * are how you show that what the machine actually paid over a long run agrees
+ * with the return it was certified at.
+ *
+ * They are a RECORD, never an input. Nothing in resolveRound() can see them, and
+ * nothing here feeds back into an outcome -- see docs/22-METERS.md for why that
+ * line matters and what would happen to the certification if it were crossed.
+ */
+var METER_KEY = 'wyrm.meters.v1';
+var HM = { rounds:0, inCents:0, outCents:0, eggFires:0, chestFires:0, clips:0, best:0 };
+try {
+  var stored = window.localStorage && window.localStorage.getItem(METER_KEY);
+  if (stored) {
+    var o = JSON.parse(stored);
+    for (var mk in HM) if (typeof o[mk] === 'number') HM[mk] = o[mk];
+  }
+} catch (e) { /* private mode: meters run for this session only */ }
+function meterSave() {
+  try { window.localStorage && window.localStorage.setItem(METER_KEY, JSON.stringify(HM)); }
+  catch (e) {}
+}
+function meterRound(betC, awardC, r) {
+  HM.rounds++; HM.inCents += betC; HM.outCents += awardC;
+  if (r.eggFired) HM.eggFires++;
+  if (r.chestFired) HM.chestFires++;
+  if (r.clipped) HM.clips++;
+  HM.freeGames = (HM.freeGames || 0) + (r.freeGamesRun || 0);
+  HM.picks = (HM.picks || 0) + (r.picksRun || 0);
+  if (awardC > HM.best) HM.best = awardC;
+  meterSave();
+}
+
+/* -------------------------------------------------------------- elements */
+var $ = function (id) { return document.getElementById(id); };
+var elGrid=$('grid'), elMsg=$('msg'), elBet=$('bet'), elLair=$('lair');
+
+/* ------------------------------------------------------------ build once */
+/* Board numerals as sprites. Both colourways are emitted and cross-faded by CSS,
+   so marking a square never touches an image src. docs/60-ASSET-MANIFEST.md 15. */
+function digits(n, tone) {
+  var out = '', str = String(n), j;
+  for (j = 0; j < str.length; j++)
+    out += '<i style="background-image:url(assets/digits/num_' + tone + '_' + str[j] + '.png)"></i>';
+  return '<span class="dg ' + tone + '">' + out + '</span>';
+}
+
+var cells = [];
+for (var i = 1; i <= 80; i++) {
+  var c = document.createElement('div');
+  c.className = 'cell'; c.dataset.n = i;
+  c.innerHTML = '<span class="coin"></span>' +
+                '<span class="num">' + digits(i, 'bronze') + digits(i, 'gold') +
+                '</span><span class="x"></span>' +
+                '<span class="egg" hidden></span><span class="chest" hidden></span>' +
+                '<span class="xsym" hidden></span>';
+  c.addEventListener('click', onCell);
+  elGrid.appendChild(c); cells[i] = c;
+}
+/* Bet is stepped, not chosen from a grid.
+   Every certified denomination is a whole number of 5c: 5, 10, 25, 50, 100, 200.
+   The 25c ladder is the subset that is also a whole number of 25c. Stepping walks
+   one of those two ladders -- it cannot invent 15c or 20c, because a bet with no
+   paytable behind it has no certified return. Adding those would mean regenerating
+   gen2.py for two more denominations. */
+function betLadder() {
+  return DENOMS.filter(function (d) {
+    return Math.round(Number(d) * 100) % S.step === 0;
+  });
+}
+function stepBet(dir) {
+  if (S.phase !== 'PICKING') return;
+  var lad = betLadder(), at = lad.indexOf(S.denom);
+  if (at < 0) {                                  // current bet is off this ladder
+    for (at = 0; at < lad.length - 1; at++) if (Number(lad[at]) >= Number(S.denom)) break;
+    setDenom(lad[at]);
+    return;
+  }
+  var next = lad[at + dir];
+  if (next) { A.play('pick_on'); setDenom(next); }
+}
+function setStep(v) {
+  if (S.phase !== 'PICKING') return;
+  S.step = v; A.play('pick_off');
+  var lad = betLadder();
+  if (lad.indexOf(S.denom) < 0) {                // snap up to the nearest legal bet
+    var pick = lad[0], i2;
+    for (i2 = 0; i2 < lad.length; i2++) if (Number(lad[i2]) >= Number(S.denom)) { pick = lad[i2]; break; }
+    setDenom(pick);
+  }
+  paint();
+}
+$('betdn').onclick  = function (e) { e.stopPropagation(); stepBet(-1); };
+$('betup').onclick  = function (e) { e.stopPropagation(); stepBet(1); };
+$('step5').onclick  = function (e) { e.stopPropagation(); setStep(5); };
+$('step25').onclick = function (e) { e.stopPropagation(); setStep(25); };
+
+$('clr').onclick     = function (e) { e.stopPropagation(); if (S.phase === 'PICKING') { A.play('pick_off'); S.picks = []; paint(); } };
+$('speed').onclick   = function (e) {
+  e.stopPropagation(); A.play('pick_off');
+  S.speed = (S.speed + 1) % SPEEDS.length;
+  try { window.localStorage && window.localStorage.setItem(SPEED_KEY, String(S.speed)); }
+  catch (er) {}
+  paint();
+};
+$('cashout').onclick = function (e) { e.stopPropagation(); if (S.phase === 'PICKING') { A.play('cashout'); say('Cashed out', fmtC(S.credits)); } };
+$('menu').onclick    = function (e) { e.stopPropagation(); A.play('pick_off'); say('No menu in the prototype'); };
+// The fader.  Off / Quiet / Normal / Loud, Normal = 0.5 and the level the trim
+// table in audio.js was balanced against.  Choice persists across reloads.
+$('sound').onclick   = function (e) {
+  e.stopPropagation();
+  A.start();                                   // this click is the gesture, if it is the first
+  var lv = A.cycle();
+  $('soundlab').textContent = lv.name;
+  soundIcon();
+  A.play('pick_on');                           // hear the level you just chose
+};
+// The four Kibyra volume glyphs line up exactly with the four fader positions --
+// mute, one wave, two, three.  docs/70-AUDIO.md section 2.
+function soundIcon() {
+  var i = A.levels ? A.level : 0;
+  $('soundicon').src = 'assets/ui/icon_vol_' + (i > 3 ? 3 : i < 0 ? 0 : i) + '.png';
+}
+elBet.onclick        = function (e) { e.stopPropagation(); if (S.picks.length < 4) quickPick(); else placeBet(); };
+// "touch anywhere dumps the remainder" means the board, not the chrome
+document.addEventListener('click', function (e) {
+  if (!S.skip) return;
+  if (e.target.closest('.bar, .rail, .tops, .meters, .helpwrap, .lair, .marquee')) return;
+  S.skip();
+});
+
+/* --------------------------------------------------------------- helpers */
+function betCents() { return Math.round(Number(S.denom) * 100); }
+function cents(mult) { return mult * betCents(); }
+function money(mult) { return cents(mult) / 100; }
+function fmt(v) { return W.fmt(v); }
+function fmtC(c) { return W.fmt(c / 100); }
+/* Floored at 10ms -- about one display frame. Turbo scales the 210ms lead coin down to
+   15ms, which is still one coin per frame; without the floor the shorter waits would
+   collapse several coins into a single frame and the draw would read as a jump cut
+   rather than the fast fall it is meant to be. */
+function ms(v) { return Math.max(10, Math.round(v * SPEEDS[S.speed].k)); }
+function after(t, fn) { var h = setTimeout(fn, t); S.timers.push(h); return h; }
+function clearTimers() { S.timers.forEach(clearTimeout); S.timers = []; }
+function say(main, pay) {
+  var line = [main, pay].filter(Boolean).join(' | ');
+  if (line) LAST.plate = line;
+  elMsg.innerHTML = (main || '') + (pay ? '<i>' + pay + '</i>' : '');
+}
+
+/* --------------------------------------------------------------- picking */
+/* There is no spot-count button any more. The paytable follows however many
+   squares are marked: mark a fifth and you are playing the five-spot table.
+   Four is the floor and ten is the ceiling, and DRAW stays dead below four. */
+function onCell(e) {
+  if (S.phase !== 'PICKING') return;
+  var n = +e.currentTarget.dataset.n, at = S.picks.indexOf(n);
+  if (at >= 0) { S.picks.splice(at, 1); A.play('pick_off'); }
+  else if (S.picks.length < 10) { S.picks.push(n); A.play('pick_on'); }
+  else { say("That's the Ledger. Ten is the most."); return; }
+  syncSpots();
+  paint();
+}
+
+// The table on the glass is the one that would pay if you drew right now.
+// Below four marks there is no legal table, so the four-spot one shows dimmed.
+function syncSpots() {
+  S.spots = Math.min(10, Math.max(4, S.picks.length));
+}
+function quickPick() {
+  if (S.phase !== 'PICKING') return;
+  var pool = [], k;
+  for (k = 1; k <= 80; k++) if (S.picks.indexOf(k) < 0) pool.push(k);
+  var need = Math.min(10, Math.max(4, S.want)) - S.picks.length;
+  if (need > 0) { S.picks = S.picks.concat(W.sampleFrom(rng, pool, need)); A.play('pick_on'); }
+  syncSpots();
+  paint();
+}
+/* Changing the bet keeps the board.
+   30-GAME-SPEC section 10 used to clear it, because the two table shapes had
+   different ROWS -- catch-0 paid on the capped tables and not on the jackpot ones,
+   so the same marks could mean a structurally different ticket either side of the
+   change. Nothing pays on catch-0 anywhere as of v0.10.0-alpha, so every table now
+   has the same rows and only the money differs. The marks carry across and the
+   paytable simply re-prices them. */
+function setDenom(d) {
+  if (S.phase !== 'PICKING' || d === S.denom) return;
+  S.denom = d;
+  syncSpots();
+  say(S.picks.length ? 'Same numbers, new bet' : 'New table');
+  paint();
+}
+// Kept for the harness: choose a target count, then quickPick() fills to it.
+function setSpots(n) {
+  if (S.phase !== 'PICKING') return;
+  S.want = Math.min(10, Math.max(4, n));
+  S.picks = []; syncSpots(); paint();
+}
+
+/* ----------------------------------------------------------------- paint */
+function paint() {
+  for (var k = 1; k <= 80; k++) {
+    var c = cells[k], picked = S.picks.indexOf(k) >= 0;
+    c.className = 'cell' + (picked ? ' pick' : '') + (S.phase === 'PICKING' ? '' : ' locked');
+    if (S.phase === 'PICKING') {
+      c.querySelector('.x').textContent = '';
+      c.querySelector('.egg').hidden = true;
+      c.querySelector('.chest').hidden = true;
+      c.querySelector('.xsym').hidden = true;
+    }
+  }
+
+  $('credits').textContent = fmtC(S.credits);
+  $('betamt').textContent  = fmtC(betCents());
+  $('marked').textContent  = S.picks.length;
+  var enough = S.picks.length >= 4;
+  $('ptname').textContent  = enough ? 'Pays — ' + W.SPOT_NAMES[S.spots]
+                                    : 'Pays — mark four';
+  $('betnow').textContent  = fmtC(betCents());
+  $('step5').classList.toggle('on', S.step === 5);
+  $('step25').classList.toggle('on', S.step === 25);
+  $('betdn').disabled = S.phase !== 'PICKING' || betLadder().indexOf(S.denom) <= 0;
+  $('betup').disabled = S.phase !== 'PICKING' ||
+                        betLadder().indexOf(S.denom) === betLadder().length - 1;
+  $('speedlab').textContent = SPEEDS[S.speed].n;
+  $('soundlab').textContent = A.levelName();       // reflects the stored choice at boot
+  soundIcon();
+  paintFree();
+
+  var pb = payback();
+  $('pbnum').textContent = (pb * 100).toFixed(2) + '%';
+  /* 80-98, not 80-96. The scale was built when every denomination returned the same
+     92% at tier 6; the bet ladder now tops out at 97.2% and the old range pegged the
+     bar at full for the whole top denomination. */
+  $('pbfill').style.width = Math.max(0, Math.min(100, (pb - 0.80) / 0.18 * 100)) + '%';
+
+  drawPaytable();
+
+  var poor = S.credits < betCents();
+  if (S.phase === 'FREE_READY') {
+    elBet.disabled = false;
+    elBet.textContent = 'Free game \u2014 ' + S.free.left + ' left';
+  } else {
+    elBet.disabled = S.phase !== 'PICKING' || poor;
+    elBet.textContent = poor ? 'Not enough' : (enough ? 'Draw' : 'Quick pick');
+  }
+  $('paytable').classList.toggle('dim', !enough);
+  if (S.phase === 'FREE_READY') return;
+  if (S.phase === 'PICKING' && !elMsg.textContent) {
+    say(S.picks.length === 0 ? 'Mark four to ten numbers'
+      : !enough ? 'Four at least — ' + (4 - S.picks.length) + ' to go' : '');
+  }
+}
+
+/* Exact theoretical return for the game type on screen.
+   A free game is a FULL ROUND -- it can retrigger, and it can open the chest pick -- so
+   the value of a round is defined in terms of itself and the series closes:
+
+       R = A / (1 - k)      A = what one round is worth, k = free games per round
+
+   Same expression bonus4.py solves against. If the two ever disagree the harness says
+   so, cell by cell, in section 2. docs/26-FOUR-AND-FIVE.md. */
+function payback() {
+  var pays = D.paytables[S.denom].tiers[String(TIER)].pays[String(S.spots)];
+  var n = S.spots, cap = W.capFor(S.denom);
+  /* One round. `free` puts the X on the board and turns the eggs and chests into the
+     stack; the multiplier goes INSIDE the cap, which is most of why the top of the
+     range is affordable at all. */
+  function A(free) {
+    var nx = free ? NX : 0, t = 0, k, j, ci, xi, z;
+    for (k = 0; k <= n; k++) {
+      var pk = W.pCatch(n, k);
+      if (!pk) continue;
+      var base = pays[String(k)] || 0;
+      for (j = 0; j <= NEGGS; j++) {
+        for (ci = 0; ci <= NCHESTS; ci++) {
+          for (xi = 0; xi <= nx; xi++) {
+            var q = jointP(n, k, [[NEGGS, j], [NCHESTS, ci], [nx, xi]]);
+            if (!q) continue;
+            var bw = (base + (free ? xi * XCOIN : 0)) * (free ? stackFor(j, ci, xi) : 1);
+            var amounts = cashFor(ci), acc = 0;
+            for (z = 0; z < amounts.length; z++) acc += Math.min(bw + amounts[z], cap);
+            t += pk * q * acc / amounts.length;
+          }
+        }
+      }
+    }
+    return t;
+  }
+  return A(false) + K_FREE * A(true);
+}
+
+function drawPaytable() {
+  var pays = D.paytables[S.denom].tiers[String(TIER)].pays[String(S.spots)];
+  var keys = Object.keys(pays).map(Number).sort(function (a, b) { return b - a; });
+  $('paytable').innerHTML = keys.map(function (k) {
+    return '<tr class="' + (k === 0 ? 'zero' : '') + '" data-c="' + k + '"><td>' + k +
+           '</td><td>' + fmt(money(pays[k])) + '</td></tr>';
+  }).join('');
+}
+
+/* The two top panels that describe the feature, and the one that reports it while it
+   runs. Built from the structure block rather than written into the markup, so changing
+   EGGS or CHESTS in bonus3.py moves the machine's own face with it. */
+function buildTrigPanels() {
+  function row(el, n, src) {
+    var h = '', q;
+    for (q = 0; q < n; q++) h += '<img src="' + src + '" alt="">';
+    $(el).innerHTML = h;
+  }
+  row('trigeggs', NEGGS, 'assets/sym_egg.png');
+  row('trigchests', NCHESTS, 'assets/sym_chest.png');
+
+  /* Written from the awards table, not into the markup, so adding a rung in bonus6.py
+     moves the machine's own face with it. */
+  function lines(sym) {
+    var out = [], q;
+    for (q = 0; q < AWARDS.length; q++) {
+      var aw = AWARDS[q];
+      if (aw.sym !== sym) continue;
+      out.push('<b>' + aw.count + '</b> &rarr; ' + (aw.kind === 'cash'
+        ? '<b class="hot">THE HOARD BONUS</b>'
+        : '<b>' + rangeOf(aw) + ' free games</b>'));
+    }
+    return out.join('<br>');
+  }
+  $('eggrule').innerHTML = lines('egg');
+  $('chestrule').innerHTML = lines('chest');
+  var cash = null, q2;
+  for (q2 = 0; q2 < AWARDS.length; q2++) if (AWARDS[q2].kind === 'cash') cash = AWARDS[q2];
+  $('picklab').innerHTML = cash
+    ? cash.values[0] + '&times; &ndash; ' + cash.values[cash.values.length - 1] +
+      '&times; the bet, guaranteed'
+    : '';
+  /* What the same symbols do once the feature starts. Written from free_mult, so a
+     rung added in bonus8.py shows up on the machine's own face. */
+  function stackLine(sym, label) {
+    var r = rungs(sym);
+    if (!r.length) return '';
+    return label + ' ' + r.slice().reverse().map(function (p) {
+      return '<b>' + p[0] + '</b>&rarr;&times;' + p[1]; }).join(' ');
+  }
+  $('climblab').innerHTML = 'IN FREE GAMES they multiply instead, and they stack: ' +
+    [stackLine('egg', 'eggs'), stackLine('chest', 'chests'),
+     FREE_MULT.x ? 'the <b>X</b>&rarr;&times;' + FREE_MULT.x['1'] : '',
+     XCOIN ? 'the <b>X</b> is a coin worth <b>' + XCOIN + '</b> bet, and the stack multiplies it' : '']
+      .filter(Boolean).join(' &nbsp;·&nbsp; ') +
+    ' &nbsp;·&nbsp; up to <b>&times;' + ST.top_stack + '</b>' +
+    (RETRIG.egg ? ' &nbsp;·&nbsp; and eggs ADD games: ' + Object.keys(RETRIG.egg).map(Number)
+        .sort(function (a, b) { return a - b; }).map(function (th) {
+          return '<b>' + th + '</b>&rarr;+' + RETRIG.egg[String(th)]; }).join(' ') : '');
+
+  function col(el, n, cls, src, id) {
+    var h = '', q;
+    for (q = 0; q < n; q++)
+      h += '<div class="slot ' + cls + '" id="' + id + q + '"><img src="' + src +
+           '" alt=""></div>';
+    $(el).innerHTML = h;
+  }
+  col('eggcol', NEGGS, '', 'assets/sym_egg.png', 'eslot');
+  col('chestcol', NCHESTS, 'chest', 'assets/sym_chest.png', 'cslot');
+}
+
+function paintFree() {
+  var f = S.free;
+  $('fgbody').classList.toggle('live', !!f);
+  if (!f) {
+    $('fgtitle').textContent = 'Free games';
+    $('fgleft').textContent = '\u2014';
+    $('fgleftlab').textContent = 'not running';
+    $('fgmult').innerHTML = '&times;1';
+    $('fgmultlab').textContent = 'this game';
+    $('fgwon').textContent = fmt(0);
+    return;
+  }
+  $('fgtitle').textContent = 'Free games \u2014 ' + f.total;
+  $('fgleft').textContent = f.left;
+  $('fgleftlab').textContent = f.left === 1 ? 'last one' : 'to go';
+  $('fgmult').innerHTML = '&times;' + (f.mult || 1);
+  $('fgmultlab').textContent = f.stackLab || 'this game';
+  $('fgwon').textContent = fmt(money(f.won));
+}
+
+/* ------------------------------------------------------------------- bet *//* ------------------------------------------------------------------- bet */
+function placeBet() {
+  if (S.phase === 'FREE_READY') return dealFreeGame();
+  if (S.phase !== 'PICKING') return;
+  if (S.picks.length < 4 || S.picks.length > 10) return;
+  if (S.credits < betCents()) return;
+  syncSpots();
+  clearTimers();
+  A.play('bet');
+  S.credits -= betCents();
+  S.freeCents = 0; S.freeWonCount = 0; S.paidRound = null;
+  spin(false);
+}
+
+/* ONE SPIN, paid or free. The only difference is that a free game does not take a bet
+   -- handled by the caller -- and that its symbols build a multiplier instead of opening
+   a bonus, which is handled by the resolver. */
+function spin(free) {
+  clearTimers();
+  A.resetLadder();                 // the hit chime climbs within a round, not across rounds
+  S.phase = 'ARMED';
+  paint();
+
+  // ARMED: symbols placed and shown, BEFORE the draw.  30-GAME-SPEC section 3.
+  // The X is dealt in free games and nowhere else, which is what makes it feel like a
+  // different room rather than a different paytable.
+  var sym = W.placeSymbols(rng, S.picks, NEGGS, NCHESTS, free ? NX : 0);
+  S.eggs = sym.eggs; S.chests = sym.chests; S.xs = sym.xs || [];
+  S.drawn = W.drawTwenty(rng);
+
+  if (FORCE_BONUS || FORCE_CLIP) {
+    /* ?bonus=1 draws every egg, the common trigger; ?clip=1 draws every chest too, so
+       the pick opens and the round has a real chance of reaching the cap. */
+    var forced = FORCE_CLIP ? S.spots : Math.min(S.spots, 2);
+    var d = S.picks.slice(0, forced).concat(S.eggs);
+    if (FORCE_CLIP) d = d.concat(S.chests);
+    var pool = [], q;
+    for (q = 1; q <= 80; q++) if (d.indexOf(q) < 0) pool.push(q);
+    S.drawn = d.slice(0, 20).concat(W.sampleFrom(rng, pool, Math.max(0, 20 - d.length)));
+  }
+  S.drawnSet = W.toSet(S.drawn);
+
+  S.eggs.forEach(function (n, i) {
+    cells[n].querySelector('.egg').hidden = false;
+    $('eslot' + i).classList.remove('on');
+  });
+  S.chests.forEach(function (n, i) {
+    cells[n].querySelector('.chest').hidden = false;
+    $('cslot' + i).classList.remove('on');
+  });
+  S.xs.forEach(function (n) { cells[n].querySelector('.xsym').hidden = false; });
+  if (S.free) { S.free.mult = 1; S.free.coins = 0; S.free.stackLab = 'nothing yet'; paintFree(); }
+  say(free ? 'Free game ' + (S.free.total - S.free.left) + ' of ' + S.free.total
+           : NEGGS + ' eggs, ' + NCHESTS + ' chests. None on your numbers.');
+  after(ms(free ? 480 : 650), runDraw);
+}
+
+/* ------------------------------------------------------------------ draw */
+// 40-THEME-BIBLE section 5: ~180 ms average, quicker through the middle, easing
+// out over the last four so the pile settles rather than stopping dead.
+function cadence(i) {
+  if (i < 6)  return 210 - i * 8;
+  if (i < 16) return 165;
+  return [185, 215, 250, 290][i - 16];
+}
+
+function runDraw() {
+  S.phase = 'DRAWING';
+  A.play('draw_start');
+  elMsg.innerHTML = '';                              // no text while coins fall
+  var order = W.sampleFrom(rng, S.drawn, 20);        // presentation shuffle, same 20
+  var idx = 0, eggsSeen = 0, chestsSeen = 0, xSeen = 0, hits = 0;
+
+  /* THE REVEL.
+   *
+   * A trigger used to go by at the same 400ms as any other symbol: the third egg
+   * landed, the message plate changed, and the draw carried straight on to coin
+   * fourteen. The rarest thing that happens in a paid round got less screen time than
+   * it takes to read what it said. So when a count opens an award the draw STOPS, the
+   * symbols that did it pulse, and the plate that names the prize sits there long
+   * enough to be read.
+   *
+   * revelHold is set by land() and consumed by step(), rather than land() doing its own
+   * timing -- land() is also called nineteen times in one frame by the skip handler,
+   * and a pause it scheduled itself would fire nineteen times into an already-finished
+   * draw. Skips set nothing (silent), so tapping through still dumps instantly.
+   */
+  var revelHold = 0;
+
+  function revel(sym, aw) {
+    var mark = sym === 'egg' ? 'hatch' : 'opened';
+    var list = sym === 'egg' ? S.eggs : S.chests;
+    var pre  = sym === 'egg' ? 'eslot' : 'cslot';
+    var q, el;
+    // only the ones that have actually come out -- the rest are still just squares
+    for (q = 0; q < list.length; q++) {
+      el = cells[list[q]];
+      if (el.classList.contains(mark)) { el.classList.remove('drop'); el.classList.add('revel'); }
+    }
+    for (q = 0; q < (sym === 'egg' ? NEGGS : NCHESTS); q++) {
+      el = $(pre + q);
+      if (el && el.classList.contains('on')) el.classList.add('revel');
+    }
+    /* The hold scales with SPEED like everything else, but with a floor: Turbo would
+       otherwise reduce the rarest moment in the game to 112ms, and a player who chose a
+       fast draw did not thereby ask not to be told they had won something. The Hoard
+       Bonus is the top of the game and gets the longer stop. */
+    revelHold = Math.max(700, ms(aw && aw.kind === 'cash' ? 2400 : 1600));
+    /* Three pulses across whatever that hold turned out to be, so the animation ends
+       with the pause instead of being cut off mid-scale at the faster speeds. */
+    var beat = (revelHold / 3) + 'ms';
+    var all = elGrid.querySelectorAll('.cell.revel');
+    for (q = 0; q < all.length; q++) all[q].style.animationDuration = beat;
+    all = document.querySelectorAll('.rail .slot.revel');
+    for (q = 0; q < all.length; q++) all[q].style.animationDuration = beat;
+  }
+
+  function clearRevel() {
+    var els = elGrid.querySelectorAll('.cell.revel'), q;
+    for (q = 0; q < els.length; q++) { els[q].classList.remove('revel'); els[q].style.animationDuration = ''; }
+    els = document.querySelectorAll('.rail .slot.revel');
+    for (q = 0; q < els.length; q++) { els[q].classList.remove('revel'); els[q].style.animationDuration = ''; }
+  }
+
+  S.skip = function () {
+    clearTimers(); S.skip = null; clearRevel();
+    while (idx < 20) land(order[idx++], true);
+    after(ms(120), baseResolve);
+  };
+
+  function land(n, silent) {
+    var c = cells[n], isPick = S.picks.indexOf(n) >= 0;
+    var isEgg = S.eggs.indexOf(n) >= 0, isChest = S.chests.indexOf(n) >= 0;
+    var isX = S.xs.indexOf(n) >= 0;
+    c.classList.add(isPick ? 'hit' : 'miss', 'drop');
+    c.querySelector('.x').textContent = isPick ? 'HIT' : '✕';
+    if (isPick) { hits++; $('hitn').textContent = hits; }
+    // On a skip the remaining nineteen coins land in one frame.  Firing nineteen
+    // one-shots at once is the exact noise this mix exists to prevent, so the
+    // dumped remainder lands silent and only the egg beats speak.
+    //
+    // TURBO is a skip the player asked for in advance -- twenty coins inside 300ms --
+    // so the same rule applies, with one exception.  The MISSES go, because sixteen of
+    // them rattling past is the noise; the HITS stay, because there are only about two
+    // of them in a round and they are the one thing worth hearing.  Every other beat --
+    // eggs, chests, the X, the stingers -- speaks at every speed.
+    if (!silent && (isPick || !SPEEDS[S.speed].hush)) isPick ? A.hit() : A.miss();
+    if (isEgg) {
+      c.classList.add('hatch');
+      $('eslot' + eggsSeen).classList.add('on');
+      eggsSeen++;
+      // eggs are the bright, rising one -- a semitone up per egg
+      A.play(eggsSeen === NEGGS ? 'big_win' : 'egg_hit', { semitones: (eggsSeen - 1) * 2 });
+      if (!silent) {
+        var ea = awardsFor(eggsSeen, -1);
+        /* In a free game the eggs are multipliers, not triggers, and the stack panel
+           already animates -- pausing on every x3 would stall a twenty-game run. */
+        if (ea.length && !S.free) {
+          say(eggsSeen + ' eggs hatched.', rangeOf(AWARDS[ea[0]]) + ' FREE GAMES');
+          revel('egg', AWARDS[ea[0]]);
+        } else if (S.free) {
+          /* THE RETRIGGER RUNG: in a free game the eggs also add games to the run. Named
+             here as it happens, no hold -- the stack panel is already moving and the
+             +N lands on the plate at settle. */
+          var rt = W.retrigFor(ST, eggsSeen, 0);
+          if (rt > 0) say(eggsSeen + ' eggs hatched.', '+' + rt + ' FREE GAME' + (rt > 1 ? 'S' : ''));
+        }
+      }
+      bumpStack(eggsSeen, chestsSeen, xSeen, silent);
+    }
+    if (isChest) {
+      c.classList.add('opened');
+      $('cslot' + chestsSeen).classList.add('on');
+      chestsSeen++;
+      // the chests are the one stinger in the base game -- 40-THEME-BIBLE section 7
+      /* Chests are a different noise entirely, not a variant of the egg: the coin
+         sample rather than the wet bell, and pitched DOWN so the two never read as
+         the same event landing twice. docs/70-AUDIO.md section 5. */
+      A.play(chestsSeen >= NCHESTS ? 'bonus_trigger' : 'hoard_pile_gold',
+             { semitones: -5 + (chestsSeen - 1) * 2 });
+      if (!silent) {
+        var ca = awardsFor(-1, chestsSeen);
+        if (ca.length) {
+          var aw = AWARDS[ca[0]];
+          /* The Hoard Bonus is cash and pays in a free game exactly as it does in a paid
+             one, so it earns the stop wherever it lands. The free-game ladder awards do
+             not -- inside the feature they are multipliers. */
+          if (!S.free || aw.kind === 'cash') {
+            say(aw.kind === 'cash' ? 'EVERY CHEST.' : chestsSeen + ' chests.',
+                aw.kind === 'cash' ? 'THE HOARD BONUS' : rangeOf(aw) + ' FREE GAMES');
+            revel('chest', aw);
+          }
+        }
+      }
+      bumpStack(eggsSeen, chestsSeen, xSeen, silent);
+    }
+    if (isX) {
+      c.classList.add('xlit');
+      xSeen++;
+      /* x_hit, not big_win. big_win is the licensed Mixkit SLOT MACHINE WIN ALERT clip,
+         so the X -- then a flat x2, the smallest multiplier in the game -- was announcing
+         itself with a cash-out sting. Same correction the chests got at v0.21.0-alpha
+         and for the same reason: a multiplier is not a payout, and the two must not
+         share a vocabulary. docs/70-AUDIO.md section 5. */
+      A.play('x_hit');
+      bumpStack(eggsSeen, chestsSeen, xSeen, silent);
+    }
+  }
+  /* THE STACK, climbing as the symbols land rather than appearing at the end -- which
+     is the whole reason a free game with two chests already showing is worth watching.
+     It reads the resolver's own rule, so the panel and the payout cannot come apart. */
+  function bumpStack(e, c, x, silent) {
+    if (!S.free) return;
+    var was = S.free.mult || 1, hadCoins = S.free.coins || 0;
+    var now = stackFor(e, c, x), coins = x * XCOIN;
+    if (now === was && coins === hadCoins) return;
+    S.free.mult = now; S.free.coins = coins;
+    var parts = [];
+    if (stackFor(e, 0, 0) > 1) parts.push(e + ' eggs \u00d7' + stackFor(e, 0, 0));
+    if (stackFor(0, c, 0) > 1) parts.push(c + ' chests \u00d7' + stackFor(0, c, 0));
+    if (stackFor(0, 0, x) > 1) parts.push('the X \u00d7' + stackFor(0, 0, x));
+    /* the coin is not a rung, so it is named as what it is: a bet on the table before
+       the eggs and chests multiply */
+    if (coins > 0) parts.push('the X +' + coins + (coins === 1 ? ' bet' : ' bets'));
+    S.free.stackLab = parts.join(' + ') || 'nothing yet';
+    paintFree();
+    var el = $('fgbody').querySelector('.mult');
+    el.classList.add('up');
+    after(ms(320), function () { el.classList.remove('up'); });
+    if (!silent && now >= 10) A.play('bonus_trigger');
+  }
+
+  function step() {
+    clearRevel();                       // last pulse ends as the next coin falls
+    var n = order[idx++];
+    land(n, false);
+    var isSym = S.eggs.indexOf(n) >= 0 || S.chests.indexOf(n) >= 0;
+    var hold = revelHold; revelHold = 0;      // already scaled and floored by revel()
+    if (idx >= 20) {
+      S.skip = null;
+      return after(hold || ms(400), function () { clearRevel(); baseResolve(); });
+    }
+    after(hold || ms(isSym ? 400 : cadence(idx - 1)), step);
+  }
+  step();
+}
+
+/* -------------------------------------------------------- base resolution */
+function baseResolve() {
+  S.phase = 'BASE_RESOLVE';
+  var free = !!S.free;
+  function resolve(chosen) {
+    return W.resolveRound(D, { denom:S.denom, tier:TIER, spots:S.spots, picks:S.picks,
+                               drawn:S.drawn, drawnSet:S.drawnSet,
+                               eggs:S.eggs, chests:S.chests, xs:S.xs,
+                               chosen:chosen, free:free });
+  }
+  var probe = resolve([]);
+  var row = document.querySelector('#paytable tr[data-c="' + probe.hits + '"]');
+  if (row) row.classList.add('live');
+
+  /* Only offer a pick that will actually be honoured. With the retrigger off a free
+     game cannot award more free games, so its egg and chest screens would have the
+     player open a tile for nothing -- the worst kind of bug, because it looks like it
+     worked. The Hoard Bonus is cash and always counts, in a free game as in a paid one.
+     Skipped awards still take a slot in `chosen` (as 0) so it stays parallel to the
+     resolver's `fired` list. */
+  var offer = [];
+  for (var oi = 0; oi < probe.fired.length; oi++) {
+    var oaw = AWARDS[probe.fired[oi]];
+    offer.push(oaw.kind === 'cash' || !S.free || ST.retrigger);
+  }
+  var any = offer.indexOf(true) >= 0;
+  if (!any) {
+    var zeros = probe.fired.map(function () { return 0; });
+    return after(ms(600), function () { settle(resolve(zeros)); });
+  }
+
+  /* THE PICKS. Every amount is shuffled here, before a single covered symbol is drawn on
+     screen, and the player's tile index reads straight out of that array -- so the one
+     they touch is the one they get, and every tile was equally likely to hold every
+     amount. Both an egg award and a chest award can fire in the same round, and then
+     both are offered, one after the other. docs/28-THE-PICKS.md. */
+  var layouts = [], chosen = [], q;
+  for (q = 0; q < probe.fired.length; q++)
+    layouts.push(W.freeGameLayout(rng, AWARDS[probe.fired[q]].values));
+
+  var at = 0;
+  (function nextPick() {
+    if (at >= probe.fired.length)
+      return after(ms(400), function () { settle(resolve(chosen)); });
+    if (!offer[at]) { chosen.push(0); at++; return nextPick(); }
+    var aw = AWARDS[probe.fired[at]], lay = layouts[at];
+    showPick(aw, lay, function (i) { chosen.push(lay[i]); at++; nextPick(); });
+  })();
+}
+
+function settle(r) {
+  var pays = D.paytables[S.denom].tiers[String(TIER)].pays[String(S.spots)];
+
+  if (S.free) {
+    /* A free game pays into the credit meter as it lands rather than at the end of the
+       feature. The pour the player is waiting for is the run as a whole, but a bonus
+       that shows nothing moving for thirty games is a bonus nobody believes is paying. */
+    S.free.won += r.award;
+    S.freeCents += cents(r.award);
+    S.credits += cents(r.award);
+    paintFree();
+  } else {
+    /* Hold on to the PAID round. Free games overwrite S.drawn, S.eggs and S.chests --
+       they deal the same ticket again -- so by the time round end runs there is nothing
+       left to re-resolve it from. */
+    S.paidRound = r;
+  }
+
+  if (r.cash > 0) {
+    S.picksRun = (S.picksRun || 0) + 1;
+    // a multiplier, not a payout: drum, climbing horn, dragon -- no coins, no bells,
+    // because those are what a cash-out sounds like (mult_hit, added v0.21.0-alpha)
+    A.play('mult_hit');
+    say('The chest held \u00d7' + r.cash + '.', fmt(money(r.award)));
+  }
+  else if (r.award > 0) {
+    A.play(r.award >= BIG_WIN ? 'big_win' : 'win');
+    /* The X's coin can be the whole win -- "Nothing caught. The X pays. x5." is a real
+       line now, and it is the line the coin was added to make possible. */
+    say((r.hits > 0 || !r.coins ? 'Caught ' + r.hits + '.' : 'Nothing caught.') +
+        (r.coins ? ' The X pays.' : '') + (r.mult > 1 ? ' \u00d7' + r.mult + '.' : ''),
+        fmt(money(r.award)));
+  }
+  else if (r.hits === 0 && pays['0'] !== undefined) say('Nothing. The hoard came up empty.', fmt(money(r.base)));
+  else if (pays[String(r.hits)] === 1) say('Caught ' + r.hits + '. It gave that one back.', fmt(money(r.base)));
+  else say('Nothing.');
+
+  after(ms(r.award > 0 ? 1100 : 700), function () { awardFree(r); });
+}
+
+/* ------------------------------------------------------------- free games
+ *
+ * Free games are FULL ROUNDS. They deal the same ticket, they can open the pick, and
+ * they can win more free games -- which is why the counter goes up in the middle of a
+ * run and why the eggs and chests are still worth watching once the feature starts.
+ *
+ * It terminates because free games per round is 0.171, comfortably under one, so the
+ * expected run is k/(1-k) and long ones die off geometrically. FREE_CAP is a guard on
+ * a series that has never approached it, not a rule of the game.
+ */
+function awardFree(r) {
+  /* RETRIGGER. ST.retrigger is off in this build, so only a PAID round may award free
+     games -- a free game that draws three eggs pays its own win and nothing more.
+     The engine enforces this in playSequence for the harness; the UI runs its own flow
+     and has to enforce it here too, which it did not at first: the counter climbed
+     20 -> 39 -> 57 inside a single feature, worth twelve points of RTP the machine had
+     not been priced for. */
+  /* THE RETRIGGER RUNG (v0.27.0-alpha) is the one thing that adds games inside a run:
+     r.retrig is derived by the resolver from the eggs, flat, no pick. The pick awards
+     above are still refused in a free game. */
+  var add = (r.freeGames > 0 && (!S.free || ST.retrigger)) ? r.freeGames : 0;
+  if (S.free && r.retrig > 0) add += r.retrig;
+  if (add > 0 && S.freeWonCount < FREE_CAP) {
+    var first = !S.free;
+    if (first) {
+      S.free = { total: 0, left: 0, won: 0, idx: 0, mult: 1, coins: 0, stackLab: 'nothing yet' };
+      $('cab').classList.add('inbonus');
+    }
+    S.free.total += add;
+    S.free.left += add;
+    S.freeWonCount += add;
+    paintFree();
+    A.play('bonus_trigger');
+    if (first) return showFreeStart(add);
+    say('+' + add + ' MORE', r.retrig ? 'The eggs add to the run.' : 'The run goes on.');
+    return after(ms(1200), stepFree);
+  }
+  stepFree();
+}
+
+/* The count, and the one question worth asking before a forty-game run: who is pressing
+   the button. Nothing here is an outcome -- the draw has not happened yet for any of
+   these games and does not care which way this goes. */
+function showFreeStart(count) {
+  S.phase = 'BONUS_INTRO'; S.busy = true;
+  $('choice').innerHTML = ''; $('choice').hidden = true;
+  $('fgstart').hidden = false;
+  $('fgcount').textContent = count;
+  $('lairmsg').textContent = count >= 40 ? 'THE HOARD OPENS' : 'Free games';
+  $('lairsub').textContent = 'Nothing costs anything now.';
+  $('depthnum').textContent = count;
+  $('depthamt').textContent = 'to play';
+  $('depthadd').innerHTML = '&nbsp;';
+  elLair.classList.add('on');
+  if (count >= 40) elLair.classList.add('lit');
+  A.play('big_win');
+  after(ms(700), function () { S.busy = false; });
+
+  $('fgplay').onclick = function (e) {
+    e.stopPropagation();
+    if (S.busy) return;
+    A.play('pick_on');
+    $('fgstart').hidden = true;
+    elLair.classList.remove('on', 'lit');
+    after(ms(450), stepFree);
+  };
+}
+
+function stepFree() {
+  if (S.free && S.free.left > 0) {
+    if (!autoFree) {
+      /* MANUAL. The round is not dealt until the player asks for it -- the same button
+         they bet with, so there is nothing new to learn. Waiting changes nothing about
+         what the round will do; the draw happens when it is asked for, not before. */
+      S.phase = 'FREE_READY';
+      clearBoardMarks();
+      say('Free game ' + (S.free.total - S.free.left + 1) + ' of ' + S.free.total,
+          'Press to deal');
+      return paint();
+    }
+    return advanceFree();
+  }
+  if (S.free) return endFreeGames();
+  roundEnd();
+}
+
+/* Step into the next free game. The multiplier is a function of POSITION IN THE RUN,
+   so it is derived here and never accumulated -- an off-by-one in a running counter
+   would be a silent RTP change, and this way the panel, the resolver and the harness
+   all read the same function of the same index. */
+function advanceFree() {
+  S.free.left--;
+  S.free.idx++;
+  /* The stack starts over every free game. It is a property of what THIS draw put on
+     the board, not something carried between games -- carrying it would compound into
+     a number no cap could hold and is not what was priced. */
+  S.free.mult = 1;
+  S.free.coins = 0;
+  S.free.stackLab = 'nothing yet';
+  paintFree();
+  clearBoardMarks();
+  spin(true);
+}
+
+// the manual path: consume one from the queue and deal it
+function dealFreeGame() {
+  if (S.phase !== 'FREE_READY' || !S.free || S.free.left <= 0) return;
+  advanceFree();
+}
+
+function endFreeGames() {
+  $('fgstart').hidden = true;
+  var won = S.free.won, total = S.free.total;
+  S.phase = 'BONUS_RESOLVE';
+  $('cab').classList.remove('inbonus');
+  S.free = null;
+  paintFree();
+  say(total + ' free games over.', won > 0 ? fmt(money(won)) : 'Nothing stuck.');
+  after(ms(1500), roundEnd);
+}
+
+/* ------------------------------------------------------------- the picks */
+function showPick(aw, layout, done) {
+  S.phase = 'BONUS_INTRO'; S.busy = true;
+  var cash = aw.kind === 'cash';
+  $('fgstart').hidden = true;
+  $('lairmsg').textContent = cash ? 'THE HOARD BONUS' : (aw.name || 'Open one');
+  $('lairsub').textContent = cash ? 'Every chest opened. This one cannot pay nothing.'
+                                  : rangeOf(aw) + ' free games are under there.';
+  $('depthnum').textContent = layout.length;
+  $('depthamt').textContent = cash ? 'chests' : (aw.sym === 'egg' ? 'eggs' : 'chests');
+  $('depthadd').innerHTML = '&nbsp;';
+
+  var el = $('choice');
+  el.hidden = false;
+  el.className = 'choice n' + layout.length;
+  el.innerHTML = '';
+  layout.forEach(function (amount, i) {
+    var t = document.createElement('div');
+    t.className = 'pick' + (aw.sym === 'egg' ? ' nest' : '');
+    t.innerHTML = '<img src="' + artFor(aw) + '" alt="">';
+    t.onclick = function (ev) { ev.stopPropagation(); take(i, t); };
+    el.appendChild(t);
+  });
+  elLair.classList.add('on');
+  if (cash) elLair.classList.add('lit');
+  A.play('bonus_trigger');
+  after(ms(850), function () {
+    S.phase = 'BONUS_PICK'; S.busy = false;
+    $('lairsub').textContent = 'Open one. They are all the same odds.';
+  });
+
+  function label(v) { return cash ? '\u00d7' + v : String(v); }
+
+  function take(i, tile) {
+    if (S.phase !== 'BONUS_PICK' || S.busy) return;
+    S.phase = 'BONUS_RESOLVE'; S.busy = true;
+    A.play(cash ? 'hoard_award' : 'big_win');
+    // every tile opens, so the player can see the choice was a choice and not a reveal
+    [].forEach.call(el.children, function (o, q) {
+      o.classList.add('done', q === i ? 'mine' : 'other');
+      var em = document.createElement('em');
+      em.innerHTML = label(layout[q]);
+      o.appendChild(em);
+    });
+    $('lairmsg').innerHTML = cash ? '\u00d7' + layout[i] : layout[i] + ' FREE GAMES';
+    $('lairsub').textContent = cash ? fmt(money(layout[i])) : '';
+    if (!cash) elLair.classList.add('lit');
+    after(ms(2000), function () {
+      elLair.classList.remove('on', 'lit');
+      S.busy = false;
+      after(ms(400), function () { done(i); });
+    });
+  }
+}
+
+/* Board back to marked-but-undrawn, keeping the player's numbers. Free games replay
+   the SAME ticket, which is why the picks are never touched here. */
+function clearBoardMarks() {
+  var q;
+  for (q = 1; q <= 80; q++) {
+    var c = cells[q];
+    c.classList.remove('hit', 'miss', 'drop', 'hatch', 'opened', 'xlit');
+    c.querySelector('.x').textContent = '';
+    c.querySelector('.egg').hidden = true;
+    c.querySelector('.chest').hidden = true;
+    c.querySelector('.xsym').hidden = true;
+  }
+  for (q = 0; q < NEGGS; q++) $('eslot' + q).classList.remove('on');
+  for (q = 0; q < NCHESTS; q++) $('cslot' + q).classList.remove('on');
+  var live = document.querySelector('#paytable tr.live');
+  if (live) live.classList.remove('live');
+  $('hitn').textContent = 0;
+  elMsg.innerHTML = '';
+}
+
+/* ------------------------------------------------------------- round end */
+
+// Anything at or above this many bet units gets the big stinger instead of the
+// small one.  20x is roughly the top two or three rows of most tables -- rare
+// enough that the sound still means something.
+var BIG_WIN = 20;
+
+/* The win meter rolls instead of snapping.  Ticks are gated at 45 ms inside
+   audio.js and the whole roll is capped, so a 400x award cannot hold the
+   machine hostage.  Returns the duration so round end can wait for it.
+   Credits already moved -- this is display only, and the ledger check in
+   drive.js reads S.credits, not this. */
+function rollWin(mult) {
+  if (!(mult > 0)) { $('lastwin').textContent = fmt(0); return 0; }
+  var target = money(mult);
+  var steps  = Math.max(4, Math.min(18, Math.round(4 + Math.log(1 + mult) * 3)));
+  var per    = Math.max(45, Math.round(ms(Math.min(1400, 260 + mult * 25)) / steps));
+  var i = 0;
+  (function tick() {
+    i++;
+    $('lastwin').textContent = fmt(i >= steps ? target : target * (i / steps));
+    if (i < steps) { A.play('rollup_tick'); after(per, tick); }
+    else A.play('rollup_end');
+  })();
+  return per * steps;
+}
+
+function roundEnd() {
+  S.phase = 'ROUND_END';
+  /* THE PAID ROUND is resolved here and only here. Its award has not been credited
+     yet; the free games have, one at a time as they landed, and S.freeCents is the
+     sum of them. The clip is per ROUND, so it has already been applied to each free
+     game separately -- there is nothing left to clip across the feature, and adding
+     the sum up and clipping THAT would be a different and much stingier machine. */
+  var r = S.paidRound;
+  var freeC = S.freeCents || 0;
+  r.freeGamesRun = S.freeWonCount || 0;
+  r.picksRun = S.picksRun || 0;
+  var paidC = cents(r.award);
+  S.credits += paidC;
+  LEDGER.rounds++; LEDGER.bets += betCents(); LEDGER.awards += paidC + freeC;
+  meterRound(betCents(), paidC + freeC, r);
+  /* Casino ledger: the same numbers the hard meters just took, sent to the shared
+     ledgers/keno document for the casino console. Dollars, not cents; the cell names
+     the pay table this round was played against. See casino-ledger.js. */
+  if (window.CasinoLedger) CasinoLedger.report('keno', {
+    bet: betCents() / 100, paid: (paidC + freeC) / 100, bonus: r.eggFired ? 1 : 0,
+    cell: 'c' + Math.round(Number(S.denom) * 100) + '_t' + TIER + '_s' + S.spots });
+  LAST.round = r;
+  S.hoard = Math.min(72, S.hoard + 1);
+
+  // stinger first, meter under it -- the duck in audio.js pulls the ticks below
+  // the win so the two do not fight
+  var totalUnits = r.award + freeC / betCents();
+  if (totalUnits > 0) A.play(totalUnits >= BIG_WIN ? 'big_win' : 'win');
+  var rollMs = rollWin(totalUnits);
+
+  if (r.clipped)      say('Hoard limit — it kept the rest.', fmt(money(r.award)));
+  else if (freeC)     say('The bonus is in.', fmtC(paidC + freeC));
+  S.freeCents = 0; S.freeWonCount = 0; S.picksRun = 0; S.paidRound = null;
+
+  after(ms(r.clipped ? 2200 : 900) + rollMs, function () {
+    S.phase = 'PICKING'; S.eggs = []; S.chests = [];
+    var live = document.querySelector('#paytable tr.live');
+    if (live) live.classList.remove('live');
+    for (var q = 0; q < NEGGS; q++) $('eslot' + q).classList.remove('on');
+    for (q = 0; q < NCHESTS; q++) $('cslot' + q).classList.remove('on');
+    $('hitn').textContent = 0;
+    elMsg.innerHTML = '';
+    paint();
+  });
+}
+
+/* ------------------------------------------------------------------ help */
+var HELP_PAGES = 4, helpPage = 1;
+var HELP_TITLES = { 1: 'How to play', 2: 'Eggs, chests and the pick',
+                    3: 'Payback and meters', 4: 'Admin — demo only' };
+
+function buildHelp() {
+  $('maxaward').textContent = fmt(M.maxAward);
+  $('hne').textContent = NEGGS;
+  $('hnc').textContent = NCHESTS;
+  var cashAw = null, qz;
+  for (qz = 0; qz < AWARDS.length; qz++) if (AWARDS[qz].kind === 'cash') cashAw = AWARDS[qz];
+  $('hpickrange').innerHTML = cashAw
+    ? cashAw.values[0] + '&times; to ' + cashAw.values[cashAw.values.length - 1] + '&times;'
+    : '&mdash;';
+  $('hpickmin').innerHTML = cashAw ? cashAw.values[0] + '&times;' : '&mdash;';
+  $('hpicktiles').textContent = cashAw ? cashAw.values.length : 0;
+  $('hmax2').textContent = fmt(M.maxAward);
+
+  /* Both tables are written from the structure block. No number in the help screen is
+     typed in; if bonus4.py changes, this changes with it. */
+  var eh = '', ch = '', q;
+  for (q = 0; q < AWARDS.length; q++) {
+    var aw = AWARDS[q];
+    var what = aw.kind === 'cash'
+      ? '<b>THE HOARD BONUS</b>'
+      : 'open 1 of ' + aw.values.length + ' &rarr; ' + aw.values.join(' / ') + ' games';
+    var line = '<tr><td>' + aw.count + ' of ' + placedFor(aw) + '</td><td>' + what + '</td></tr>';
+    if (aw.sym === 'egg') eh += line; else ch += line;
+  }
+  $('heggtab').innerHTML = eh;
+  $('hchesttab').innerHTML = ch;
+
+  var sh = '', sq, sk;
+  [['egg', 'eggs'], ['chest', 'chests'], ['x', 'the X']].forEach(function (pair) {
+    var r = rungs(pair[0]).slice().reverse();
+    for (sq = 0; sq < r.length; sq++) {
+      var placedN = pair[0] === 'x' ? NX : (pair[0] === 'egg' ? NEGGS : NCHESTS);
+      sh += '<tr><td>' + r[sq][0] + ' of ' + placedN + ' ' + pair[1] +
+            '</td><td>&times;' + r[sq][1] + '</td></tr>';
+    }
+  });
+  if (XCOIN) sh += '<tr><td>the X</td><td>+' + XCOIN + ' bet, then the stack multiplies it</td></tr>';
+  if (RETRIG.egg) Object.keys(RETRIG.egg).map(Number).sort(function (a, b) { return a - b; })
+    .forEach(function (th) {
+      sh += '<tr><td>' + th + ' of ' + NEGGS + ' eggs</td><td>+' + RETRIG.egg[String(th)] +
+            ' free game' + (RETRIG.egg[String(th)] > 1 ? 's' : '') + ' added to the run</td></tr>';
+    });
+  $('hstacktab').innerHTML = sh;
+  $('hxcoin').textContent = XCOIN === 1 ? 'one bet' : XCOIN + ' bets';
+  $('hstacktop').innerHTML = '&times;' + ST.top_stack;
+  $('hpays').textContent = W.SPOT_NAMES[S.spots] + ' — ' + S.spots + ' marks';
+  $('hpayback').textContent = (payback() * 100).toFixed(2) + '%';
+
+  /* Pay list, every paying catch count. No odds column: the PAYBACK meter is the
+     only place on this machine that quantifies chance. */
+  var pays = D.paytables[S.denom].tiers[String(TIER)].pays[String(S.spots)];
+  var keys = Object.keys(pays).map(Number).sort(function (a, b) { return b - a; });
+  $('oddstab').innerHTML = keys.map(function (k) {
+    return '<tr><td>Catch ' + k + '</td><td>' + fmt(money(pays[k])) + '</td></tr>';
+  }).join('');
+
+  var back = HM.inCents ? (HM.outCents / HM.inCents * 100).toFixed(2) + '%' : '—';
+  $('metertab').innerHTML =
+    row('Games played', HM.rounds.toLocaleString()) +
+    row('Total bet', fmtC(HM.inCents)) +
+    row('Total won', fmtC(HM.outCents)) +
+    row('Measured return', back) +
+    row('Best single round', fmtC(HM.best)) +
+    row('Eggs paid', HM.eggFires.toLocaleString()) +
+    row('Chests paid', HM.chestFires.toLocaleString()) +
+    row('Free games played', (HM.freeGames || 0).toLocaleString()) +
+    row('Picks opened', (HM.picks || 0).toLocaleString()) +
+    row('Rounds at the limit', HM.clips.toLocaleString());
+  function row(a, b) { return '<tr><td>' + a + '</td><td>' + b + '</td></tr>'; }
+
+  $('admincredits').textContent = fmtC(S.credits);
+  $('admintab').innerHTML =
+    row('Games played', HM.rounds.toLocaleString()) +
+    row('Total bet', fmtC(HM.inCents)) +
+    row('Total won', fmtC(HM.outCents)) +
+    row('Measured return', back);
+
+  showHelpPage(helpPage);
+}
+
+function showHelpPage(n) {
+  helpPage = Math.min(HELP_PAGES, Math.max(1, n));
+  [].forEach.call(document.querySelectorAll('.hpage'), function (el) {
+    el.classList.toggle('on', +el.dataset.page === helpPage);
+  });
+  $('helptitle').textContent = HELP_TITLES[helpPage];
+  $('hprev').disabled = helpPage === 1;
+  $('hnext').disabled = helpPage === HELP_PAGES;
+  var d = '';
+  for (var i2 = 1; i2 <= HELP_PAGES; i2++) d += '<i class="' + (i2 === helpPage ? 'on' : '') + '"></i>';
+  $('hdots').innerHTML = d;
+}
+$('hprev').onclick = function (e) { e.stopPropagation(); A.play('pick_off'); showHelpPage(helpPage - 1); };
+$('hnext').onclick = function (e) { e.stopPropagation(); A.play('pick_off'); showHelpPage(helpPage + 1); };
+/* Demo credit controls. These move the credit meter and nothing else -- no outcome,
+   no probability and no meter of record is reachable from here. docs/22-METERS.md. */
+function adminCredits(fn) {
+  S.credits = Math.max(0, fn(S.credits));
+  A.play('pick_on');
+  paint(); buildHelp();
+}
+[].forEach.call(document.querySelectorAll('[data-add]'), function (b) {
+  b.onclick = function (e) {
+    e.stopPropagation();
+    var add = +b.dataset.add;
+    adminCredits(function (c) { return c + add; });
+  };
+});
+$('adminset').onclick = function (e) {
+  e.stopPropagation(); adminCredits(function () { return M.startCredits; });
+};
+$('adminzero').onclick = function (e) {
+  e.stopPropagation(); adminCredits(function () { return 0; });
+};
+$('meterreset').onclick = function (e) {
+  e.stopPropagation(); A.play('pick_off');
+  HM = { rounds:0, inCents:0, outCents:0, eggFires:0, chestFires:0, clips:0, best:0 };
+  meterSave(); buildHelp();
+};
+$('help').onclick  = function (e) { e.stopPropagation(); helpPage = 1; buildHelp(); $('helpwrap').classList.add('on'); };
+$('helpx').onclick = function (e) { e.stopPropagation(); $('helpwrap').classList.remove('on'); };
+$('helpwrap').onclick = function (e) { if (e.target === $('helpwrap')) $('helpwrap').classList.remove('on'); };
+
+/* ------------------------------------------------------------------ boot */
+buildTrigPanels();
+paint();
+say('Twenty coins. Pick which ones it touches.');
+window.__wyrm = { S: S, W: W, D: D, quickPick: quickPick, placeBet: placeBet,
+                  setSpots: setSpots, setDenom: setDenom,
+                  get lastRound() { return LAST.round; },
+                  get lastPlate() { return LAST.plate; },
+                  get ledger() { return { rounds: LEDGER.rounds, credits: S.credits,
+                    expected: M.startCredits - LEDGER.bets + LEDGER.awards }; } };
+})();
+</script>
+
+<!-- VRX Games badge: links back to the site. Fixed, small, stays out of the game's way. -->
+<style>
+.vrx-badge{position:fixed;left:10px;top:10px;z-index:2147483000;display:block;width:88px;opacity:.72;transition:opacity .15s}
+.vrx-badge:hover{opacity:1}
+.vrx-badge img{display:block;width:100%;height:auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+@media (max-width:640px){.vrx-badge{width:64px;left:6px;top:6px}}
+</style>
+<a class="vrx-badge" href="../" aria-label="Back to the game page"><picture><source srcset="/assets/brand/vrx-badge.webp" type="image/webp"><img src="/assets/brand/vrx-badge.png" width="180" height="85" alt="VRX Games" decoding="async"></picture></a>
+</body>
+</html>

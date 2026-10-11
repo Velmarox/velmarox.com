@@ -83,12 +83,9 @@ img { display: block; max-width: 100%; }
   box-shadow: var(--glow-red);
 }
 .head-in { display: flex; align-items: center; gap: 24px; height: 68px; }
-.logo {
-  display: block; text-decoration: none; line-height: 0.82;
-  font: italic 900 1.5rem/0.82 var(--display); letter-spacing: -0.01em; text-transform: uppercase;
-}
-.logo span { display: block; color: var(--yellow); }
-.logo span + span { color: var(--red); font-size: 0.62em; letter-spacing: 0.32em; margin-top: 3px; }
+.logo { display: block; flex: none; text-decoration: none; }
+.logo img { width: auto; height: 44px; filter: drop-shadow(0 0 8px rgba(227,18,45,0.35)); }
+.site-foot .logo img { height: 56px; }
 .nav { display: flex; align-items: center; gap: 4px; margin-left: 12px; }
 .nav > a, .nav .drop > button {
   position: relative; display: inline-flex; align-items: center; gap: 6px; height: 68px; padding: 0 14px;

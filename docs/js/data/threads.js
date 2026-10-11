@@ -40,7 +40,7 @@ window.THREADS = [
   },
   {
     slug: 'sample-bug-reports', sample: true,
-    title: 'Bug reports: Neon Drift', date: '2026-10-09', board: 'Bugs', game: 'sample-neon-drift',
+    title: 'Bug reports', date: '2026-10-09', board: 'Bugs',
     excerpt: 'Placeholder thread. Post bugs here with your browser and device.'
   }
 ];

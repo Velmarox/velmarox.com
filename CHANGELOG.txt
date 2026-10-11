@@ -5,6 +5,15 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.5.0-alpha (2026-10-11)
+- Branded VRX Games: the VRX logo, recoloured to the site palette (white -> electric yellow, blue -> crimson),
+  replaces the text logo in the header and footer. Page titles read "| VRX Games".
+- Ported all four games from pixel-den (velmaroxie.web.app): Wyrmhoard Keno (+ maths verifier), Elo's Hoard,
+  Safari Time, Animalism. Builds at games/<slug>/play/, info pages at games/<slug>/ with cover, in-game
+  screenshot, details, how to play. Ledger URLs and the in-game VRX badge (recoloured, links to the info page) updated.
+- Sample games removed; sample posts, threads and products repointed at real games. Categories now include Slots and Action.
+- Game page hides the icon box when a game has no icon.
+
 v0.4.0-alpha (2026-10-11)
 - Nav is now Home, Games (category dropdown), Blog, News, Community, Shop.
 - News tab: short announcements, same post system as the blog (type: 'news' in posts.js), own list and post pages.

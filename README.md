@@ -76,10 +76,22 @@ the header. Delete them from every list in `docs/js/data/` and delete the matchi
 Bump `<meta name="version">` in every page (`grep -rl 'name="version"' docs`) and add a `CHANGELOG.txt` entry with
 every release (patch = fixes, minor = new content). Git history keeps the old versions.
 
-## Keep the anonymous sites separate
+## The games (ported from VRX Games / pixel-den)
 
-Don't link VRX Games (`velmaroxie.web.app`, repo `pixel-den`) from this site. That site
-is meant to stay anonymous, and a link from velmarox.com would break that.
+The four games came from the `pixel-den` repo (velmaroxie.web.app) and live here at
+`docs/games/<slug>/play/`. Their info pages are `docs/games/<slug>/`. Changes made when porting:
+
+- `keno/play/casino-ledger.js` and `safari-time/play/casino-ledger.js`: `CREATE_URL` and `BOARD_URL`
+  point at `/games/elos-hoard/play/`.
+- The VRX badge on every game page links to `../` (the game's info page) and uses the
+  crimson/yellow logo in `docs/assets/brand/`.
+
+When a game is rebuilt, copy its build into `play/` again and re-apply those two edits.
+
+Elo's Hoard accounts (and the shared leaderboard in Keno and Safari Time) sign in against the
+`elos-hoard` Firebase project, which only accepts sign-ins from its authorised domains. Add
+`velmarox.com` in Firebase console > elos-hoard > Authentication > Settings > Authorised domains,
+or sign-in fails here. Guest play is unaffected.
 
 ## Hosting setup (one time)
 
