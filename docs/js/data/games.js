@@ -128,6 +128,8 @@ window.GAMES = [
     released: '2026-09-11', updated: '2026-09-21', version: '1.23.0',
     controls: 'Keyboard and mouse', platforms: 'Windows', session: 'As long as you like',
     download: { label: 'Download', url: '', note: 'No public download yet.' },
+    thumb: '/games/pokedungeon/thumb.jpg', banner: '/games/pokedungeon/cover.jpg',
+    shots: ['/games/pokedungeon/shot-1.png'],
     warning: {
       title: 'Unofficial fan game',
       text: 'PokéDungeon is a free, non-commercial fan project. It is not made, approved or endorsed by Nintendo, The Pokémon Company, Game Freak, Creatures or Spike Chunsoft. Pokémon and all related names, characters and artwork belong to their owners. The sprites and tilesets come from the community PMDCollab project and remain the work of their artists. Nothing about it is for sale.'
