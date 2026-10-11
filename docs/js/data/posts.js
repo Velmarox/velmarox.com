@@ -26,11 +26,6 @@ window.POSTS = [
     excerpt: 'Placeholder news item. Short announcements go in the News tab.'
   },
   {
-    slug: 'sample-shop-open', sample: true, type: 'news',
-    title: 'Shop opens soon', date: '2026-10-10', tag: 'Shop',
-    excerpt: 'Placeholder news item about the shop.'
-  },
-  {
     slug: 'sample-welcome', sample: true,
     title: 'Welcome to the site', date: '2026-10-11', tag: 'Thoughts',
     excerpt: 'Placeholder post. This is where blog posts show up, newest first.'

@@ -5,6 +5,9 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.6.3-alpha (2026-10-11)
+- Removed the sample news item "Shop opens soon" (and its page), the last shop mention on the home page.
+
 v0.6.2-alpha (2026-10-11)
 - Shop closed for now: /shop/ shows a big COMING SOON panel (links to News and Games) and the home page's
   "From the shop" row is hidden. Switch: window.SHOP_OPEN in docs/js/data/products.js.
