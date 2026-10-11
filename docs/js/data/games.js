@@ -140,5 +140,21 @@ window.GAMES = [
       { date: '2026-09-21', text: 'v1.23.0: shops are Pokémon you walk up to, the pier is the way down, deep floors are worth a level.' },
       { date: '2026-09-11', text: 'v0.1.0: first build.' }
     ]
+  },
+  {
+    slug: 'notepadsupreme',
+    title: 'NotePadSupreme', tagline: 'A simple, better notepad for Windows, with formatting and light/dark mode.',
+    genres: ['tools'], status: 'live',
+    released: '2026-09-13', updated: '2026-09-13', version: '0.2.0-alpha',
+    controls: 'Keyboard and mouse', platforms: 'Windows 10 and 11',
+    download: { label: 'Download for Windows', url: 'https://github.com/Velmarox/NotePadSupreme/releases/latest', note: 'Free. Installer or portable exe, no admin rights needed.' },
+    icon: '/games/notepadsupreme/icon.png', thumb: '/games/notepadsupreme/thumb.jpg', banner: '/games/notepadsupreme/cover.jpg',
+    shots: ['/games/notepadsupreme/shot-dark.png', '/games/notepadsupreme/shot-light.png', '/games/notepadsupreme/shot-installer.png'],
+    about: "I made this because I hated Windows Notepad, and Notepad++ wasn't what I wanted either. I just wanted a little notepad. That is all this is: a simple, better notepad with formatting and light/dark mode. Free, and always will be.\n\nBold, italic, underline, strikethrough, colours, highlights, alignment, bullets and indents. Light and dark themes with matching title bar and scrollbars, word wrap and a focus mode.\n\nPlain .txt stays plain: it keeps its encoding and line endings, and if you add formatting it offers to save a formatted .rtf copy instead of silently dropping it.",
+    howto: ['Download NotePadSupreme-Setup.exe and run it. It installs just for your Windows account.', 'If Windows says "Windows protected your PC", click More info, then Run anyway. The app just isn\'t code-signed.', 'Ctrl+V pastes as plain text; Ctrl+Shift+V keeps formatting.', 'F11 for focus mode.', 'To open .txt files with it: right-click a .txt, Open with, Choose another app, NotePadSupreme, Always.'],
+    log: [
+      { date: '2026-09-13', text: 'v0.2.0-alpha: installer with update in place and clean uninstall; readable highlights in dark mode.' },
+      { date: '2026-09-13', text: 'v0.1.0-alpha: first release.' }
+    ]
   }
 ];

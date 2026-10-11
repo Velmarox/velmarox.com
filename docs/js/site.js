@@ -50,7 +50,7 @@
     return out.length ? '<div class="badge-row">' + out.join('') + '</div>' : '';
   }
   function statusTag(g) {
-    if (g.status === 'live' && !g.play) return '<span class="tag">Desktop game</span>';
+    if (g.status === 'live' && !g.play) return '<span class="tag">' + ((g.genres || []).indexOf('tools') > -1 ? 'Free download' : 'Desktop game') + '</span>';
     if (g.status === 'live') return '<span class="tag">Free to play</span>';
     if (g.status === 'wip') return '<span class="tag">In the workshop</span>';
     return '<span class="tag dim">Idea</span>';
@@ -289,11 +289,12 @@
     var list = GAMES.filter(function (g) { return !cat || (g.genres || []).indexOf(cat) > -1; });
     var order = { live: 0, wip: 1, idea: 2 };
     list.sort(function (a, b) { return (order[a.status] || 0) - (order[b.status] || 0) || ((b.updated || b.released || '') > (a.updated || a.released || '') ? 1 : -1); });
-    document.title = (cat ? catName(cat) + ' games' : 'All games') + ' | VRX Games';
+    document.title = (cat === 'tools' ? 'Tools' : cat ? catName(cat) + ' games' : 'All games') + ' | VRX Games';
     main.innerHTML =
       '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Games</div>' +
-      '<h1>' + (cat ? esc(catName(cat)) + ' <em>games</em>' : 'All <em>games</em>') + '</h1>' +
-      '<p>' + list.length + ' game' + (list.length === 1 ? '' : 's') + (cat ? ' in this category.' : ', from finished to half-built.') + '</p></div>' +
+      '<h1>' + (cat === 'tools' ? 'The <em>tools</em>' : cat ? esc(catName(cat)) + ' <em>games</em>' : 'All <em>games</em>') + '</h1>' +
+      '<p>' + (cat === 'tools' ? 'Small apps I made because I wanted them.'
+        : list.length + ' game' + (list.length === 1 ? '' : 's') + (cat ? ' in this category.' : ', from finished to half-built.')) + '</p></div>' +
       '<nav class="chips" aria-label="Categories"><a class="chip" href="/games/"' + (!cat ? ' aria-current="true"' : '') + '>All <small>' + GAMES.length + '</small></a>' +
         categoryCounts().map(function (c) {
           return '<a class="chip" href="/games/?cat=' + c[0] + '"' + (cat === c[0] ? ' aria-current="true"' : '') + '>' + esc(catName(c[0])) + ' <small>' + c[1] + '</small></a>';

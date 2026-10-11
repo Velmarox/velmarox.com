@@ -5,6 +5,11 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.7.0-alpha (2026-10-11)
+- Added NotePadSupreme (from the NotePadSupreme repo, v0.2.0-alpha) under Tools: page with dark, light and
+  installer screenshots, its icon, and a Download for Windows button to its GitHub release.
+- Downloadable tools read "Free download" instead of "Desktop game".
+
 v0.6.4-alpha (2026-10-11)
 - PokéDungeon has its first screenshot (the team in a desert corridor): game page gallery, card thumbnail and
   home banner crop. Placeholder frames gone.
