@@ -843,6 +843,17 @@
     showTitle();
   }
 
+  // For the desktop app's menu bar (desktop/clack-arena): the commands it can send the game.
+  A.menu = {
+    get inRun() { return !!run; },
+    get sound() { return A.settings.sound; },
+    newRun: () => { sfx('unlock'); behind = null; newRun(); },
+    title: () => { behind = null; if (fight) { A.tray.clearDice(); A.tray.setZones(false); clearLabels(); fight = null; drawCards(); } run = null; showTitle(); },
+    rules: () => openSide('rules'),
+    settings: () => openSide('settings'),
+    toggleSound: () => { A.settings.sound = !A.settings.sound; saveSettings(); return A.settings.sound; },
+  };
+
   // For checks from dev tools.
   A.debug = { get run() { return run; }, get fight() { return fight; }, get phase() { return phase; }, throwTurn, chooseThrow, outcomeOf, newRun, startFight, showMap, resolveTurn };
 

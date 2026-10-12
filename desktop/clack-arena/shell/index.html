@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clack Arena</title>
+<link rel="stylesheet" href="shell.css">
+</head>
+<body>
+<!-- The window's own title bar and menu bar (the Windows ones are switched off), with the game in a frame below. -->
+<header class="titlebar" id="titlebar">
+  <img class="app-ico" src="icon.png" alt="" draggable="false">
+  <span class="app-name">Clack Arena</span>
+  <span class="app-ver" id="ver"></span>
+  <span class="drag"></span>
+  <div class="win-btns">
+    <button type="button" data-win="min" title="Minimize" aria-label="Minimize"><i class="g-min"></i></button>
+    <button type="button" data-win="max" title="Maximize" aria-label="Maximize"><i class="g-max"></i></button>
+    <button type="button" data-win="close" class="close" title="Close" aria-label="Close"><i class="g-close"></i></button>
+  </div>
+</header>
+<nav class="menubar" id="menubar" role="menubar">
+  <div class="menu" data-menu="game">
+    <button type="button" class="menu-top" role="menuitem"><u>G</u>ame</button>
+    <div class="drop" role="menu">
+      <button type="button" data-cmd="newRun"><span>New run</span><kbd>Ctrl+N</kbd></button>
+      <button type="button" data-cmd="title"><span>Title screen</span><kbd>Ctrl+T</kbd></button>
+      <hr>
+      <button type="button" data-cmd="quit"><span>Quit</span><kbd>Alt+F4</kbd></button>
+    </div>
+  </div>
+  <div class="menu" data-menu="view">
+    <button type="button" class="menu-top" role="menuitem"><u>V</u>iew</button>
+    <div class="drop" role="menu">
+      <button type="button" data-cmd="fullscreen"><span>Full screen</span><kbd>F11</kbd></button>
+      <hr>
+      <button type="button" data-cmd="zoomIn"><span>Zoom in</span><kbd>Ctrl++</kbd></button>
+      <button type="button" data-cmd="zoomOut"><span>Zoom out</span><kbd>Ctrl+-</kbd></button>
+      <button type="button" data-cmd="zoomReset"><span>Actual size</span><kbd>Ctrl+0</kbd></button>
+      <hr>
+      <button type="button" data-cmd="reload"><span>Reload</span><kbd>Ctrl+R</kbd></button>
+    </div>
+  </div>
+  <div class="menu" data-menu="options">
+    <button type="button" class="menu-top" role="menuitem"><u>O</u>ptions</button>
+    <div class="drop" role="menu">
+      <button type="button" data-cmd="settings"><span>Settings…</span><kbd>Ctrl+,</kbd></button>
+      <button type="button" data-cmd="sound" class="check"><span>Sound</span><kbd>Ctrl+M</kbd></button>
+    </div>
+  </div>
+  <div class="menu" data-menu="help">
+    <button type="button" class="menu-top" role="menuitem"><u>H</u>elp</button>
+    <div class="drop" role="menu">
+      <button type="button" data-cmd="rules"><span>How to play</span><kbd>F1</kbd></button>
+      <button type="button" data-cmd="site"><span>velmarox.com</span><kbd></kbd></button>
+      <hr>
+      <button type="button" data-cmd="about"><span>About Clack Arena</span><kbd></kbd></button>
+    </div>
+  </div>
+  <span class="menu-drag"></span>
+</nav>
+<main class="stage">
+  <iframe id="game" src="/games/clack-arena/play/index.html" title="Clack Arena"></iframe>
+</main>
+<div class="fs-hint" id="fs-hint">Full screen · press F11 to leave</div>
+<div class="dialog-back" id="dialog-back">
+  <div class="dialog" role="dialog" aria-modal="true" id="dialog"></div>
+</div>
+<script src="shell.js"></script>
+</body>
+</html>
