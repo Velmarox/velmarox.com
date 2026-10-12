@@ -120,7 +120,7 @@ every release (patch = fixes, minor = new content). Git history keeps the old ve
 
 ## The games (ported from VRX Games / pixel-den)
 
-The four games came from the `pixel-den` repo (velmaroxie.web.app) and live here at
+Three games came from the `pixel-den` repo (velmaroxie.web.app; a fourth, Animalism, was taken off in v0.22.6-alpha) and live here at
 `docs/games/<slug>/play/`. Their info pages are `docs/games/<slug>/`. Changes made when porting:
 
 - `keno/play/casino-ledger.js` and `safari-time/play/casino-ledger.js`: `CREATE_URL` and `BOARD_URL`
