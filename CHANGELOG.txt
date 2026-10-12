@@ -5,6 +5,11 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.22.3-alpha (2026-10-12)
+- Clack Arena v0.8.2: Chalk and Talc get icons from Franuka's Fantasy RPG Icon Pack instead of the GUI gems:
+  Chalk is the Pencil (#259), Talc the Pouch (#105). Same mechanics. tools/build_arena_art.py cuts them to
+  ui/item-chalk and ui/item-talc (3x and 2x); the sources are in art/fantasy-rpg-icons/.
+
 v0.22.2-alpha (2026-10-12)
 - A game with no browser version and no download link yet (PokéDungeon, for now) gets a translucent grey veil over
   its picture on game cards, tool banners and the featured banner. It lifts on its own once the game has a play

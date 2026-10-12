@@ -121,7 +121,7 @@ window.ARENA = window.ARENA || {};
     rest: { name: 'Rest', icon: 'btn-green', text: 'Repair some pips.' },
     boss: { name: 'The House', icon: 'crest-red', text: 'The boss of the Green Felt.' },
   };
-  A.ITEM_ICON = { nudge: 'chevron', chalk: 'gem-cyan', talc: 'gem-green', lead: 'gem-orange' };
+  A.ITEM_ICON = { nudge: 'chevron', chalk: 'item-chalk', talc: 'item-talc', lead: 'gem-orange' };
   A.RELIC_ICON = 'rank-cyan';
 
   // The four beats a turn resolves in: key, name, what happens in it (shown under the phase strip and on the rules page).

@@ -643,7 +643,7 @@
       el.after.className = 'after show';
       el.after.innerHTML = `<span class="after-q">You rolled <b>${ok ? esc(A.faceLabel(f)) : 'Pinned'}</b>. Use an item?</span>
         ${canNudge ? `<button type="button" class="pbtn" data-act="nudge">${px('chevron', 2)}Nudge</button>` : ''}
-        ${canTalc ? `<button type="button" class="pbtn" data-act="talc" title="Call off the throw. Everyone throws again.">${px('gem-green', 2)}Talc</button>` : ''}
+        ${canTalc ? `<button type="button" class="pbtn" data-act="talc" title="Call off the throw. Everyone throws again.">${px(A.ITEM_ICON.talc, 2)}Talc</button>` : ''}
         <button type="button" class="pbtn primary go" data-act="go">Go ▸</button>`;
     } else setTimeout(resolveTurn, 700 * pace());
     if (fight.turn === 1) setTimeout(() => {
