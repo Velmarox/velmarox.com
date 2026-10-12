@@ -296,6 +296,13 @@ button.tag { cursor: help; }
 .howto li::before { content: counter(step); grid-row: span 2; font-family: var(--px); font-size: 36px; line-height: 1; color: var(--yellow); }
 .howto b { font-family: var(--px); font-size: 22px; font-weight: 400; color: #fff; }
 .howto span { color: #d8d8de; line-height: 1.45; }
+.screen-tip { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 14px; padding: 10px 12px; background: var(--panel-2); border-left: 4px solid var(--yellow); }
+.screen-tip-ico { flex: none; margin-top: 2px; }
+.screen-tip > div { flex: 1; }
+.screen-tip b { font-family: var(--px); font-size: 22px; font-weight: 400; color: var(--yellow); }
+.screen-tip p { margin: 2px 0 0; color: #d8d8de; line-height: 1.45; }
+.screen-tip .pbtn { flex: none; align-self: center; }
+@media (max-width: 560px) { .screen-tip { flex-wrap: wrap; } .screen-tip > div { flex-basis: calc(100% - 50px); } .screen-tip .pbtn { margin-left: auto; } }
 .rule-faces { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
 .rule-face { display: flex; gap: 10px; align-items: center; background: var(--panel-2); padding: 6px; }
 .rule-face img { width: 44px; height: 44px; }

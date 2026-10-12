@@ -71,6 +71,24 @@
   function closeScreen() { el.overlay.className = 'overlay'; el.overlay.innerHTML = ''; }
   const btn = (label, act, cls = '', extra = '') => `<button type="button" class="pbtn ${cls}" data-act="${act}" ${extra}>${label}</button>`;
 
+  // What a screen is for, at the top of it, the first time it comes up. It stays through re-draws (buying at the
+  // Tavern) until Got it or until you move on, then never again on this device. Show tips again brings it back.
+  const SCREEN_TIPS = {
+    map: ['The map', 'Your route across the Green Felt. At each stop you pick one card below, and the strip at the top shows where you have been and what is ahead. Fights pay chips, Elites give a relic, the Forge changes your faces, the Tavern sells things, Rest repairs pips. The House waits at the last stop.'],
+    forge: ['The Forge', 'One job per visit. Engrave: pick a new face, then the face it covers (the bars show your odds before and after). Sand off a Skull to make it blank. Or grow to a d6: more faces, but each one comes up less often.'],
+    tavern: ['The Tavern', 'Spend chips here. Items go in your bag (3 slots) and are used once, during a fight. Relics work for the rest of the run. Mend repairs pips and you can buy it more than once. A grey button says why you can\'t buy.'],
+    rest: ['Rest', 'Resting repairs up to 4 in 10 of your pips, never past your max. That\'s all it does: move on when you\'re ready.'],
+    reward: ['After a fight', 'Every win pays chips for the Tavern. Fights sometimes drop an item into your bag. Elites let you take one relic. Your die panel shows what you have.'],
+  };
+  const tipsUp = new Set();
+  function screenTip(id) {
+    if (!A.settings.tips || U().seen('screen-' + id)) return '';
+    tipsUp.add(id);
+    const [title, text] = SCREEN_TIPS[id];
+    return `<div class="screen-tip" data-tip="${id}">${px('pointer', 2, 'screen-tip-ico')}<div><b>${esc(title)}</b><p>${esc(text)}</p></div><button type="button" class="pbtn small" data-act="tip-ok" data-tip="${id}">Got it</button></div>`;
+  }
+  function tipDone(id) { tipsUp.delete(id); U().markSeen('screen-' + id); }
+
   const itemInfo = (id) => A.CONSUMABLES[id];
   function playerCard(o = {}) {
     const st = fight?.st.p;
@@ -185,11 +203,11 @@
     const route = run.map.map((s, k) => `<div class="stop ${k < i ? 'done' : k === i ? 'now' : 'later'}">${s.map((n, j) => `<span class="mini-node${k < i && run.path[k] === j ? ' taken' : ''}" title="${esc(A.NODES[n.type].name)}">${px(A.NODES[n.type].icon, 2)}</span>`).join('')}<small>${k === run.map.length - 1 ? 'Boss' : k + 1}</small></div>`).join('<i class="link"></i>');
     screen(`
       <div class="map-head"><h2 class="pxfont">Green Felt</h2><span class="dim">Stop ${i + 1} of ${run.map.length}</span></div>
+      ${screenTip('map')}
       <div class="route">${route}</div>
       <h3>Pick your next stop</h3>
       <div class="nodes">${opts.map((n, k) => nodeCard(n, k)).join('')}</div>
       <h3>Your die</h3>${playerCard()}`, 'map');
-    if (run.step === 1) coachAt('map', 'Pick where to go. Fights pay chips, the Forge upgrades your die, the Tavern sells items. The House waits at the end.', '.nodes', 'above');
   }
   function nodeCard(n, k) {
     const N = A.NODES[n.type];
@@ -208,6 +226,7 @@
 
   function enterNode(k) {
     sfx('click');
+    tipsUp.forEach(tipDone);
     run.path[run.step] = k;
     const n = run.map[run.step][k];
     if (n.type === 'fight' || n.type === 'elite' || n.type === 'boss') startFight(n.enemy, n.type);
@@ -215,7 +234,7 @@
     else if (n.type === 'tavern') showTavern();
     else if (n.type === 'rest') showRest();
   }
-  function nextStep() { run.step++; showMap(); }
+  function nextStep() { tipsUp.forEach(tipDone); run.step++; showMap(); }
 
   // ---------- Forge ----------
   function showForge() {
@@ -224,6 +243,7 @@
     const hasSkull = run.die.faces.some((f) => f.t === 'skull');
     screen(`
       <h2 class="pxfont">Forge</h2>
+      ${screenTip('forge')}
       <p>One job per visit. Engrave a new face over an old one, sand off a Skull, or grow your die.</p>
       ${forgeDie()}
       <h3>Engrave</h3>
@@ -276,6 +296,7 @@
     const g = run.tavern.goods;
     screen(`
       <h2 class="pxfont">Tavern</h2>
+      ${screenTip('tavern')}
       <p class="npc">“${run.chips >= 18 ? 'Big spender. Sit down.' : run.chips >= 7 ? "You've got enough for something." : 'Not much on you. Look anyway.'}”</p>
       <div class="purse">${px('btn-yellow', 2)}<b>${run.chips}</b> chips</div>
       <div class="goods">${g.map((x, k) => {
@@ -312,7 +333,7 @@
     const before = run.hp, n = Math.min(run.max - run.hp, Math.ceil(run.max * A.REST_SHARE));
     run.hp += n;
     sfx('heal');
-    screen(`<h2 class="pxfont">Rest</h2><p>You sit in the corner of the tray for a while.</p>
+    screen(`<h2 class="pxfont">Rest</h2>${screenTip('rest')}<p>You sit in the corner of the tray for a while.</p>
       <div class="rest-gain">${px('heart', 3)}<b class="pxfont">+${n}</b><span>${before} → ${run.hp} / ${run.max}</span></div>
       ${playerCard()}<div class="row">${btn('Move on', 'leave', 'big primary')}</div>`, 'rest');
   }
@@ -700,6 +721,7 @@
     fight = null; drawCards(); el.log.innerHTML = '';
     sfx('coin');
     screen(`<h2 class="pxfont">${esc(name)} is out.</h2>
+      ${screenTip('reward')}
       <div class="reward">${px('btn-yellow', 3)}<b class="pxfont">+${chips}</b><span>chips (you have ${run.chips})</span></div>
       ${found}${relicChoice}
       <h3>Your die</h3>${playerCard()}
@@ -807,6 +829,7 @@
     if (act !== 'coach-ok' && !b.closest('.pop')) U().closePop();
     if (act) sfx('click');
     if (act === 'coach-ok') { U().doneCoach(U().coachId()); return; }
+    if (act === 'tip-ok') { tipDone(b.dataset.tip); b.closest('.screen-tip').remove(); return; }
     if (act === 'start') {
       if (A.settings.tips && !U().seen('howto')) { showHowTo(); return; }
       sfx('unlock'); newRun(); return;
