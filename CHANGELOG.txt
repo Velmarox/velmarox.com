@@ -21,7 +21,7 @@ v0.23.2-alpha (2026-10-12)
     (red X, #134), Nudge (Paw, #278), Lead Weight (Silver ingot, #306), Sand off a Skull (Blacksmith hammer,
     #327), Grow (Buff, #148), Tavern Mend (Heal, #168). tools/build_arena_art.py cuts them to ui/item-<name>.
   - The chip count next to the coin is set in Saira: Thaleah's 0 drew as a yellow dot.
-- The Windows app stays at 0.8.0 until it's rebuilt; the download still points at clack-arena-v0.8.0.
+- Clack Arena for Windows goes to 0.8.4; the Download for Windows button points at the clack-arena-v0.8.4 release.
 - A game with no browser version and no download link yet (PokéDungeon, for now) gets a translucent grey veil over
   its picture on game cards, tool banners and the featured banner. It lifts once the game has a play link or a
   download URL.
