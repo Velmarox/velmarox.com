@@ -5,6 +5,27 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.23.2-alpha (2026-10-12)
+- Clack Arena v0.8.4:
+  - Phone held sideways (landscape, 500px tall or less): the enemy and player panels share a column on the left
+    and the tray takes the full height beside it. Before, the two panels filled the screen and hid the tray.
+    Panels, tray overlays and screens are sized down to fit; the fight log moves to the tray's top-left so it no
+    longer sits on the throw hint.
+  - Skulls cost a pip. Whoever lands a Skull loses 1 (A.SKULL_COST), shown as FUMBLE −1 and in the log. Guard
+    doesn't stop it and it doesn't set off Thorns. Snake Oil turns that cost into a 2-pip heal. Sanding a Skull
+    off at the Forge now matters (the blank costs nothing); engraving over one still works.
+  - Growing to a d6 adds two Skulls, not two blank faces. The House's blank face is a Skull too.
+  - Items renamed to fit their icons, same mechanics: Chalk is Lucky Star (its ring on the die is star gold),
+    Talc is No Throw, Lead Shot is Lead Weight. Item ids are unchanged.
+  - Every item and action icon comes from Franuka's Fantasy RPG Icon Pack: Lucky Star (Star, #265), No Throw
+    (red X, #134), Nudge (Paw, #278), Lead Weight (Silver ingot, #306), Sand off a Skull (Blacksmith hammer,
+    #327), Grow (Buff, #148), Tavern Mend (Heal, #168). tools/build_arena_art.py cuts them to ui/item-<name>.
+  - The chip count next to the coin is set in Saira: Thaleah's 0 drew as a yellow dot.
+- Clack Arena for Windows goes to 0.8.4; the Download for Windows button points at the clack-arena-v0.8.4 release.
+- A game with no browser version and no download link yet (PokéDungeon, for now) gets a translucent grey veil over
+  its picture on game cards, tool banners and the featured banner. It lifts once the game has a play link or a
+  download URL.
+
 v0.23.1-alpha (2026-10-12)
 - Casino games post: new section "The basic maths" (return, how keno odds work, how reel stops set slot odds,
   and why two games with the same return can feel different).

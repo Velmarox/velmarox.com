@@ -130,7 +130,7 @@
     const lead = run.relics.includes('leadcore');
     tags.push(...traitTags(playerPhys(), { deal: lead ? 1 : 0, take: lead ? -1 : 0 }));
     if (st?.charged) tags.push(U().tag('Charged ×2', 'hot', 'Your next face with a number is doubled'));
-    if (fight?.lead) tags.push(U().tag('Lead Shot', 'hot', "This throw can't settle on Skull or Smooth"));
+    if (fight?.lead) tags.push(U().tag('Lead Weight', 'hot', "This throw can't settle on Skull or Smooth"));
     if (o.guard) tags.push(U().tag('Guard ' + o.guard, 'blue'));
     const items = run.items.map((id, k) => {
       const it = itemInfo(id), usable = fight && it.when === 'before' && phase === 'aim' && !(id === 'lead' && fight.lead);
@@ -312,8 +312,8 @@
       <div class="stamps">${stamps.map((f, k) => `<button type="button" class="stamp" data-stamp="${k}"><img alt="" src="${A.faceChip(f, run.die.look)}"><span><b>${esc(A.faceLabel(f))}</b><small>${esc(A.faceText(f))}</small></span></button>`).join('')}</div>
       <h3>Or</h3>
       <div class="stamps">
-        ${hasSkull ? `<button type="button" class="stamp" data-act="sand">${px('down-orange', 3)}<span><b>Sand off a Skull</b><small>It becomes Smooth (blank): ready to engrave next time.</small></span></button>` : ''}
-        ${run.die.sides === 4 ? `<button type="button" class="stamp" data-act="grow">${px('up-green', 3)}<span><b>Grow to a d6</b><small>Two new Smooth faces. Each face: 25% → 17%.</small></span></button>` : ''}
+        ${hasSkull ? `<button type="button" class="stamp" data-act="sand">${px('item-hammer', 3)}<span><b>Sand off a Skull</b><small>It becomes Smooth (blank): no more pip cost, ready to engrave next time.</small></span></button>` : ''}
+        ${run.die.sides === 4 ? `<button type="button" class="stamp" data-act="grow">${px('item-grow', 3)}<span><b>Grow to a d6</b><small>Two new Skull faces. Each face: 25% → 17%.</small></span></button>` : ''}
       </div>
       <div class="row">${btn('Leave', 'leave')}</div>`, 'forge');
     el.overlay.dataset.stamps = JSON.stringify(stamps);
@@ -332,10 +332,10 @@
     el.overlay.onPick = (i) => { run.die.faces[i] = f; sfx('forge'); forgeDone(`Engraved <b>${esc(A.faceLabel(f))}</b>.`); };
   }
   function grow() {
-    const d = clone(run.die); d.sides = 6; d.faces.push(A.F('smooth'), A.F('smooth'));
+    const d = clone(run.die); d.sides = 6; d.faces.push(A.F('skull'), A.F('skull'));
     screen(`
       <h2 class="pxfont">Grow to a d6?</h2>
-      <p>You keep your four faces and gain two Smooth (blank) ones. Room for a bigger build. But every face comes up less often, so your best face lands 1 time in 6 instead of 1 in 4.</p>
+      <p>You keep your four faces and gain two Skulls, each costing you a pip when it lands. Room for a bigger build once you engrave over them or sand them off. But every face comes up less often, so your best face lands 1 time in 6 instead of 1 in 4.</p>
       <div class="compare"><div style="--faces:4"><small>d4 now</small>${U().oddsBar(run.die)}${U().net(run.die)}</div><div style="--faces:6"><small>d6 after</small>${U().oddsBar(d)}${U().net(d)}</div></div>
       <div class="row">${btn('Grow', 'grow-yes', 'primary')}${btn('Back', 'back-forge')}</div>`, 'forge');
   }
@@ -364,7 +364,7 @@
       <div class="goods">${g.map((x, k) => {
         const name = x.kind === 'item' ? itemInfo(x.id).name : x.kind === 'relic' ? A.RELICS[x.id].name : `Mend ${A.MEND_AMOUNT} pips`;
         const text = x.kind === 'item' ? itemInfo(x.id).text : x.kind === 'relic' ? A.RELICS[x.id].text : `Back up to ${Math.min(run.max, run.hp + A.MEND_AMOUNT)} / ${run.max}.`;
-        const icon = x.kind === 'item' ? A.ITEM_ICON[x.id] : x.kind === 'relic' ? A.RELIC_ICON : 'heart';
+        const icon = x.kind === 'item' ? A.ITEM_ICON[x.id] : x.kind === 'relic' ? A.RELIC_ICON : 'item-mend';
         const full = x.kind === 'item' && run.items.length >= A.MAX_CONSUMABLES, topped = x.kind === 'mend' && run.hp >= run.max;
         const short = x.price - run.chips;
         const why = x.sold ? (x.kind === 'mend' ? '' : 'Sold') : full ? 'Bag full' : topped ? 'Pips full' : short > 0 ? `Need ${short} more` : '';
@@ -459,7 +459,7 @@
     A.tray.setZones(true, true);
     drawCards();
     const sling = A.settings.aim === 'sling';
-    hint((fight.lead ? 'Lead Shot loaded. ' : '') + (sling ? 'Press your die, pull back, let go.' : 'Press in the yellow zone, drag where to throw, let go.'));
+    hint((fight.lead ? 'Lead Weight loaded. ' : '') + (sling ? 'Press your die, pull back, let go.' : 'Press in the yellow zone, drag where to throw, let go.'));
     if (!resume) { U().banner('Your throw', `Turn ${fight.turn}`, 'yellow', 900); sfx('turn'); }
     // First fight: show how to throw.
     if (!resume) setTimeout(() => {
@@ -600,7 +600,7 @@
       const sim = A.tray.simulate(throws); sims++;
       last = { sim, throws };
       const playerBad = sim.status[0] === 'lean' || !leadOk(sim);
-      if (playerBad) {   // the same throw, a hair different, so your die lands cleanly (or, with Lead Shot, on a real face)
+      if (playerBad) {   // the same throw, a hair different, so your die lands cleanly (or, with Lead Weight, on a real face)
         const s = pThrow.seed.map((v, k) => (k < 3 ? v + (Math.random() - 0.5) * 0.12 : v + (Math.random() - 0.5) * 0.4));
         pThrow = A.tray.makeThrow(PKEY, playerPhys(), a.start.x, a.start.z, a.dx, a.dz, a.power, s);
         good.length = 0;   // earlier previews were against a throw you didn't make
@@ -642,8 +642,8 @@
       const f = A.effFace(fight.st, 'p', 0, fight.outcome.dice[0].face);
       el.after.className = 'after show';
       el.after.innerHTML = `<span class="after-q">You rolled <b>${ok ? esc(A.faceLabel(f)) : 'Pinned'}</b>. Use an item?</span>
-        ${canNudge ? `<button type="button" class="pbtn" data-act="nudge">${px('chevron', 2)}Nudge</button>` : ''}
-        ${canTalc ? `<button type="button" class="pbtn" data-act="talc" title="Call off the throw. Everyone throws again.">${px('gem-green', 2)}Talc</button>` : ''}
+        ${canNudge ? `<button type="button" class="pbtn" data-act="nudge">${px(A.ITEM_ICON.nudge, 2)}Nudge</button>` : ''}
+        ${canTalc ? `<button type="button" class="pbtn" data-act="talc" title="Call No Throw. Everyone throws again.">${px(A.ITEM_ICON.talc, 2)}No Throw</button>` : ''}
         <button type="button" class="pbtn primary go" data-act="go">Go ▸</button>`;
     } else setTimeout(resolveTurn, 700 * pace());
     if (fight.turn === 1) setTimeout(() => {
@@ -670,7 +670,7 @@
   function doTalc() {
     useItem('talc');
     fight.shown = { p: fight.st.p.hp, e: fight.st.e.hp };
-    log('Talc. The throw is called off.');
+    log('No Throw. The throw is called off.');
     fight.outcome = null;
     readyDice();
     toAim();
@@ -701,14 +701,14 @@
     // Clack damage already landed during the throw; it gets a log line here.
     ev.filter((e) => e.k === 'clack').forEach((e) => { if (e.from.side === 'p') run.stats.clacks++; log(`Clack! ${who(e.from)} ${e.from.side === 'p' ? 'hit' : 'hits'} ${who(e.to, true)} for <b>${e.n}</b>.`); });
     ev.filter((e) => e.k === 'pinned').forEach((e) => log(`${who(e.at)} ${e.at.side === 'p' ? 'are' : 'is'} <b>Pinned</b>: no move this turn.`));
-    ev.filter((e) => e.k === 'face' && e.face.t !== 'smooth').forEach((e) => log(`${who(e.at)}: <b>${esc(A.faceLabel(e.face))}</b>${e.times > 1 ? ' ×2 (chalk)' : ''}${e.face.charged ? ' (charged ×2)' : ''}${e.pinBonus ? ` (+${e.pinBonus} from a pin)` : ''}.`));
+    ev.filter((e) => e.k === 'face' && e.face.t !== 'smooth').forEach((e) => log(`${who(e.at)}: <b>${esc(A.faceLabel(e.face))}</b>${e.times > 1 ? ' ×2 (lucky star)' : ''}${e.face.charged ? ' (charged ×2)' : ''}${e.pinBonus ? ` (+${e.pinBonus} from a pin)` : ''}.`));
 
     // First time something happens, say what it was (once per device, if tips are on).
     const pin = ev.find((e) => e.k === 'pinned');
     if (pin) await teach('learn-pinned', `<b>Pinned.</b> ${who(pin.at)} landed leaning on another die, so ${pin.at.side === 'p' ? 'you do' : 'it does'} nothing this turn. The die holding it up gets <b>+1</b> to its face.`, keyOf(pin.at));
     const dud = ev.find((e) => e.k === 'face' && e.at.side === 'p' && ((e.face.t === 'skull' && !run.relics.includes('snakeoil')) || e.face.t === 'smooth'));
     if (dud) await teach('learn-' + dud.face.t, dud.face.t === 'skull'
-      ? '<b>Skull.</b> A fumble: your die does nothing this turn. The Forge can sand a Skull off, and Lead Shot keeps one throw off it.'
+      ? `<b>Skull.</b> A fumble: you lose <b>${A.SKULL_COST}</b> pip and do nothing else this turn. The Forge can engrave over a Skull or sand it off, and Lead Weight keeps one throw off it.`
       : '<b>Smooth.</b> A blank face: nothing happens. Engrave something onto it at the Forge.', PKEY);
 
     if (has.clack) {
@@ -736,6 +736,13 @@
           floatOn(onDie(e.side), `BLOCKED ${e.n}`, 'guard'); sfx('block');
           log(`${e.side === 'p' ? 'You block' : `${esc(fight.def.name)} blocks`} <b>${e.n}</b>.`);
           await wait(320);
+        } else if (e.k === 'dmg' && e.why === 'skull') {
+          const prev = fight.shown[e.side];
+          fight.shown[e.side] = Math.max(0, prev - e.n);
+          floatOn(onDie(e.side), `FUMBLE −${e.n}`, 'dmg'); sfx(e.side === 'p' ? 'hurt' : 'hit', e.n);
+          log(`${e.side === 'p' ? 'You fumble' : `${esc(fight.def.name)} fumbles`}: <b>−${e.n}</b>.`);
+          drawCards({ [e.side]: { prev, guard: guard[e.side] } });
+          await wait(420);
         } else if (e.k === 'dmg' && (e.why === 'strike' || e.why === 'pierce')) {
           if (e.at) A.tray.flash(keyOf(e.at), '#ffffff', 0.7);
           const prev = fight.shown[e.side], through = e.why === 'pierce' && guard[e.side] > 0;
@@ -892,7 +899,7 @@
         if (bonus[i]) { f.v += bonus[i]; why.push(`+${bonus[i]} pin`); }
         if (charged[d.side]) { f.v *= 2; charged[d.side] = false; why.push('×2 charge'); }
       }
-      if (d.status !== 'pinned' && d.side === 'p' && fight.st.p.chalk.includes(d.face)) why.push('twice: chalk');
+      if (d.status !== 'pinned' && d.side === 'p' && fight.st.p.chalk.includes(d.face)) why.push('twice: lucky star');
       const div = document.createElement('div');
       div.className = 'face-label ' + (d.side === 'p' ? 'mine' : 'theirs') + (d.status === 'pinned' ? ' pinned' : '');
       const under = d.status === 'pinned' && oc.dice[d.on] ? `no move · +1 to ${who(oc.dice[d.on], true)}` : 'no move';
@@ -912,16 +919,16 @@
     const id = run.items[k]; if (!id) return;
     const it = itemInfo(id);
     if (it.when !== 'before' || phase !== 'aim' || (id === 'lead' && fight.lead)) { U().inspect(btnEl); return; }
-    if (id === 'lead') { useItem('lead'); fight.lead = true; sfx('charge'); log('Lead Shot loaded: no Skull or Smooth this throw.'); toAim(true); }
+    if (id === 'lead') { useItem('lead'); fight.lead = true; sfx('charge'); log('Lead Weight loaded: no Skull or Smooth this throw.'); toAim(true); }
     else if (id === 'chalk') {
       phase = 'screen';
-      screen(`<h2 class="pxfont">Chalk a face</h2><p>If it comes up this fight, it triggers twice.</p>${U().net(run.die, { pickable: true, chalk: fight.st.p.chalk, only: (f, i) => !fight.st.p.chalk.includes(i) })}<div class="row">${btn('Cancel', 'back-fight')}</div>`, 'chalk');
+      screen(`<h2 class="pxfont">Star a face</h2><p>If it comes up this fight, it triggers twice.</p>${U().net(run.die, { pickable: true, chalk: fight.st.p.chalk, only: (f, i) => !fight.st.p.chalk.includes(i) })}<div class="row">${btn('Cancel', 'back-fight')}</div>`, 'chalk');
       el.overlay.onPick = (i) => {
         if (fight.st.p.chalk.includes(i)) return;
         useItem('chalk'); fight.st.p.chalk.push(i);
         closeScreen(); buildPlayerDie(); readyDice();
         sfx('forge');
-        log(`Chalked <b>${esc(A.faceLabel(run.die.faces[i]))}</b>.`);
+        log(`Starred <b>${esc(A.faceLabel(run.die.faces[i]))}</b>.`);
         toAim(true);
       };
     }
@@ -964,7 +971,7 @@
       return;
     }
     if (act === 'grow') { grow(); return; }
-    if (act === 'grow-yes') { run.die.sides = 6; run.die.faces.push(A.F('smooth'), A.F('smooth')); sfx('forge'); forgeDone('You are a <b>d6</b> now. Two Smooth faces are waiting for stamps.'); return; }
+    if (act === 'grow-yes') { run.die.sides = 6; run.die.faces.push(A.F('skull'), A.F('skull')); sfx('forge'); forgeDone('You are a <b>d6</b> now, with two new Skulls. Engrave over them or sand them off at the Forge.'); return; }
     if (act === 'back-forge') { showForge(); return; }
     if (act === 'back-fight') { closeScreen(); toAim(true); return; }
     if (b.dataset.face != null && el.overlay.onPick && b.closest('.pickable')) { if (!b.classList.contains('off')) el.overlay.onPick(+b.dataset.face); return; }

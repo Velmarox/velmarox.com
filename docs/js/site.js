@@ -46,6 +46,9 @@
   function threadUrl(t) { return '/community/' + t.slug + '/'; }
   function findGame(s) { return ALL.filter(function (g) { return g.slug === s; })[0]; }
   function playable(g) { return g.status === 'live' && g.play && g.play !== '#'; }
+  // Nothing to play in the browser and no download link yet: its pictures get a grey veil.
+  function available(g) { return playable(g) || !!(g.download && g.download.url); }
+  function veil(g) { return available(g) ? '' : '<span class="veil" aria-hidden="true"></span>'; }
   function img(src, alt, label) {
     return src
       ? '<img src="' + esc(src) + '" alt="' + esc(alt || '') + '" loading="lazy">'
@@ -79,7 +82,7 @@
   // ---------- cards ----------
   function gameCard(g) {
     return '<li><a class="card" href="' + gameUrl(g) + '"><div class="card-in">' +
-      '<div class="card-img">' + img(g.thumb, g.title, 'Card') + badges(g) +
+      '<div class="card-img">' + img(g.thumb, g.title, 'Card') + veil(g) + badges(g) +
       (g.icon ? '<div class="card-icon">' + img(g.icon, '') + '</div>' : '') + '</div>' +
       '<div class="card-body">' + statusTag(g) +
       '<h3>' + esc(g.title) + '</h3><div class="tags">' + genreTags(g) + '</div>' +
@@ -283,7 +286,7 @@
         '<div class="hero-actions">' +
           (playable(g) ? '<a class="btn big" href="' + esc(g.play) + '">Play now</a>' : '<a class="btn big" href="' + gameUrl(g) + '">' + (g.download ? 'Get it' : g.status === 'live' ? 'Play now' : 'See game') + '</a>') +
           '<a class="btn ghost big" href="' + gameUrl(g) + '">Details</a></div></div>';
-      $('#hero-img').innerHTML = img(g.banner || g.thumb, g.title, 'Image');
+      $('#hero-img').innerHTML = img(g.banner || g.thumb, g.title, 'Image') + veil(g);
       $('#hero-screen').href = gameUrl(g);
       $('#hero-num').textContent = String(i + 1).padStart(2, '0');
       dots.forEach(function (d, k) { d.setAttribute('aria-current', k === i); });
@@ -334,7 +337,7 @@
   function toolBanner(g) {
     var first = (g.about || '').split(/\n\s*\n/)[0];
     return '<li class="tool"><div class="tool-in">' +
-      '<a class="tool-img" href="' + gameUrl(g) + '" tabindex="-1" aria-hidden="true">' + img(g.banner || g.thumb, '', 'Banner') + badges(g) + '</a>' +
+      '<a class="tool-img" href="' + gameUrl(g) + '" tabindex="-1" aria-hidden="true">' + img(g.banner || g.thumb, '', 'Banner') + veil(g) + badges(g) + '</a>' +
       '<div class="tool-body">' +
         '<div class="game-id">' + (g.icon ? '<div class="game-icon"><div>' + img(g.icon, '') + '</div></div>' : '') +
           '<div><div class="tags">' + statusTag(g) + (g.version ? '<span class="tag dim">v' + esc(g.version) + '</span>' : '') + '</div>' +

@@ -6,6 +6,7 @@ window.ARENA = window.ARENA || {};
   const A = window.ARENA;
 
   // A face is { t: type, v: value } plus optional icon/name overrides (The House's Jackpot is a Strike with a crown).
+  A.SKULL_COST = 1;   // pips a Skull costs whoever lands it
   A.FACE_TYPES = {
     strike: { name: 'Strike', icon: 'claw', color: '#ff2a43', valued: true, text: (v) => `Deal ${v}.` },
     guard: { name: 'Guard', icon: 'shield', color: '#4fa3ff', valued: true, text: (v) => `Block ${v} Strike damage this turn. Pierce goes through.` },
@@ -13,7 +14,7 @@ window.ARENA = window.ARENA || {};
     mend: { name: 'Mend', icon: 'heart', color: '#3ddc84', valued: true, text: (v) => `Heal ${v} pips.` },
     charge: { name: 'Charge', icon: 'flame', color: '#f5e400', valued: false, text: () => 'Next turn, the number on your face is doubled.' },
     thorn: { name: 'Thorn', icon: 'thorns', color: '#b98cff', valued: true, text: (v) => `If a Strike or Pierce hurts you this turn, the attacker takes ${v}.` },
-    skull: { name: 'Skull', icon: 'skull', color: '#9a9aa6', valued: false, text: () => 'A fumble. Nothing happens.' },
+    skull: { name: 'Skull', icon: 'skull', color: '#9a9aa6', valued: false, text: () => `A fumble: lose ${A.SKULL_COST} pip.` },
     smooth: { name: 'Smooth', icon: '', color: '#5a5a66', valued: false, text: () => 'Blank. Engrave it at the Forge.' },
   };
 
@@ -85,7 +86,7 @@ window.ARENA = window.ARENA || {};
       name: 'The House', hp: 18, previews: 3, chips: 0, boss: true,
       line: "I've already seen how this goes.", lose: 'Count it again.', win: 'The House always does.',
       dice: [{ sides: 12, faces: [F('strike', 3), F('strike', 2), F('strike', 2), F('strike', 2), F('strike', 1), F('guard', 2), F('guard', 2),
-        F('pierce', 2), F('mend', 2), F('charge'), F('strike', 5, { icon: 'crown', name: 'Jackpot' }), F('smooth')],
+        F('pierce', 2), F('mend', 2), F('charge'), F('strike', 5, { icon: 'crown', name: 'Jackpot' }), F('skull')],
         look: { color: '#d4a83a', finish: 'metal', ink: '#2a1d05' }, phys: { mass: 1.4, bounce: 0.9, grip: 1 } }],
     },
   };
@@ -96,16 +97,16 @@ window.ARENA = window.ARENA || {};
   // Consumables: hold 3, each used once. when: 'before' (while aiming) or 'after' (once the dice land).
   A.CONSUMABLES = {
     nudge: { name: 'Nudge', icon: 'N', when: 'after', text: 'After landing, tip your die onto a neighbouring face.' },
-    chalk: { name: 'Chalk', icon: 'C', when: 'before', text: 'Mark one face. If it comes up this fight, it triggers twice.' },
-    talc: { name: 'Talc', icon: 'T', when: 'after', text: 'Call off the throw. Everyone throws again.' },
-    lead: { name: 'Lead Shot', icon: 'L', when: 'before', text: "This throw can't settle on Skull or Smooth." },
+    chalk: { name: 'Lucky Star', icon: 'S', when: 'before', text: 'Put a star on one face. If it comes up this fight, it triggers twice.' },
+    talc: { name: 'No Throw', icon: 'X', when: 'after', text: 'Call No Throw. Everyone throws again.' },
+    lead: { name: 'Lead Weight', icon: 'L', when: 'before', text: "This throw can't settle on Skull or Smooth." },
   };
   A.MAX_CONSUMABLES = 3;
 
   A.RELICS = {
     leadcore: { name: 'Lead Core', text: 'Your die is twice as heavy: shove other dice, shrug off their hits (+1 Clack dealt, -1 taken).' },
     rubber: { name: 'Rubber Coat', text: 'Your die bounces much higher. Long, wild throws with lots of Clacks.' },
-    snakeoil: { name: 'Snake Oil', text: 'Your Skull faces heal you for 2.' },
+    snakeoil: { name: 'Snake Oil', text: 'Your Skulls heal you for 2 instead of costing a pip.' },
     cracked: { name: 'Cracked Shell', text: '+1 on every face with a number. -5 max pips.' },
   };
 
@@ -121,7 +122,7 @@ window.ARENA = window.ARENA || {};
     rest: { name: 'Rest', icon: 'btn-green', text: 'Repair some pips.' },
     boss: { name: 'The House', icon: 'crest-red', text: 'The boss of the Green Felt.' },
   };
-  A.ITEM_ICON = { nudge: 'chevron', chalk: 'gem-cyan', talc: 'gem-green', lead: 'gem-orange' };
+  A.ITEM_ICON = { nudge: 'item-paw', chalk: 'item-star', talc: 'item-nothrow', lead: 'item-weight' };
   A.RELIC_ICON = 'rank-cyan';
 
   // The four beats a turn resolves in: key, name, what happens in it (shown under the phase strip and on the rules page).

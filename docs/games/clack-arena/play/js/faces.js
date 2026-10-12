@@ -110,8 +110,9 @@
     return tex;
   };
 
+  // The Lucky Star's ring: dashed, in star gold.
   function chalkMark(g, x, y, r) {
-    g.save(); g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineWidth = Math.max(2, r * 0.12); g.setLineDash([r * 0.25, r * 0.15]);
+    g.save(); g.strokeStyle = 'rgba(255,214,64,0.95)'; g.lineWidth = Math.max(2, r * 0.12); g.setLineDash([r * 0.25, r * 0.15]);
     g.beginPath(); g.arc(x, y, r, 0, 6.3); g.stroke(); g.restore();
   }
 
