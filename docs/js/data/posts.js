@@ -21,6 +21,11 @@
 
 window.POSTS = [
   {
+    slug: 'you-can-make-anything-you-want',
+    title: 'You Can Make Anything You Want (Terms and Conditions Apply)', date: '2026-10-12', tag: 'Thoughts',
+    excerpt: 'My dad told me I could make anything that runs on a computer. He was right. He left out the fine print.'
+  },
+  {
     slug: 'three-casino-games',
     title: 'Three casino games, and the maths is the hard part', date: '2026-10-12', tag: 'Thoughts',
     cover: '/games/keno/cover.jpg',
