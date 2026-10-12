@@ -13,6 +13,8 @@ docs/
   games/index.html        all games; ?cat=<key> filters by category (the Games dropdown links here)
   games/<slug>/           one folder per game: index.html + that game's images
   games/_template/        copy this to start a new game page
+  tools/index.html        tools page: one wide banner per tool (anything with genre 'tools')
+  tools/<slug>/           one folder per tool, same as a game folder; Download first, browser build as a preview
   blog/index.html         all posts
   blog/<slug>/            one folder per post: the post text lives in its index.html
   blog/_template/         copy this to start a new post

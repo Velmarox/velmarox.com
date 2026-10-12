@@ -21,11 +21,13 @@ const add = (url, title, desc, image, type = 'website') => pages.push({ url, tit
 
 add('/', 'VRX Games', 'Games, tools and devlogs, made by one person. Play in your browser, no installs, no ads.');
 add('/games/', 'All games | VRX Games', 'Every game and tool on VRX Games, from finished to half-built.');
+add('/tools/', 'Tools | VRX Games', 'Small apps I made because I wanted them. Free to download.');
 add('/blog/', 'Blog | VRX Games', 'Devlogs, thoughts and whatever else is on my mind.');
 add('/news/', 'News | VRX Games', 'Releases, updates and announcements.');
 add('/community/', 'Community | VRX Games', 'Talk about the games, report bugs, pitch ideas.');
 add('/shop/', 'Shop | VRX Games', 'Soundtracks, extras and merch. Coming soon.');
-for (const g of GAMES) add(`/games/${g.slug}/`, `${g.title} | VRX Games`, g.tagline || '', g.banner || g.thumb);
+const isTool = g => (g.genres || []).includes('tools');
+for (const g of GAMES) add(`/${isTool(g) ? 'tools' : 'games'}/${g.slug}/`, `${g.title} | VRX Games`, g.tagline || '', g.banner || g.thumb);
 for (const p of POSTS) {
   const g = GAMES.find(x => x.slug === p.game);
   add(`/${p.type === 'news' ? 'news' : 'blog'}/${p.slug}/`, `${p.title} | VRX Games`, p.excerpt || '', p.cover || (g && (g.banner || g.thumb)), 'article');
