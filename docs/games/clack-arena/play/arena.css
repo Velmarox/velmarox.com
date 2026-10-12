@@ -316,13 +316,10 @@ button.tag { cursor: help; }
 .swatch:hover { outline-color: #8a8a94; }
 .swatch.on { outline: 3px solid var(--yellow); }
 .segs.wrap { flex-wrap: wrap; flex: 1; }
-.trays { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; }
-.tray-pick { position: relative; padding: 0; border: 0; background: #000; cursor: pointer; outline: 2px solid var(--line); text-align: left; }
-.tray-pick img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
-.tray-pick span { position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 6px; background: rgba(11,11,13,.8); font-family: var(--cond); font-size: 12px; text-transform: uppercase; }
-.tray-pick:hover { outline-color: #8a8a94; }
-.tray-pick.on { outline: 3px solid var(--yellow); }
-.tray-pick.on span { color: var(--yellow); }
+.seg.locked { display: inline-flex; flex-direction: column; align-items: center; line-height: 1; padding: 4px 10px; color: #55555f; border-style: dashed; cursor: not-allowed; background: #0e0e12; }
+.seg.locked small { font-family: var(--cond); font-size: 10px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+.good.unlock { border-left-color: var(--purple); }
+.unlock-chip { display: block; width: 40px; height: 40px; background: linear-gradient(135deg, rgba(255,255,255,.55), transparent 45%), var(--sw); border: 3px solid #111; outline: 2px solid var(--purple); }
 
 /* rules, settings */
 .sheet p.small { font-size: 13px; color: var(--muted); }

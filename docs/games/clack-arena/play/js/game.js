@@ -35,7 +35,8 @@
   }
 
   // ---------- your look (Customize) ----------
-  // Picked before a run and kept on this device: die colour, number colour, finish and tray.
+  // Picked before a run and kept on this device: die colour, number colour and finish. Some finishes are unlocked by
+  // beating the enemy that uses them (A.FINISH_UNLOCKS); unlocks are kept on this device too.
   function loadStyle() {
     let s = {};
     try { s = JSON.parse(localStorage.getItem('clackArena.style') || '{}'); } catch { /* storage off */ }
@@ -43,12 +44,22 @@
     A.style = { ...A.STYLE_DEFAULT, ...s };
     if (!ok(A.DIE_COLORS, A.style.color)) A.style.color = A.STYLE_DEFAULT.color;
     if (!ok(A.INK_COLORS, A.style.ink)) A.style.ink = A.STYLE_DEFAULT.ink;
-    if (!A.FINISHES[A.style.finish]) A.style.finish = A.STYLE_DEFAULT.finish;
-    if (!A.TRAYS.includes(A.style.tray)) A.style.tray = A.STYLE_DEFAULT.tray;
+    delete A.style.tray;
+    if (!A.FINISHES[A.style.finish] || !finishOpen(A.style.finish)) A.style.finish = A.STYLE_DEFAULT.finish;
   }
   function saveStyle() {
     try { localStorage.setItem('clackArena.style', JSON.stringify(A.style)); } catch { /* storage off */ }
-    A.tray.setTray(A.trayPic(A.style.tray));
+  }
+  let unlocked = new Set();
+  try { unlocked = new Set(JSON.parse(localStorage.getItem('clackArena.unlocks') || '[]')); } catch { /* storage off */ }
+  const finishOpen = (f) => !A.FINISH_UNLOCKS[f] || unlocked.has('finish-' + f);
+  // Beating an enemy unlocks the finish its die is made of. Returns that finish if it's new.
+  function unlockFor(enemy) {
+    const f = Object.keys(A.FINISH_UNLOCKS).find((k) => A.FINISH_UNLOCKS[k] === enemy);
+    if (!f || finishOpen(f)) return null;
+    unlocked.add('finish-' + f);
+    try { localStorage.setItem('clackArena.unlocks', JSON.stringify([...unlocked])); } catch { /* storage off */ }
+    return f;
   }
   const myLook = () => ({ color: A.style.color, ink: A.style.ink, finish: A.style.finish });
 
@@ -181,21 +192,21 @@
       <div class="row center">${btn("Let's go", 'howto-go', 'big primary')}${btn('Full rules', 'rules')}</div>`, 'rules');
   }
 
-  // Before every run: how your die and the tray look. Only looks, nothing here changes how the game plays.
+  // Before every run: how your die looks. Only looks, nothing here changes how the game plays.
   function showCustomize() {
     phase = 'title';
     const st = A.style, die = { ...A.PLAYER_START.die, look: myLook() };
     const sw = (key, val, label, fill) => `<button type="button" class="swatch${st[key] === val ? ' on' : ''}" data-style="${key}" data-val="${esc(val)}" title="${esc(label)}" aria-label="${esc(label)}" aria-pressed="${st[key] === val}" style="--sw:${fill}"></button>`;
     const seg = (key, val, label) => `<button type="button" class="seg${st[key] === val ? ' on' : ''}" data-style="${key}" data-val="${esc(val)}">${esc(label)}</button>`;
+    const locked = (f) => `<button type="button" class="seg locked" disabled title="Beat ${esc(A.ENEMIES[A.FINISH_UNLOCKS[f]].name)} to unlock">${esc(A.FINISH_NAMES[f])}<small>beat ${esc(A.ENEMIES[A.FINISH_UNLOCKS[f]].name)}</small></button>`;
     const name = (list, v) => list.find(([c]) => c === v)?.[1] || '';
     screen(`
       <h2 class="pxfont">Your die</h2>
-      <p>How ${esc(A.PLAYER_START.name)} looks this run. Looks only: nothing here changes how it plays. The yellow ring stays, so you can always find yourself.</p>
+      <p>How ${esc(A.PLAYER_START.name)} looks this run. Looks only: nothing here changes how it plays. The yellow ring stays, so you can always find yourself. Locked finishes open when you beat the enemy made of them.</p>
       <div class="cust-preview"><div style="--faces:${die.faces.length}">${U().net(die)}</div><span class="dim">${esc(name(A.DIE_COLORS, st.color))} · ${esc(A.FINISH_NAMES[st.finish])} · ${esc(name(A.INK_COLORS, st.ink))} numbers</span></div>
       <div class="cust"><b>Colour</b><div class="swatches">${A.DIE_COLORS.map(([c, n]) => sw('color', c, n, c)).join('')}</div></div>
       <div class="cust"><b>Numbers</b><div class="swatches">${A.INK_COLORS.map(([c, n]) => sw('ink', c, n, c)).join('')}</div></div>
-      <div class="cust"><b>Finish</b><div class="segs wrap">${Object.keys(A.FINISHES).map((f) => seg('finish', f, A.FINISH_NAMES[f] || f)).join('')}</div></div>
-      <div class="cust"><b>Tray</b><div class="trays">${A.TRAYS.map((t) => `<button type="button" class="tray-pick${st.tray === t ? ' on' : ''}" data-style="tray" data-val="${t}" aria-pressed="${st.tray === t}"><img alt="" loading="lazy" src="ui/trays/${t}.jpg"><span>${esc(A.trayName(t))}</span></button>`).join('')}</div></div>
+      <div class="cust"><b>Finish</b><div class="segs wrap">${Object.keys(A.FINISHES).map((f) => (finishOpen(f) ? seg('finish', f, A.FINISH_NAMES[f] || f) : locked(f))).join('')}</div></div>
       <div class="row">${btn('Start the run', 'cust-go', 'big primary')}${btn('Reset', 'cust-reset')}${btn('Back', 'title')}</div>`, 'customize');
   }
 
@@ -791,13 +802,15 @@
     const chips = fight.def.chips + Math.floor(Math.random() * 4);
     run.chips += chips;
     let found = '', relicChoice = '';
+    const fin = unlockFor(fight.id);
+    if (fin) found += `<div class="good unlock"><span class="good-ico unlock-chip" style="--sw:${esc(fight.def.dice[0].look.color)}"></span><div class="good-text"><b>Unlocked: ${esc(A.FINISH_NAMES[fin])} finish</b><small>Your die can be ${esc(A.FINISH_NAMES[fin]).toLowerCase()} now. Pick it in Customize before your next run.</small></div></div>`;
     if (fight.type === 'elite') {
       const opts = shuffle(Object.keys(A.RELICS).filter((r) => !run.relics.includes(r))).slice(0, 2);
       if (opts.length) relicChoice = `<h3>Take a relic</h3><div class="goods" id="relic-pick">${opts.map((r) => `<div class="good relic">${px(A.RELIC_ICON, 2, 'good-ico')}<div class="good-text"><b>${esc(A.RELICS[r].name)}</b><small>${esc(A.RELICS[r].text)}</small></div><button type="button" class="pbtn primary" data-relic="${r}">Take</button></div>`).join('')}</div>`;
     } else if (Math.random() < 0.5) {
       const id = pick(Object.keys(A.CONSUMABLES));
-      if (run.items.length < A.MAX_CONSUMABLES) { run.items.push(id); found = `<div class="good item">${px(A.ITEM_ICON[id], 2, 'good-ico')}<div class="good-text"><b>Found ${esc(itemInfo(id).name)}</b><small>${esc(itemInfo(id).text)}</small></div></div>`; }
-      else found = `<p class="small">Found ${esc(itemInfo(id).name)}, but your bag is full.</p>`;
+      if (run.items.length < A.MAX_CONSUMABLES) { run.items.push(id); found += `<div class="good item">${px(A.ITEM_ICON[id], 2, 'good-ico')}<div class="good-text"><b>Found ${esc(itemInfo(id).name)}</b><small>${esc(itemInfo(id).text)}</small></div></div>`; }
+      else found += `<p class="small">Found ${esc(itemInfo(id).name)}, but your bag is full.</p>`;
     }
     A.tray.clearDice();
     clearLabels();
@@ -928,7 +941,7 @@
       showCustomize(); return;
     }
     if (act === 'howto-go') { U().doneCoach('howto'); showCustomize(); return; }
-    if (b.dataset.style) { A.style[b.dataset.style] = b.dataset.val; saveStyle(); const y = el.overlay.scrollTop; showCustomize(); el.overlay.scrollTop = y; return; }
+    if (b.dataset.style) { if (b.dataset.style === 'finish' && !finishOpen(b.dataset.val)) return; A.style[b.dataset.style] = b.dataset.val; saveStyle(); const y = el.overlay.scrollTop; showCustomize(); el.overlay.scrollTop = y; return; }
     if (act === 'cust-reset') { A.style = { ...A.STYLE_DEFAULT }; saveStyle(); showCustomize(); return; }
     if (act === 'cust-go') { sfx('unlock'); newRun(); return; }
     if (act === 'title') { showTitle(); return; }
@@ -977,7 +990,6 @@
     if (!window.THREE || !window.CANNON || !window.RP?.dieShape) { el.overlay.className = 'overlay show'; el.overlay.innerHTML = '<div class="sheet"><h2>Couldn\'t load the dice.</h2><p>The 3D engine didn\'t load. Check your connection and reload.</p></div>'; return; }
     try { A.tray.init(el.trayWrap); } catch (err) { console.error(err); el.overlay.className = 'overlay show'; el.overlay.innerHTML = '<div class="sheet"><h2>No 3D here.</h2><p>This browser can\'t draw WebGL, which the tray needs.</p></div>'; return; }
     A.tray.onFrame = onFrame;
-    A.tray.setTray(A.trayPic(A.style.tray));
     document.addEventListener('click', onClick);
     document.addEventListener('mouseover', onOver);
     el.trayWrap.addEventListener('pointerdown', onDown);
