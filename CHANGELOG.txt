@@ -14,6 +14,10 @@ v0.16.0-alpha (2026-10-12)
 - Installer: per-user (no admin, no "who is this for" page), choose a folder, desktop and Start menu shortcuts,
   pixel art sidebar, launch on finish. Uninstalling asks whether to delete your settings; No is the default.
 - The game exposes ARENA.menu (new run, title, rules, settings, sound) for the menu bar.
+- .github/workflows/clack-arena-windows.yml builds the installer on a Windows runner when the game or the desktop
+  app changes; on main it publishes the GitHub release clack-arena-v<version> with the installer attached.
+- Clack Arena's page has a Download for Windows button (that release). Clack Arena is the first featured slide
+  on the home page and first in Trending now (PokéDungeon drops off Trending, which shows six).
 
 v0.15.0-alpha (2026-10-12)
 - Clack Arena v0.2.0: a design overhaul aimed at making the game explain itself.
