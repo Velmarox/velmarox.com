@@ -291,6 +291,11 @@ button.tag { cursor: help; }
 .gloss { display: grid; grid-template-columns: 130px 1fr; gap: 6px 14px; margin: 0; }
 .gloss dt { font-family: var(--px); font-size: 22px; color: var(--yellow); }
 .gloss dd { margin: 0; color: #d8d8de; line-height: 1.45; }
+.howto { list-style: none; counter-reset: step; margin: 0 0 16px; padding: 0; display: grid; gap: 8px; }
+.howto li { counter-increment: step; display: grid; grid-template-columns: 40px 1fr; gap: 2px 12px; background: var(--panel-2); padding: 8px 10px; }
+.howto li::before { content: counter(step); grid-row: span 2; font-family: var(--px); font-size: 36px; line-height: 1; color: var(--yellow); }
+.howto b { font-family: var(--px); font-size: 22px; font-weight: 400; color: #fff; }
+.howto span { color: #d8d8de; line-height: 1.45; }
 .rule-faces { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
 .rule-face { display: flex; gap: 10px; align-items: center; background: var(--panel-2); padding: 6px; }
 .rule-face img { width: 44px; height: 44px; }
