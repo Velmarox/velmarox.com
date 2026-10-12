@@ -5,6 +5,17 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.22.4-alpha (2026-10-12)
+- Clack Arena v0.8.3: items renamed to fit their icons, and every action icon comes from Franuka's Fantasy RPG
+  Icon Pack. Same mechanics.
+  - Chalk is now Lucky Star (Star, #265): star one face, and if it comes up this fight it triggers twice. The ring
+    it draws on the die is star gold instead of white.
+  - Talc is now No Throw (red X, #134): call No Throw after landing and everyone throws again.
+  - Nudge is a cat's Paw (#278) and Lead Shot a lead weight (Silver ingot, #306), replacing the GUI chevron and gem.
+  - Forge: Sand off a Skull is the Blacksmith hammer (#327), Grow is Buff (#148). Tavern Mend is Heal (#168).
+  - The pencil and pouch from v0.8.2 are gone. tools/build_arena_art.py writes all of these as ui/item-<name>.
+    Item ids stay chalk and talc, so code and saved state are unchanged.
+
 v0.22.3-alpha (2026-10-12)
 - Clack Arena v0.8.2: Chalk and Talc get icons from Franuka's Fantasy RPG Icon Pack instead of the GUI gems:
   Chalk is the Pencil (#259), Talc the Pouch (#105). Same mechanics. tools/build_arena_art.py cuts them to

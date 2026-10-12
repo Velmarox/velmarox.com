@@ -312,8 +312,8 @@
       <div class="stamps">${stamps.map((f, k) => `<button type="button" class="stamp" data-stamp="${k}"><img alt="" src="${A.faceChip(f, run.die.look)}"><span><b>${esc(A.faceLabel(f))}</b><small>${esc(A.faceText(f))}</small></span></button>`).join('')}</div>
       <h3>Or</h3>
       <div class="stamps">
-        ${hasSkull ? `<button type="button" class="stamp" data-act="sand">${px('down-orange', 3)}<span><b>Sand off a Skull</b><small>It becomes Smooth (blank): ready to engrave next time.</small></span></button>` : ''}
-        ${run.die.sides === 4 ? `<button type="button" class="stamp" data-act="grow">${px('up-green', 3)}<span><b>Grow to a d6</b><small>Two new Skull faces. Each face: 25% → 17%.</small></span></button>` : ''}
+        ${hasSkull ? `<button type="button" class="stamp" data-act="sand">${px('item-hammer', 3)}<span><b>Sand off a Skull</b><small>It becomes Smooth (blank): ready to engrave next time.</small></span></button>` : ''}
+        ${run.die.sides === 4 ? `<button type="button" class="stamp" data-act="grow">${px('item-grow', 3)}<span><b>Grow to a d6</b><small>Two new Skull faces. Each face: 25% → 17%.</small></span></button>` : ''}
       </div>
       <div class="row">${btn('Leave', 'leave')}</div>`, 'forge');
     el.overlay.dataset.stamps = JSON.stringify(stamps);
@@ -364,7 +364,7 @@
       <div class="goods">${g.map((x, k) => {
         const name = x.kind === 'item' ? itemInfo(x.id).name : x.kind === 'relic' ? A.RELICS[x.id].name : `Mend ${A.MEND_AMOUNT} pips`;
         const text = x.kind === 'item' ? itemInfo(x.id).text : x.kind === 'relic' ? A.RELICS[x.id].text : `Back up to ${Math.min(run.max, run.hp + A.MEND_AMOUNT)} / ${run.max}.`;
-        const icon = x.kind === 'item' ? A.ITEM_ICON[x.id] : x.kind === 'relic' ? A.RELIC_ICON : 'heart';
+        const icon = x.kind === 'item' ? A.ITEM_ICON[x.id] : x.kind === 'relic' ? A.RELIC_ICON : 'item-mend';
         const full = x.kind === 'item' && run.items.length >= A.MAX_CONSUMABLES, topped = x.kind === 'mend' && run.hp >= run.max;
         const short = x.price - run.chips;
         const why = x.sold ? (x.kind === 'mend' ? '' : 'Sold') : full ? 'Bag full' : topped ? 'Pips full' : short > 0 ? `Need ${short} more` : '';
@@ -642,8 +642,8 @@
       const f = A.effFace(fight.st, 'p', 0, fight.outcome.dice[0].face);
       el.after.className = 'after show';
       el.after.innerHTML = `<span class="after-q">You rolled <b>${ok ? esc(A.faceLabel(f)) : 'Pinned'}</b>. Use an item?</span>
-        ${canNudge ? `<button type="button" class="pbtn" data-act="nudge">${px('chevron', 2)}Nudge</button>` : ''}
-        ${canTalc ? `<button type="button" class="pbtn" data-act="talc" title="Call off the throw. Everyone throws again.">${px(A.ITEM_ICON.talc, 2)}Talc</button>` : ''}
+        ${canNudge ? `<button type="button" class="pbtn" data-act="nudge">${px(A.ITEM_ICON.nudge, 2)}Nudge</button>` : ''}
+        ${canTalc ? `<button type="button" class="pbtn" data-act="talc" title="Call No Throw. Everyone throws again.">${px(A.ITEM_ICON.talc, 2)}No Throw</button>` : ''}
         <button type="button" class="pbtn primary go" data-act="go">Go ▸</button>`;
     } else setTimeout(resolveTurn, 700 * pace());
     if (fight.turn === 1) setTimeout(() => {
@@ -670,7 +670,7 @@
   function doTalc() {
     useItem('talc');
     fight.shown = { p: fight.st.p.hp, e: fight.st.e.hp };
-    log('Talc. The throw is called off.');
+    log('No Throw. The throw is called off.');
     fight.outcome = null;
     readyDice();
     toAim();
@@ -701,7 +701,7 @@
     // Clack damage already landed during the throw; it gets a log line here.
     ev.filter((e) => e.k === 'clack').forEach((e) => { if (e.from.side === 'p') run.stats.clacks++; log(`Clack! ${who(e.from)} ${e.from.side === 'p' ? 'hit' : 'hits'} ${who(e.to, true)} for <b>${e.n}</b>.`); });
     ev.filter((e) => e.k === 'pinned').forEach((e) => log(`${who(e.at)} ${e.at.side === 'p' ? 'are' : 'is'} <b>Pinned</b>: no move this turn.`));
-    ev.filter((e) => e.k === 'face' && e.face.t !== 'smooth').forEach((e) => log(`${who(e.at)}: <b>${esc(A.faceLabel(e.face))}</b>${e.times > 1 ? ' ×2 (chalk)' : ''}${e.face.charged ? ' (charged ×2)' : ''}${e.pinBonus ? ` (+${e.pinBonus} from a pin)` : ''}.`));
+    ev.filter((e) => e.k === 'face' && e.face.t !== 'smooth').forEach((e) => log(`${who(e.at)}: <b>${esc(A.faceLabel(e.face))}</b>${e.times > 1 ? ' ×2 (lucky star)' : ''}${e.face.charged ? ' (charged ×2)' : ''}${e.pinBonus ? ` (+${e.pinBonus} from a pin)` : ''}.`));
 
     // First time something happens, say what it was (once per device, if tips are on).
     const pin = ev.find((e) => e.k === 'pinned');
@@ -892,7 +892,7 @@
         if (bonus[i]) { f.v += bonus[i]; why.push(`+${bonus[i]} pin`); }
         if (charged[d.side]) { f.v *= 2; charged[d.side] = false; why.push('×2 charge'); }
       }
-      if (d.status !== 'pinned' && d.side === 'p' && fight.st.p.chalk.includes(d.face)) why.push('twice: chalk');
+      if (d.status !== 'pinned' && d.side === 'p' && fight.st.p.chalk.includes(d.face)) why.push('twice: lucky star');
       const div = document.createElement('div');
       div.className = 'face-label ' + (d.side === 'p' ? 'mine' : 'theirs') + (d.status === 'pinned' ? ' pinned' : '');
       const under = d.status === 'pinned' && oc.dice[d.on] ? `no move · +1 to ${who(oc.dice[d.on], true)}` : 'no move';
@@ -915,13 +915,13 @@
     if (id === 'lead') { useItem('lead'); fight.lead = true; sfx('charge'); log('Lead Shot loaded: no Skull or Smooth this throw.'); toAim(true); }
     else if (id === 'chalk') {
       phase = 'screen';
-      screen(`<h2 class="pxfont">Chalk a face</h2><p>If it comes up this fight, it triggers twice.</p>${U().net(run.die, { pickable: true, chalk: fight.st.p.chalk, only: (f, i) => !fight.st.p.chalk.includes(i) })}<div class="row">${btn('Cancel', 'back-fight')}</div>`, 'chalk');
+      screen(`<h2 class="pxfont">Star a face</h2><p>If it comes up this fight, it triggers twice.</p>${U().net(run.die, { pickable: true, chalk: fight.st.p.chalk, only: (f, i) => !fight.st.p.chalk.includes(i) })}<div class="row">${btn('Cancel', 'back-fight')}</div>`, 'chalk');
       el.overlay.onPick = (i) => {
         if (fight.st.p.chalk.includes(i)) return;
         useItem('chalk'); fight.st.p.chalk.push(i);
         closeScreen(); buildPlayerDie(); readyDice();
         sfx('forge');
-        log(`Chalked <b>${esc(A.faceLabel(run.die.faces[i]))}</b>.`);
+        log(`Starred <b>${esc(A.faceLabel(run.die.faces[i]))}</b>.`);
         toAim(true);
       };
     }

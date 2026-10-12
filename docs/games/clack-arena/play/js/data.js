@@ -96,8 +96,8 @@ window.ARENA = window.ARENA || {};
   // Consumables: hold 3, each used once. when: 'before' (while aiming) or 'after' (once the dice land).
   A.CONSUMABLES = {
     nudge: { name: 'Nudge', icon: 'N', when: 'after', text: 'After landing, tip your die onto a neighbouring face.' },
-    chalk: { name: 'Chalk', icon: 'C', when: 'before', text: 'Mark one face. If it comes up this fight, it triggers twice.' },
-    talc: { name: 'Talc', icon: 'T', when: 'after', text: 'Call off the throw. Everyone throws again.' },
+    chalk: { name: 'Lucky Star', icon: 'S', when: 'before', text: 'Put a star on one face. If it comes up this fight, it triggers twice.' },
+    talc: { name: 'No Throw', icon: 'X', when: 'after', text: 'Call No Throw. Everyone throws again.' },
     lead: { name: 'Lead Shot', icon: 'L', when: 'before', text: "This throw can't settle on Skull or Smooth." },
   };
   A.MAX_CONSUMABLES = 3;
@@ -121,7 +121,7 @@ window.ARENA = window.ARENA || {};
     rest: { name: 'Rest', icon: 'btn-green', text: 'Repair some pips.' },
     boss: { name: 'The House', icon: 'crest-red', text: 'The boss of the Green Felt.' },
   };
-  A.ITEM_ICON = { nudge: 'chevron', chalk: 'item-chalk', talc: 'item-talc', lead: 'gem-orange' };
+  A.ITEM_ICON = { nudge: 'item-paw', chalk: 'item-star', talc: 'item-nothrow', lead: 'item-weight' };
   A.RELIC_ICON = 'rank-cyan';
 
   // The four beats a turn resolves in: key, name, what happens in it (shown under the phase strip and on the rules page).

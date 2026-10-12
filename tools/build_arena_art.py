@@ -2,7 +2,8 @@
 # docs/games/clack-arena/play/:
 #   icons/<name>.png         face icons from Franuka's Fantasy RPG Icon Pack (art/fantasy-rpg-icons/, CC BY 4.0),
 #                            kept at their native 16x16; the game scales them up without smoothing.
-#   ui/item-<id>.png, @2     item icons from the same pack, 3x and 2x, so A.px() can draw them like GUI pieces.
+#   ui/item-<id>.png, @2     icons for items and actions (Forge, Tavern) from the same pack, 3x and 2x, so A.px()
+#                            can draw them like GUI pieces.
 #   ui/cat-<enemy>.png       the enemy's cat (All Cats pack, art/all-cats-3/), first idle frame, 3x and @2 at 2x,
 #                            so A.px() can draw it like any other GUI piece.
 #   ui/cat-<enemy>-idle@2.png the whole idle loop as one strip at 2x, for the animated cats on the map cards.
@@ -20,8 +21,11 @@ ICONS = {
     'flame': '141-fire', 'thorns': 'spells-81-thorn-whip', 'skull': '137-skull', 'crown': '270-crown',
 }
 
-# Item id (A.ITEM_ICON) -> source file in the same pack.
-ITEMS = {'chalk': '259-pencil', 'talc': '105-pouch'}
+# Item and action icon name (ui/item-<name>) -> source file in the same pack.
+ITEMS = {
+    'star': '265-star', 'nothrow': '134-x-mark', 'paw': '278-paw', 'weight': '306-silver-ingot',
+    'hammer': '327-blacksmith-hammer', 'grow': '148-buff', 'mend': '168-heal',
+}
 
 # Enemy id (A.ENEMIES) -> cat. Each sheet is an idle loop of 32x32 frames side by side.
 CATS = {
