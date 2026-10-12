@@ -26,10 +26,12 @@
     A.settings = { ...A.SETTINGS_DEFAULT, ...s };
     if (s.reduceMotion == null && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) A.settings.reduceMotion = true;
     A.playSpeed = A.settings.fast ? 1.6 : 1;
+    document.documentElement.classList.toggle('calm', !!A.settings.reduceMotion);
   }
   function saveSettings() {
     try { localStorage.setItem('clackArena.settings', JSON.stringify(A.settings)); } catch { /* storage off */ }
     A.playSpeed = A.settings.fast ? 1.6 : 1;
+    document.documentElement.classList.toggle('calm', !!A.settings.reduceMotion);
   }
 
   // ---------- run ----------
@@ -165,6 +167,7 @@
       <h2 class="pxfont">How to play</h2>
       <dl class="gloss">${A.GLOSSARY.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
       <h3>Faces</h3><div class="rule-faces">${faces}</div>
+      <p class="small">Face icons: <a href="https://franuka.itch.io/" target="_blank" rel="noopener">Fantasy RPG Icon Pack by Franuka</a> (CC BY 4.0). Cats: All Cats pack.</p>
       <div class="row">${btn('Back', 'back', 'primary')}</div>`, 'rules');
   }
 
@@ -177,7 +180,7 @@
       <div class="setting"><div><b>Aim arrow</b><small>The arrow showing where your throw will go.</small></div><div class="segs">${opt('arrow', true, 'On')}${opt('arrow', false, 'Off')}</div></div>
       <div class="setting"><div><b>Sound</b></div><div class="segs">${opt('sound', true, 'On')}${opt('sound', false, 'Off')}</div></div>
       <div class="setting"><div><b>Dice speed</b><small>Fast plays throws and results quicker.</small></div><div class="segs">${opt('fast', false, 'Normal')}${opt('fast', true, 'Fast')}</div></div>
-      <div class="setting"><div><b>Reduce motion</b><small>No screen shake or slow-motion on hits.</small></div><div class="segs">${opt('reduceMotion', false, 'Off')}${opt('reduceMotion', true, 'On')}</div></div>
+      <div class="setting"><div><b>Reduce motion</b><small>No screen shake, slow-motion on hits or idle animations.</small></div><div class="segs">${opt('reduceMotion', false, 'Off')}${opt('reduceMotion', true, 'On')}</div></div>
       <div class="setting"><div><b>Tips</b><small>One-time tips the first time something comes up.</small></div><div class="segs">${opt('tips', true, 'On')}${opt('tips', false, 'Off')}</div></div>
       <div class="row">${btn('Back', 'back', 'primary')}${btn('Show tips again', 'reset-tips')}</div>`, 'settings');
   }
@@ -197,10 +200,14 @@
   }
 
   // ---------- map ----------
+  // Stops with an enemy show that enemy's cat (All Cats pack, cut by tools/build_arena_art.py); the rest their icon.
+  // The cards get the idle loop, the route strip a still.
+  const nodeIcon = (n, cls) => (n.enemy ? px('cat-' + n.enemy, 2, cls + ' cat') : px(A.NODES[n.type].icon, 2, cls));
+  const catCard = (n) => `<span class="node-ico cat-idle" style="--strip:url('ui/cat-${n.enemy}-idle@2.png')" role="img" aria-label="${esc(A.ENEMIES[n.enemy].name)}"></span>`;
   function showMap() {
     phase = 'map';
     const i = run.step, opts = run.map[i];
-    const route = run.map.map((s, k) => `<div class="stop ${k < i ? 'done' : k === i ? 'now' : 'later'}">${s.map((n, j) => `<span class="mini-node${k < i && run.path[k] === j ? ' taken' : ''}" title="${esc(A.NODES[n.type].name)}">${px(A.NODES[n.type].icon, 2)}</span>`).join('')}<small>${k === run.map.length - 1 ? 'Boss' : k + 1}</small></div>`).join('<i class="link"></i>');
+    const route = run.map.map((s, k) => `<div class="stop ${k < i ? 'done' : k === i ? 'now' : 'later'}">${s.map((n, j) => `<span class="mini-node${k < i && run.path[k] === j ? ' taken' : ''}" title="${esc(n.enemy ? A.ENEMIES[n.enemy].name : A.NODES[n.type].name)}">${nodeIcon(n, '')}</span>`).join('')}<small>${k === run.map.length - 1 ? 'Boss' : k + 1}</small></div>`).join('<i class="link"></i>');
     screen(`
       <div class="map-head"><h2 class="pxfont">Green Felt</h2><span class="dim">Stop ${i + 1} of ${run.map.length}</span></div>
       ${screenTip('map')}
@@ -221,7 +228,7 @@
         <small>${n.type === 'elite' ? 'Win a relic.' : n.type === 'boss' ? 'Beat it to clear the Green Felt.' : `Win ${e.chips}-${e.chips + 3} chips.`}</small>`;
     } else if (n.type === 'rest') body = `<small>Repair ${Math.min(run.max - run.hp, Math.ceil(run.max * A.REST_SHARE))} pips (you're at ${run.hp}/${run.max}).</small>`;
     else if (n.type === 'tavern') body = `<small>${esc(N.text)} You have ${run.chips} chips.</small>`;
-    return `<button type="button" class="node ${n.type}" data-node="${k}">${px(N.icon, 2, 'node-ico')}<span class="node-text"><b>${esc(N.name)}</b>${body}</span></button>`;
+    return `<button type="button" class="node ${n.type}" data-node="${k}">${n.enemy ? catCard(n) : px(N.icon, 2, 'node-ico')}<span class="node-text"><b>${esc(N.name)}</b>${body}</span></button>`;
   }
 
   function enterNode(k) {
@@ -886,7 +893,7 @@
     el.trayWrap.addEventListener('pointerup', onUp);
     el.trayWrap.addEventListener('pointercancel', () => { if (aiming) cancelAim(); });
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (aiming) cancelAim(); U().closePop(); } });
-    showTitle();
+    A.iconsReady.then(showTitle);   // faces are painted (and cached) from the pixel icons, so have them first
   }
 
   // For the desktop app's menu bar (desktop/clack-arena): the commands it can send the game.

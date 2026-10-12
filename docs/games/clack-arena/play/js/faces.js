@@ -8,7 +8,19 @@
   A.faceLabel = (f) => A.faceName(f) + (A.FACE_TYPES[f.t].valued ? ' ' + f.v : '');
   A.faceText = (f) => A.FACE_TYPES[f.t].text(f.v);
 
-  // Icons drawn here; the rest come from Clack Attack's painter (RP.drawDiceSymbol), which draws in about ±80 at size 100.
+  // Pixel icons (Franuka's Fantasy RPG Icon Pack, cut by tools/build_arena_art.py) for every face kind. They're 16x16
+  // and drawn without smoothing so the pixels stay square at any size. A.iconsReady settles once they've loaded
+  // (or failed: a missing icon falls back to the drawn one below).
+  const PIXEL = {};
+  A.iconsReady = Promise.all(['claw', 'arrow', 'shield', 'heart', 'flame', 'thorns', 'skull', 'crown'].map((name) => new Promise((done) => {
+    const im = new Image();
+    im.onload = () => { PIXEL[name] = im; done(); };
+    im.onerror = () => done();
+    im.src = 'icons/' + name + '.png';
+  })));
+
+  // Drawn icons, used where there's no pixel one (the plain pip) or it didn't load. The rest come from Clack
+  // Attack's painter (RP.drawDiceSymbol), which draws in about ±80 at size 100.
   const OWN = {
     shield(g, c) {
       g.beginPath(); g.moveTo(0, -78); g.lineTo(64, -56); g.quadraticCurveTo(66, 30, 0, 80); g.quadraticCurveTo(-66, 30, -64, -56); g.closePath();
@@ -30,7 +42,11 @@
   // Draws an icon centred at x, y, about `size` across. Icons with holes are drawn on their own canvas first.
   function icon(ctx, kind, x, y, size, rot, color) {
     if (!kind) return;
-    if (OWN[kind]) {
+    if (PIXEL[kind]) {
+      const k = Math.max(1, Math.round(size / 16)) * 16;   // whole multiples of 16 keep every pixel the same size
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(PIXEL[kind], -k / 2, -k / 2, k, k); ctx.restore();
+    } else if (OWN[kind]) {
       const off = document.createElement('canvas'); off.width = off.height = 200;
       const g = off.getContext('2d'); g.translate(100, 100); OWN[kind](g, color);
       ctx.save(); ctx.translate(x, y); ctx.rotate(rot); const k = size / 170; ctx.scale(k, k); ctx.drawImage(off, -100, -100); ctx.restore();
