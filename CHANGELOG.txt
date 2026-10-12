@@ -5,6 +5,15 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.18.0-alpha (2026-10-12)
+- Clack Arena v0.4.0: the map, the Forge, the Tavern, Rest and the after-fight screen each open with a short
+  panel the first time they come up, saying what that screen is for and how to use it. It stays while you're on
+  that screen (buying at the Tavern doesn't clear it) until Got it or until you move on, then never shows again on
+  that device. Same rules as the other tips: Settings > Show tips again brings them back, tips off skips them.
+  The map's panel replaces the old floating map tip, and now shows on the first stop instead of the second.
+- Clack Arena for Windows goes to 0.4.0; the Download for Windows button points at the clack-arena-v0.4.0 release.
+- Clack Arena's page: version 0.4.0, a v0.4.0 update entry, and the first How to play line mentions the screen tips.
+
 v0.17.0-alpha (2026-10-12)
 - Clack Arena v0.3.0: the first time you press Start a run, a short How to play comes up before the map: five numbered
   steps (Throw, Land, Clack, Between fights, Win), with Let's go and Full rules. The Throw step matches your aim

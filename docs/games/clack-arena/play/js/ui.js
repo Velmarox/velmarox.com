@@ -107,6 +107,7 @@
   const coachId = () => coachEl?.dataset.id;
   function resetTips() { seen = new Set(); saveSeen(); }
   const wasSeen = (id) => seen.has(id);
+  function markSeen(id) { seen.add(id); saveSeen(); }
   // A pointing hand that acts out a gesture: from -> to, over and over.
   function hand(from, to) {
     handEl?.remove(); handEl = null;
@@ -150,5 +151,5 @@
     if (on) host.querySelector('span').textContent = text;
   }
 
-  A.ui = { odds, oddsBar, avgHit, pips, chip, net, card, tag, inspect, closePop, coach, doneCoach, clearCoach, coachId, resetTips, seen: wasSeen, hand, banner, phases, power, thinking, get pop() { return pop; } };
+  A.ui = { odds, oddsBar, avgHit, pips, chip, net, card, tag, inspect, closePop, coach, doneCoach, clearCoach, coachId, resetTips, seen: wasSeen, markSeen, hand, banner, phases, power, thinking, get pop() { return pop; } };
 })();
