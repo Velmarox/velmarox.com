@@ -130,7 +130,7 @@
     const lead = run.relics.includes('leadcore');
     tags.push(...traitTags(playerPhys(), { deal: lead ? 1 : 0, take: lead ? -1 : 0 }));
     if (st?.charged) tags.push(U().tag('Charged ×2', 'hot', 'Your next face with a number is doubled'));
-    if (fight?.lead) tags.push(U().tag('Lead Shot', 'hot', "This throw can't settle on Skull or Smooth"));
+    if (fight?.lead) tags.push(U().tag('Lead Weight', 'hot', "This throw can't settle on Skull or Smooth"));
     if (o.guard) tags.push(U().tag('Guard ' + o.guard, 'blue'));
     const items = run.items.map((id, k) => {
       const it = itemInfo(id), usable = fight && it.when === 'before' && phase === 'aim' && !(id === 'lead' && fight.lead);
@@ -459,7 +459,7 @@
     A.tray.setZones(true, true);
     drawCards();
     const sling = A.settings.aim === 'sling';
-    hint((fight.lead ? 'Lead Shot loaded. ' : '') + (sling ? 'Press your die, pull back, let go.' : 'Press in the yellow zone, drag where to throw, let go.'));
+    hint((fight.lead ? 'Lead Weight loaded. ' : '') + (sling ? 'Press your die, pull back, let go.' : 'Press in the yellow zone, drag where to throw, let go.'));
     if (!resume) { U().banner('Your throw', `Turn ${fight.turn}`, 'yellow', 900); sfx('turn'); }
     // First fight: show how to throw.
     if (!resume) setTimeout(() => {
@@ -600,7 +600,7 @@
       const sim = A.tray.simulate(throws); sims++;
       last = { sim, throws };
       const playerBad = sim.status[0] === 'lean' || !leadOk(sim);
-      if (playerBad) {   // the same throw, a hair different, so your die lands cleanly (or, with Lead Shot, on a real face)
+      if (playerBad) {   // the same throw, a hair different, so your die lands cleanly (or, with Lead Weight, on a real face)
         const s = pThrow.seed.map((v, k) => (k < 3 ? v + (Math.random() - 0.5) * 0.12 : v + (Math.random() - 0.5) * 0.4));
         pThrow = A.tray.makeThrow(PKEY, playerPhys(), a.start.x, a.start.z, a.dx, a.dz, a.power, s);
         good.length = 0;   // earlier previews were against a throw you didn't make
@@ -708,7 +708,7 @@
     if (pin) await teach('learn-pinned', `<b>Pinned.</b> ${who(pin.at)} landed leaning on another die, so ${pin.at.side === 'p' ? 'you do' : 'it does'} nothing this turn. The die holding it up gets <b>+1</b> to its face.`, keyOf(pin.at));
     const dud = ev.find((e) => e.k === 'face' && e.at.side === 'p' && ((e.face.t === 'skull' && !run.relics.includes('snakeoil')) || e.face.t === 'smooth'));
     if (dud) await teach('learn-' + dud.face.t, dud.face.t === 'skull'
-      ? `<b>Skull.</b> A fumble: you lose <b>${A.SKULL_COST}</b> pip and do nothing else this turn. The Forge can engrave over a Skull or sand it off, and Lead Shot keeps one throw off it.`
+      ? `<b>Skull.</b> A fumble: you lose <b>${A.SKULL_COST}</b> pip and do nothing else this turn. The Forge can engrave over a Skull or sand it off, and Lead Weight keeps one throw off it.`
       : '<b>Smooth.</b> A blank face: nothing happens. Engrave something onto it at the Forge.', PKEY);
 
     if (has.clack) {
@@ -919,7 +919,7 @@
     const id = run.items[k]; if (!id) return;
     const it = itemInfo(id);
     if (it.when !== 'before' || phase !== 'aim' || (id === 'lead' && fight.lead)) { U().inspect(btnEl); return; }
-    if (id === 'lead') { useItem('lead'); fight.lead = true; sfx('charge'); log('Lead Shot loaded: no Skull or Smooth this throw.'); toAim(true); }
+    if (id === 'lead') { useItem('lead'); fight.lead = true; sfx('charge'); log('Lead Weight loaded: no Skull or Smooth this throw.'); toAim(true); }
     else if (id === 'chalk') {
       phase = 'screen';
       screen(`<h2 class="pxfont">Star a face</h2><p>If it comes up this fight, it triggers twice.</p>${U().net(run.die, { pickable: true, chalk: fight.st.p.chalk, only: (f, i) => !fight.st.p.chalk.includes(i) })}<div class="row">${btn('Cancel', 'back-fight')}</div>`, 'chalk');

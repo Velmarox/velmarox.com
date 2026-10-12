@@ -86,7 +86,7 @@ window.ARENA = window.ARENA || {};
       name: 'The House', hp: 18, previews: 3, chips: 0, boss: true,
       line: "I've already seen how this goes.", lose: 'Count it again.', win: 'The House always does.',
       dice: [{ sides: 12, faces: [F('strike', 3), F('strike', 2), F('strike', 2), F('strike', 2), F('strike', 1), F('guard', 2), F('guard', 2),
-        F('pierce', 2), F('mend', 2), F('charge'), F('strike', 5, { icon: 'crown', name: 'Jackpot' }), F('smooth')],
+        F('pierce', 2), F('mend', 2), F('charge'), F('strike', 5, { icon: 'crown', name: 'Jackpot' }), F('skull')],
         look: { color: '#d4a83a', finish: 'metal', ink: '#2a1d05' }, phys: { mass: 1.4, bounce: 0.9, grip: 1 } }],
     },
   };
@@ -99,7 +99,7 @@ window.ARENA = window.ARENA || {};
     nudge: { name: 'Nudge', icon: 'N', when: 'after', text: 'After landing, tip your die onto a neighbouring face.' },
     chalk: { name: 'Lucky Star', icon: 'S', when: 'before', text: 'Put a star on one face. If it comes up this fight, it triggers twice.' },
     talc: { name: 'No Throw', icon: 'X', when: 'after', text: 'Call No Throw. Everyone throws again.' },
-    lead: { name: 'Lead Shot', icon: 'L', when: 'before', text: "This throw can't settle on Skull or Smooth." },
+    lead: { name: 'Lead Weight', icon: 'L', when: 'before', text: "This throw can't settle on Skull or Smooth." },
   };
   A.MAX_CONSUMABLES = 3;
 
