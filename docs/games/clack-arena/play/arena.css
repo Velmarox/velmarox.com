@@ -68,6 +68,9 @@ img.px, .px { image-rendering: pixelated; image-rendering: crisp-edges; display:
 .items, .relics { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .chips { display: inline-flex; align-items: center; gap: 4px; font-family: var(--px); font-size: 22px; color: var(--yellow); }
 .chips img { height: 32px; width: auto; margin: -6px -2px; }   /* the coin at its 2x size: pixel art stays crisp */
+/* The count is in Saira: Thaleah's 0 is a filled oval that reads as a dot next to the coin. */
+.chips b, .purse b { font-family: var(--display); font-weight: 700; }
+.chips b { font-size: 20px; line-height: 1; }
 
 /* pips: one segment per point of health */
 .pips { flex: 1; display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; height: 30px; padding: 0;
@@ -284,7 +287,7 @@ button.tag { cursor: help; }
 @keyframes coin-spin { to { background-position: -240px 0; } }
 .calm .coin-spin { animation: none; }
 @media (prefers-reduced-motion: reduce) { .coin-spin { animation: none; } }
-.purse b { font-family: var(--px); font-size: 32px; font-weight: 400; color: var(--yellow); }
+.purse b { font-size: 30px; line-height: 1; color: var(--yellow); }
 .reward b, .rest-gain b { font-size: 56px; color: var(--yellow); line-height: 1; }
 .rest-gain b { color: var(--green); }
 .reward span, .rest-gain span { color: var(--muted); }
@@ -397,3 +400,71 @@ button.tag { cursor: help; }
   .pbtn.big { font-size: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { .pbtn.go, .item-btn.ready::after, .hand { animation: none; } }
+
+/* Phone on its side: too short for a panel above and below the tray. Both panels move into a left column that scrolls
+   on its own, and the tray gets the full height beside it. Overlays tighten so their buttons stay on screen. */
+@media (orientation: landscape) and (max-height: 500px) {
+  #app { grid-template-columns: minmax(230px, 36%) 1fr; grid-template-rows: auto 1fr; grid-template-areas: "enemy tray" "player tray"; }
+  #enemy-bar { grid-area: enemy; padding: 40px 6px 4px; border-bottom: 2px solid var(--red); border-right: 2px solid var(--line); }
+  #player-bar { grid-area: player; border-top: 0; border-right: 2px solid var(--yellow); overflow-y: auto; padding: 4px 6px; }
+  #tray-wrap { grid-area: tray; }
+  #enemy-bar .fcard { padding-right: 0; }
+  .fcard { grid-template-columns: 1fr; grid-template-areas: "head" "hp" "dice" "foot"; gap: 3px; border-width: 8px; border-image-width: 8px; padding: 2px 4px; }
+  .fname { font-size: 22px; }
+  .badge { height: 30px; }
+  .hpnum { font-size: 18px; } .hpnum b { font-size: 20px; }
+  .pips { height: 24px; min-width: 0; border-width: 8px; border-image-width: 8px; }
+  .fdie-head { display: none; }
+  :root { --chip: 28px; }
+  .odds { height: 15px; margin-bottom: 3px; }
+  .odds span { font-size: 11px; }
+  .ffoot { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .items, .relics { justify-content: flex-start; }
+  .item-btn img { height: 24px; }
+  .item-btn small { display: none; }
+  .item-slot { width: 28px; height: 28px; }
+  .tag { font-size: 11px; padding: 1px 5px; }
+  .vrx-badge { width: 52px; left: 6px; top: 6px; }
+  .corner-btns { top: 6px; right: 6px; }
+
+  /* the tray: overlays sized for a short screen, the log out of the dice's way */
+  .phases { top: 6px; }
+  .phases span { font-size: 17px; }
+  .phases small { font-size: 12px; }
+  .say { top: 46px; font-size: 15px; }
+  .hint { font-size: 18px; bottom: 8px; }
+  .log { top: 6px; left: 6px; right: auto; bottom: auto; width: 180px; font-size: 11px; }
+  .log p:nth-last-child(n+3) { display: none; }
+  .banner { padding: 6px 24px 8px; }
+  .banner b { font-size: 40px; } .banner.big b { font-size: 52px; } .banner.small b { font-size: 28px; }
+  .thinking { top: 12%; }
+  .face-label b { font-size: 19px; } .face-label small { font-size: 15px; }
+  .after { bottom: 6px; padding: 6px 8px; }
+  .after-q { font-size: 18px; }
+  .coach { max-width: 280px; }
+  .coach-body { font-size: 14px; padding: 8px 10px; }
+
+  /* overlay screens */
+  .overlay { padding: 6px 64px 6px 64px; }
+  .sheet { margin: 0 auto; padding: 8px 14px 12px; border-width: 10px; border-image-width: 10px; }
+  .sheet h2 { font-size: 34px; margin-bottom: 6px; }
+  .sheet h3 { font-size: 22px; margin-top: 10px; }
+  .sheet p { margin-bottom: 6px; line-height: 1.4; }
+  .sheet .lead { font-size: 17px; }
+  .row { margin-top: 10px; }
+  .pbtn.big { font-size: 24px; min-height: 44px; }
+  .title-art { margin: 0 0 6px; gap: 2px; }
+  .title-art .wings { width: 140px; }
+  .title-art h1 { font-size: clamp(44px, 15vh, 72px); }
+  .overlay.title .sheet > p { margin-bottom: 4px; }
+  .howto { gap: 5px; margin-bottom: 8px; }
+  .howto li { padding: 5px 8px; }
+  .howto li::before { font-size: 28px; }
+  .screen-tip { margin-bottom: 8px; padding: 6px 10px; }
+  .route { padding-top: 4px; }
+  .node { padding: 8px 10px; }
+  .nodes { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+  .cust { padding: 6px 0; }
+  .reward b, .rest-gain b { font-size: 44px; }
+  .stats b { font-size: 32px; }
+}

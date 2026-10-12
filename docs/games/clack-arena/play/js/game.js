@@ -313,7 +313,7 @@
       <h3>Or</h3>
       <div class="stamps">
         ${hasSkull ? `<button type="button" class="stamp" data-act="sand">${px('down-orange', 3)}<span><b>Sand off a Skull</b><small>It becomes Smooth (blank): ready to engrave next time.</small></span></button>` : ''}
-        ${run.die.sides === 4 ? `<button type="button" class="stamp" data-act="grow">${px('up-green', 3)}<span><b>Grow to a d6</b><small>Two new Smooth faces. Each face: 25% → 17%.</small></span></button>` : ''}
+        ${run.die.sides === 4 ? `<button type="button" class="stamp" data-act="grow">${px('up-green', 3)}<span><b>Grow to a d6</b><small>Two new Skull faces. Each face: 25% → 17%.</small></span></button>` : ''}
       </div>
       <div class="row">${btn('Leave', 'leave')}</div>`, 'forge');
     el.overlay.dataset.stamps = JSON.stringify(stamps);
@@ -332,10 +332,10 @@
     el.overlay.onPick = (i) => { run.die.faces[i] = f; sfx('forge'); forgeDone(`Engraved <b>${esc(A.faceLabel(f))}</b>.`); };
   }
   function grow() {
-    const d = clone(run.die); d.sides = 6; d.faces.push(A.F('smooth'), A.F('smooth'));
+    const d = clone(run.die); d.sides = 6; d.faces.push(A.F('skull'), A.F('skull'));
     screen(`
       <h2 class="pxfont">Grow to a d6?</h2>
-      <p>You keep your four faces and gain two Smooth (blank) ones. Room for a bigger build. But every face comes up less often, so your best face lands 1 time in 6 instead of 1 in 4.</p>
+      <p>You keep your four faces and gain two Skulls. Room for a bigger build once you engrave over them or sand them off. But every face comes up less often, so your best face lands 1 time in 6 instead of 1 in 4.</p>
       <div class="compare"><div style="--faces:4"><small>d4 now</small>${U().oddsBar(run.die)}${U().net(run.die)}</div><div style="--faces:6"><small>d6 after</small>${U().oddsBar(d)}${U().net(d)}</div></div>
       <div class="row">${btn('Grow', 'grow-yes', 'primary')}${btn('Back', 'back-forge')}</div>`, 'forge');
   }
@@ -964,7 +964,7 @@
       return;
     }
     if (act === 'grow') { grow(); return; }
-    if (act === 'grow-yes') { run.die.sides = 6; run.die.faces.push(A.F('smooth'), A.F('smooth')); sfx('forge'); forgeDone('You are a <b>d6</b> now. Two Smooth faces are waiting for stamps.'); return; }
+    if (act === 'grow-yes') { run.die.sides = 6; run.die.faces.push(A.F('skull'), A.F('skull')); sfx('forge'); forgeDone('You are a <b>d6</b> now, with two new Skulls. Engrave over them or sand them off at the Forge.'); return; }
     if (act === 'back-forge') { showForge(); return; }
     if (act === 'back-fight') { closeScreen(); toAim(true); return; }
     if (b.dataset.face != null && el.overlay.onPick && b.closest('.pickable')) { if (!b.classList.contains('off')) el.overlay.onPick(+b.dataset.face); return; }
