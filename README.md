@@ -5,7 +5,26 @@ Personal projects hub. Static site, no build step, hosted on GitHub Pages at
 
 ## Layout
 
-GitHub Pages publishes the `docs/` folder. README and CHANGELOG stay at the top and are not published.
+GitHub Pages publishes the `docs/` folder. README and CHANGELOG stay at the top and are not published, and so do
+`art/` (source art, such as the Pixel UI pack Clack Arena's GUI is cut from) and `tools/` (build scripts:
+`build_meta.mjs` below, and `build_arena_ui.py`, which cuts Clack Arena's GUI pieces from `art/pixel-ui-pack-3/`).
+
+## Clack Arena for Windows
+
+`desktop/clack-arena/` wraps the game in an Electron app with its own title bar and menu bar (the Windows
+ones are off) and builds a per-user installer. It packs the game straight from `docs/`, so build after changing
+the game:
+
+```
+cd desktop/clack-arena
+npm install          # once
+npm run art          # only after changing scripts/art.py (icon and installer sidebar)
+npm run dist         # -> dist/Clack-Arena-Setup-<version>.exe
+```
+
+The version comes from `desktop/clack-arena/package.json`. On Linux the build needs Wine (32-bit too) for the
+NSIS uninstaller step; on Windows it needs nothing extra. The exe isn't code-signed, so Windows shows the
+unknown-publisher screen (More info, then Run anyway).
 
 ```
 docs/

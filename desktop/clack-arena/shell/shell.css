@@ -1,0 +1,79 @@
+/* The window's own chrome, in the game's look: VRX black, crimson and yellow, the ThaleahFat pixel font and
+   pixel frames from Pixel UI pack 3 (served from the game's ui/ folder). */
+@font-face { font-family: 'Thaleah'; src: url('/games/clack-arena/play/ui/ThaleahFat.ttf') format('truetype'); }
+:root { --bar: #0b0b0d; --line: #2c2c36; --red: #e3122d; --red-hot: #ff2a43; --yellow: #f5e400; --text: #f2f2f4; --muted: #8d8d99; --px: 'Thaleah', 'Arial Narrow', sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bar); color: var(--text); overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; user-select: none; }
+body { display: grid; grid-template-rows: 34px 28px 1fr; }
+body.fullscreen { grid-template-rows: 0 0 1fr; }
+body.fullscreen .titlebar, body.fullscreen .menubar { display: none; }
+button { font: inherit; color: inherit; }
+
+/* ---------- title bar ---------- */
+.titlebar { display: flex; align-items: center; gap: 8px; padding-left: 10px; -webkit-app-region: drag; background: linear-gradient(#141419, #0b0b0d);
+  border-bottom: 2px solid transparent; border-image: repeating-linear-gradient(-45deg, var(--yellow) 0 6px, #111 6px 12px) 2; }
+body.blurred .titlebar { filter: saturate(.35) brightness(.85); }
+.app-ico { width: 20px; height: 20px; image-rendering: pixelated; }
+.app-name { font-family: var(--px); font-size: 22px; line-height: 1; letter-spacing: .03em; text-shadow: 0 2px 0 #000; }
+.app-name::first-letter { color: var(--yellow); }
+.app-ver { font-family: var(--px); font-size: 16px; color: var(--muted); }
+.drag { flex: 1; align-self: stretch; }
+.win-btns { display: flex; align-self: stretch; -webkit-app-region: no-drag; }
+.win-btns button { width: 46px; border: 0; background: transparent; display: grid; place-items: center; cursor: default; }
+.win-btns button:hover { background: #24242c; }
+.win-btns button:active { background: #31313b; }
+.win-btns .close:hover { background: var(--red); }
+.win-btns .close:active { background: #a30d20; }
+/* pixel glyphs: drawn from 2px blocks so they stay crisp */
+.win-btns i { display: block; width: 12px; height: 12px; position: relative; }
+.g-min::after { content: ""; position: absolute; left: 1px; right: 1px; bottom: 2px; height: 2px; background: currentColor; }
+.g-max::after { content: ""; position: absolute; inset: 1px; border: 2px solid currentColor; border-top-width: 4px; }
+body.maximized .g-max::after { inset: 4px 1px 1px 4px; }
+body.maximized .g-max::before { content: ""; position: absolute; inset: 1px 1px 4px 4px; border: 2px solid currentColor; border-top-width: 3px; border-left: 0; border-bottom: 0; }
+.g-close::before, .g-close::after { content: ""; position: absolute; left: -1px; right: -1px; top: 5px; height: 2px; background: currentColor; transform: rotate(45deg); }
+.g-close::after { transform: rotate(-45deg); }
+
+/* ---------- menu bar ---------- */
+.menubar { display: flex; align-items: stretch; background: #121217; border-bottom: 1px solid #000; position: relative; z-index: 20; padding-left: 4px; }
+.menu { position: relative; }
+.menu-top { height: 100%; border: 0; background: transparent; padding: 0 12px; font-family: var(--px); font-size: 19px; color: #d6d6de; cursor: default; }
+.menu-top u { text-decoration: none; }
+body.alt .menu-top u { text-decoration: underline; }
+.menu-top:hover, .menu.open .menu-top { background: #24242c; color: #fff; }
+.menu.open .menu-top { color: var(--yellow); }
+.menu-drag { flex: 1; -webkit-app-region: drag; }
+.drop { position: absolute; left: 0; top: 100%; min-width: 230px; display: none; flex-direction: column; padding: 4px;
+  border: 12px solid transparent; border-image: url('/games/clack-arena/play/ui/frame-navy@2.png') 14 / 12px / 0 stretch; image-rendering: pixelated;
+  background: #15151b; background-clip: padding-box; box-shadow: 0 10px 24px rgba(0,0,0,.55); margin-left: -6px; }
+.menu.open .drop { display: flex; }
+.drop button { display: flex; align-items: center; justify-content: space-between; gap: 24px; border: 0; background: transparent; padding: 6px 10px 6px 26px; text-align: left; cursor: default; font-size: 14px; position: relative; }
+.drop button:hover, .drop button:focus-visible { background: var(--yellow); color: #111; outline: none; }
+.drop button:hover kbd, .drop button:focus-visible kbd { color: #333; }
+.drop kbd { font-family: var(--px); font-size: 16px; color: var(--muted); }
+.drop button.check.on::before { content: ""; position: absolute; left: 9px; top: 50%; width: 8px; height: 8px; margin-top: -4px; background: currentColor; box-shadow: 0 0 0 2px rgba(0,0,0,.25); }
+.drop hr { border: 0; height: 2px; background: #26262e; margin: 4px 6px; }
+
+/* ---------- the game ---------- */
+.stage { position: relative; min-height: 0; }
+.stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: var(--bar); }
+
+.fs-hint { position: fixed; left: 50%; top: 12px; transform: translateX(-50%); z-index: 30; padding: 6px 14px; background: rgba(11,11,13,.9); border-left: 4px solid var(--yellow);
+  font-family: var(--px); font-size: 20px; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.fs-hint.show { opacity: 1; }
+
+/* ---------- dialogs (About, abandon run) ---------- */
+.dialog-back { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.6); display: none; place-items: center; }
+.dialog-back.show { display: grid; }
+.dialog { width: min(440px, 92vw); padding: 14px 18px 16px; border: 14px solid transparent; border-image: url('/games/clack-arena/play/ui/frame-navy@2.png') 14 / 14px / 0 stretch;
+  image-rendering: pixelated; background: #15151b; background-clip: padding-box; user-select: text; }
+.dialog h2 { margin: 0 0 8px; font-family: var(--px); font-weight: 400; font-size: 34px; }
+.dialog p { margin: 0 0 8px; font-size: 14px; line-height: 1.5; color: #d8d8de; }
+.dialog small { color: var(--muted); font-size: 12px; }
+.dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+.pbtn { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; cursor: pointer; color: #fff; border: 10px solid transparent;
+  border-image: url('/games/clack-arena/play/ui/pill-navy@2.png') 10 fill / 10px / 0 stretch; image-rendering: pixelated; background: none; padding: 0 8px;
+  font-family: var(--px); font-size: 20px; line-height: 1; text-shadow: 0 2px 0 rgba(0,0,0,.6); }
+.pbtn.primary { border-image-source: url('/games/clack-arena/play/ui/pill-brown@2.png'); color: #fff6c8; }
+.pbtn:hover { filter: brightness(1.18); }
+.about-head { display: flex; gap: 12px; align-items: center; }
+.about-head img { width: 64px; height: 64px; image-rendering: pixelated; }

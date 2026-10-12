@@ -1,0 +1,70 @@
+{
+  "name": "clack-arena",
+  "productName": "Clack Arena",
+  "version": "0.2.0",
+  "description": "Clack Arena for Windows: the dice-building roguelike from velmarox.com in its own window.",
+  "author": "Velmarox",
+  "homepage": "https://velmarox.com/games/clack-arena/",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "prepare-www": "node scripts/prepare.mjs",
+    "art": "python3 scripts/art.py",
+    "start": "npm run prepare-www && electron .",
+    "dist": "npm run prepare-www && electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3",
+    "resedit": "^2.0.3"
+  },
+  "build": {
+    "appId": "com.velmarox.clackarena",
+    "productName": "Clack Arena",
+    "copyright": "VRX Games",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "www/**/*",
+      "!www/**/*.map"
+    ],
+    "asar": true,
+    "afterPack": "build/afterPack.js",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Clack Arena",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "installerSidebar": "build/sidebar.bmp",
+      "uninstallerSidebar": "build/sidebar.bmp",
+      "include": "build/installer.nsh",
+      "artifactName": "Clack-Arena-Setup-${version}.${ext}"
+    },
+    "publish": null
+  }
+}

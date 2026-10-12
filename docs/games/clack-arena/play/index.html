@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="version" content="v0.1.0">
+<meta name="version" content="v0.2.0">
 <meta name="theme-color" content="#0b0b0d">
 <meta name="color-scheme" content="dark">
 <title>Clack Arena</title>
@@ -15,11 +15,16 @@
 </head>
 <body>
 <!-- Clack Arena. The dice shapes, physics library and Green Felt tray come from Clack Attack
-     (/tools/clack-attack/play/Table/); everything in js/ is the game. -->
+     (/tools/clack-attack/play/Table/); the GUI pieces in ui/ are cut from Pixel UI pack 3 by tools/build_arena_ui.py;
+     the pixel font is ThaleahFat (also used by Animalism). Everything in js/ is the game. -->
 <div id="app">
   <header id="enemy-bar" class="bar"></header>
   <div id="tray-wrap">
     <div id="labels"></div>
+    <div id="banner" class="banner"></div>
+    <div id="phases" class="phases"></div>
+    <div id="thinking" class="thinking"><i class="spin"></i><span></span></div>
+    <div id="power" class="power"><i class="bars"></i><b>0%</b></div>
     <div id="say" class="say"></div>
     <div id="hint" class="hint" style="display:none"></div>
     <div id="after" class="after"></div>
@@ -28,7 +33,10 @@
   <footer id="player-bar" class="bar"></footer>
 </div>
 <div id="overlay" class="overlay"></div>
-<button type="button" class="mute" data-act="mute">Sound on</button>
+<nav class="corner-btns">
+  <button type="button" class="pbtn small" data-act="rules" title="How to play">?</button>
+  <button type="button" class="pbtn small" data-act="settings" title="Settings">Settings</button>
+</nav>
 <a class="vrx-badge" href="../" aria-label="Back to the game page"><picture><source srcset="/assets/brand/vrx-badge.webp" type="image/webp"><img src="/assets/brand/vrx-badge.png" width="180" height="85" alt="VRX Games" decoding="async"></picture></a>
 
 <script>window.RP = window.RP || {};</script>
@@ -37,6 +45,8 @@
 <script src="js/data.js"></script>
 <script src="js/faces.js"></script>
 <script src="js/rules.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/ui.js"></script>
 <script src="js/tray.js"></script>
 <script src="js/game.js"></script>
 </body>

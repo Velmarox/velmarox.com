@@ -1,0 +1,53 @@
+# Builds the Clack Arena for Windows installer on a Windows machine. Every run keeps it as a download on the run's
+# page (Actions -> this workflow -> the run -> Artifacts). On main it is also published as the GitHub release
+# clack-arena-v<version>, which the game page's Download for Windows button links to. Runs when the game or the
+# desktop app changes, or by hand.
+name: Clack Arena for Windows
+
+on:
+  push:
+    paths:
+      - 'desktop/clack-arena/**'
+      - 'docs/games/clack-arena/**'
+      - '.github/workflows/clack-arena-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # publishing the release
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop/clack-arena
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/clack-arena/package-lock.json
+      - run: npm ci
+      - run: npm run dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Clack-Arena-Setup
+          path: desktop/clack-arena/dist/Clack-Arena-Setup-*.exe
+          retention-days: 30
+          compression-level: 0
+      - name: Publish the release (main only)
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v=$(node -p "require('./package.json').version")
+          tag="clack-arena-v$v"
+          exe="dist/Clack-Arena-Setup-$v.exe"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$exe" --clobber
+          else
+            gh release create "$tag" "$exe" --target "$GITHUB_SHA" --title "Clack Arena $v for Windows" \
+              --notes "Windows installer for Clack Arena $v. Installs for just you (no admin password). It isn't code-signed, so Windows shows an unknown-publisher screen: click More info, then Run anyway. Play in the browser at https://velmarox.com/games/clack-arena/"
+          fi

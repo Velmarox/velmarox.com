@@ -112,6 +112,32 @@ window.ARENA = window.ARENA || {};
   // What the Forge offers to engrave (three at random each visit).
   A.STAMPS = [F('strike', 4), F('strike', 3), F('guard', 3), F('pierce', 3), F('mend', 3), F('charge'), F('thorn', 2)];
 
+  // Stops on the map. icon: a GUI piece from ui/ (Pixel UI pack 3).
+  A.NODES = {
+    fight: { name: 'Fight', icon: 'btn-red', text: 'A die looking for trouble. Win chips, maybe an item.' },
+    elite: { name: 'Elite', icon: 'shield-red', text: 'A hard fight. Win a relic.' },
+    forge: { name: 'Forge', icon: 'rank-orange', text: 'Engrave a face, sand off a Skull, or grow.' },
+    tavern: { name: 'Tavern', icon: 'btn-yellow', text: 'Spend chips on items, relics and pips.' },
+    rest: { name: 'Rest', icon: 'btn-green', text: 'Repair some pips.' },
+    boss: { name: 'The House', icon: 'crest-red', text: 'The boss of the Green Felt.' },
+  };
+  A.ITEM_ICON = { nudge: 'chevron', chalk: 'gem-cyan', talc: 'gem-green', lead: 'gem-orange' };
+  A.RELIC_ICON = 'rank-cyan';
+
+  // The rules sheet: every term the game uses, in one place.
+  A.GLOSSARY = [
+    ['Your throw', 'Press on your die and pull back like a slingshot. Let go to throw it the other way. Longer pull, harder throw. You can press anywhere in the yellow zone to throw from there. (Settings can switch this to dragging the way you want to throw.)'],
+    ['Faces', 'The face that ends up on top is what your die does this turn. Tap any face, on a die panel or on the map, to read it.'],
+    ['Clack', "Hit an enemy die hard while it's tumbling and it takes damage straight away: 1 for a solid hit, 2 for a hard one, 3 for a smash. Their dice can Clack you too."],
+    ['Pinned', 'A die left leaning on another die does nothing this turn. The die holding it up gets +1 to its face.'],
+    ['Order', 'Each turn resolves in order: Clack, then Guard, then hits and heals, then Thorn.'],
+    ['Previews', 'Some enemies try several throws in secret against yours and keep the best one. You see the ones they threw away as faint red paths.'],
+    ['Odds', 'Every face on a die is equally likely. A d4 shows each face 1 time in 4; a d6, 1 in 6. The bars under each die show the odds by kind of face.'],
+    ['Pips and chips', 'Pips are your health. Chips are money for the Tavern.'],
+  ];
+
+  A.SETTINGS_DEFAULT = { aim: 'sling', arrow: true, sound: true, reduceMotion: false, fast: false, tips: true };
+
   A.PRICES = { consumable: 7, relic: 18, mend: 5 };
   A.MEND_AMOUNT = 6;
   A.REST_SHARE = 0.4;
