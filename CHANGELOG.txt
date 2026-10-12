@@ -5,44 +5,38 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
-v0.22.5-alpha (2026-10-12)
-- Clack Arena v0.8.4: Skulls cost a pip. Whoever lands a Skull loses 1 (A.SKULL_COST), shown as FUMBLE −1 and in
-  the log. Guard doesn't stop it and it doesn't set off Thorns. Before, a Skull did nothing, exactly like a blank
-  face, so sanding one off was pointless.
-  - Snake Oil: your Skulls heal you for 2 instead of costing a pip.
-  - Sand off a Skull now has a reason: the blank it leaves costs nothing. Engraving over a Skull still works.
-  - The Skull tip, face text, Forge and Grow texts say what it costs.
-
-v0.22.4-alpha (2026-10-12)
-- Clack Arena v0.8.3: items renamed to fit their icons, and every action icon comes from Franuka's Fantasy RPG
-  Icon Pack. Same mechanics.
-  - Chalk is now Lucky Star (Star, #265): star one face, and if it comes up this fight it triggers twice. The ring
-    it draws on the die is star gold instead of white.
-  - Talc is now No Throw (red X, #134): call No Throw after landing and everyone throws again.
-  - Nudge is a cat's Paw (#278) and Lead Shot a lead weight (Silver ingot, #306), replacing the GUI chevron and gem.
-  - Forge: Sand off a Skull is the Blacksmith hammer (#327), Grow is Buff (#148). Tavern Mend is Heal (#168).
-  - The pencil and pouch from v0.8.2 are gone. tools/build_arena_art.py writes all of these as ui/item-<name>.
-    Item ids stay chalk and talc, so code and saved state are unchanged.
-
-v0.22.3-alpha (2026-10-12)
-- Clack Arena v0.8.2: Chalk and Talc get icons from Franuka's Fantasy RPG Icon Pack instead of the GUI gems:
-  Chalk is the Pencil (#259), Talc the Pouch (#105). Same mechanics. tools/build_arena_art.py cuts them to
-  ui/item-chalk and ui/item-talc (3x and 2x); the sources are in art/fantasy-rpg-icons/.
-
-v0.22.2-alpha (2026-10-12)
-- A game with no browser version and no download link yet (PokéDungeon, for now) gets a translucent grey veil over
-  its picture on game cards, tool banners and the featured banner. It lifts on its own once the game has a play
-  link or a download URL.
-
-v0.22.1-alpha (2026-10-12)
-- Clack Arena v0.8.1:
+v0.23.2-alpha (2026-10-12)
+- Clack Arena v0.8.4:
   - Phone held sideways (landscape, 500px tall or less): the enemy and player panels share a column on the left
     and the tray takes the full height beside it. Before, the two panels filled the screen and hid the tray.
     Panels, tray overlays and screens are sized down to fit; the fight log moves to the tray's top-left so it no
     longer sits on the throw hint.
-  - Growing to a d6 at the Forge adds two Skulls, not two Smooth (blank) faces.
+  - Skulls cost a pip. Whoever lands a Skull loses 1 (A.SKULL_COST), shown as FUMBLE −1 and in the log. Guard
+    doesn't stop it and it doesn't set off Thorns. Snake Oil turns that cost into a 2-pip heal. Sanding a Skull
+    off at the Forge now matters (the blank costs nothing); engraving over one still works.
+  - Growing to a d6 adds two Skulls, not two blank faces. The House's blank face is a Skull too.
+  - Items renamed to fit their icons, same mechanics: Chalk is Lucky Star (its ring on the die is star gold),
+    Talc is No Throw, Lead Shot is Lead Weight. Item ids are unchanged.
+  - Every item and action icon comes from Franuka's Fantasy RPG Icon Pack: Lucky Star (Star, #265), No Throw
+    (red X, #134), Nudge (Paw, #278), Lead Weight (Silver ingot, #306), Sand off a Skull (Blacksmith hammer,
+    #327), Grow (Buff, #148), Tavern Mend (Heal, #168). tools/build_arena_art.py cuts them to ui/item-<name>.
   - The chip count next to the coin is set in Saira: Thaleah's 0 drew as a yellow dot.
 - The Windows app stays at 0.8.0 until it's rebuilt; the download still points at clack-arena-v0.8.0.
+- A game with no browser version and no download link yet (PokéDungeon, for now) gets a translucent grey veil over
+  its picture on game cards, tool banners and the featured banner. It lifts once the game has a play link or a
+  download URL.
+
+v0.23.1-alpha (2026-10-12)
+- Casino games post: new section "The basic maths" (return, how keno odds work, how reel stops set slot odds,
+  and why two games with the same return can feel different).
+
+v0.23.0-alpha (2026-10-12)
+- New blog post: "Three casino games, and the maths is the hard part" (blog/three-casino-games/), on Safari Time,
+  Wyrmhoard Keno and Elo's Hoard.
+- Animalism is unlisted. Its page and build still work at /games/animalism/ and /games/animalism/play/, but it is
+  gone from the home page, the games list, the Games dropdown, More games, the devlog and the sitemap, and its
+  page is marked noindex. The launch news post no longer links to it.
+- New game field `unlisted: true` (games.js) does all of the above; build_meta.mjs honours it.
 
 v0.22.0-alpha (2026-10-12)
 - Clack Arena v0.8.0: unlockable finishes.

@@ -21,6 +21,12 @@
 
 window.POSTS = [
   {
+    slug: 'three-casino-games',
+    title: 'Three casino games, and the maths is the hard part', date: '2026-10-12', tag: 'Thoughts',
+    cover: '/games/keno/cover.jpg',
+    excerpt: 'A slot and two kenos, built to Montana machine limits. Why I made them, how they differ, and why the cash-outs still do not match.'
+  },
+  {
     slug: 'installers-patchers-and-a-pixel-dog',
     title: 'Installers, patchers and a pixel dog', date: '2026-10-11', tag: 'Thoughts',
     cover: '/blog/installers-patchers-and-a-pixel-dog/cover.jpg',
@@ -30,7 +36,7 @@ window.POSTS = [
     slug: 'vrx-games-is-live', type: 'news',
     title: 'VRX Games is live', date: '2026-10-11', tag: 'Site',
     cover: '/news/vrx-games-is-live/cover.jpg',
-    excerpt: 'Everything I make, in one place: four browser games, a dice roller, a notepad and a roguelike.'
+    excerpt: 'Everything I make, in one place: three casino games, a dice roller, a notepad and a roguelike.'
   },
   {
     slug: 'clack-attack-on-phones', type: 'news', game: 'clack-attack',

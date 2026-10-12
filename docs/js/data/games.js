@@ -33,6 +33,7 @@
 //   download   { label: 'Download for Windows', url: '...', note: '...' } (url blank = "no public download yet")
 //   flag       short badge on cards, e.g. 'Fan game'
 //   warning    { title: '...', text: '...' } big hazard banner at the top of the game page
+//   unlisted   true = the page still works at /games/<slug>/, but nothing on the site links to it
 //
 // Missing images show a placeholder frame, so a game can go up before its art is ready.
 
@@ -64,10 +65,7 @@ window.GAMES = [
     about: "You are a die. You start as Caltrop, a d4, and every enemy is a die too. You both throw into the same tray at the same time, the dice crash into each other, and whatever face you land on is what you do.\n\nAim your throw: where from, which way, how hard. Hit an enemy die hard mid-tumble and it takes damage, and you might knock it off its best face. Leave a die leaning on another and it's Pinned.\n\nBetween fights, engrave new faces at the Forge, buy items and relics at the Tavern, and decide whether to grow into a d6. Bigger dice have room for more faces, but every face comes up less often.\n\nThe dice, the physics and the Green Felt tray come from Clack Attack. This is an early build: one tray, the d4 and the d6, six enemies and The House.\n\nFace icons from the Fantasy RPG Icon Pack by Franuka (franuka.itch.io, CC BY 4.0). Enemy cats from the All Cats pack.",
     howto: ['Your first run opens with a five-step How to play, and the map, Forge, Tavern and Rest each explain themselves the first time you reach them, and each rule explains itself the first time it happens in a fight. Full rules are on the title screen any time.', 'Before each run, Customize picks your die\'s colour, numbers and finish. Glass, Pearl and Metal unlock when you beat the enemy made of them.', 'Press your die and pull back like a slingshot. Let go to fling it the other way. Longer pull, harder throw. (Settings can switch to dragging the way you want to throw.)', 'Aim at the enemy die to Clack it, or throw soft into a corner for a calm landing.', 'Tap any face on a die panel to read it. The coloured bars show each die\'s odds.', 'Use items from your panel: Lucky Star and Lead Weight before a throw, Nudge and No Throw after landing.', 'Pick your route on the map. Beat The House at the end of the Green Felt.'],
     log: [
-      { date: '2026-10-12', text: 'v0.8.4: Skulls cost a pip. Land one and you lose 1, and so does an enemy. Engrave over them or sand them off at the Forge. Snake Oil turns that cost into a heal.' },
-      { date: '2026-10-12', text: 'v0.8.3: Chalk is now the Lucky Star (star a face and it triggers twice) and Talc is now No Throw (everyone throws again). Every item, plus the Forge and Mend, has a pixel icon from the same pack as the faces.' },
-      { date: '2026-10-12', text: 'v0.8.2: Chalk is a pencil and Talc is a pouch of powder, from the same pixel icon pack as the faces.' },
-      { date: '2026-10-12', text: 'v0.8.1: plays properly on a phone held sideways. Both panels sit in a column on the left and the tray gets the rest of the screen. Growing to a d6 now adds two Skulls instead of two blank faces, and your chip count is easier to read.' },
+      { date: '2026-10-12', text: 'v0.8.4: plays properly on a phone held sideways, with both panels in a column and the tray beside them. Skulls now cost a pip, for you and for enemies; engrave over them or sand them off at the Forge. Growing to a d6 adds two Skulls. Chalk is now Lucky Star, Talc is No Throw and Lead Shot is Lead Weight, and every item has a pixel icon from the same pack as the faces.' },
       { date: '2026-10-12', text: 'v0.8.0: finishes to unlock. Beat Glassjaw for Glass, Tumbler for Pearl and Iron Mike for Metal. The tray picker is gone from Customize: trays are being saved for difficulty levels.' },
       { date: '2026-10-12', text: 'v0.7.0: Customize before each run. Pick your die\'s colour, number colour and finish, and any of the 18 Clack Attack trays to play on. Looks only, and remembered for next time.' },
       { date: '2026-10-12', text: 'v0.6.0: the game explains its rules as they happen. The first Clack, Pin, Guard, Pierce, Charge, Thorns or Skull pauses the turn to say what it did. Face labels show the real number after pins and Charge, the turn strip says what each step does, dice show Heavy, Light and Bouncy tags, and chips are coins.' },
@@ -121,7 +119,7 @@ window.GAMES = [
   {
     slug: 'animalism',
     title: 'Animalism', tagline: 'A rock em sock em picture. Walk right and deal with whoever is in the way.',
-    genres: ['action', 'arcade'], status: 'live', featured: true, trending: true,
+    genres: ['action', 'arcade'], status: 'live', unlisted: true,
     released: '2026-09-10',
     controls: 'Keyboard or gamepad', platforms: 'Desktop',
     play: '/games/animalism/play/',
