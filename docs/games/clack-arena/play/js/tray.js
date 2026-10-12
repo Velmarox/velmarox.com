@@ -9,7 +9,8 @@
 (() => {
   const A = window.ARENA;
   const STEP = 1 / 60, MAX_SIM = 60 * 8, FLAT = 0.985;
-  const TRAY_PIC = '/tools/clack-attack/play/Table/Trays/Green_Felt.jpg', TRAY_BORDER = 0.14;
+  const TRAY_BORDER = 0.14;
+  let trayPic = '/tools/clack-attack/play/Table/Trays/Green_Felt.jpg';   // setTray() swaps it
   const SOUNDS = { hit: '/tools/clack-attack/play/Table/Sounds/Die_Hit.wav', clatter: '/tools/clack-attack/play/Table/Sounds/Dice_Clatter.wav' };
   const FRAME = 1.7;               // painted frame width round the floor, world units
   const ZONE = 0.3;                // share of the tray's depth that is your throwing zone
@@ -80,7 +81,9 @@
     const W = dims.w + 2 * FRAME, D = dims.d + 2 * FRAME;
     tray.scale.set(W, D, 1);
     const img = new Image();
+    const want = trayPic;
     img.onload = () => {
+      if (want !== trayPic) return;   // swapped again while this one loaded
       const PW = 1400, PH = Math.round(PW * D / W), fx2 = Math.round(PW * FRAME / W), fy = Math.round(PH * FRAME / D);
       const c = document.createElement('canvas'); c.width = PW; c.height = PH;
       const g = c.getContext('2d'), S = img.naturalWidth, T = img.naturalHeight, B = Math.round(TRAY_BORDER * Math.min(S, T)), iw = S - 2 * B, ih = T - 2 * B;
@@ -96,7 +99,7 @@
       tray.material.map = tex; tray.material.color.set(0xffffff); tray.material.needsUpdate = true;
     };
     tray.material.color.set(0x1f4a2c);
-    img.src = TRAY_PIC;
+    img.src = trayPic;
   }
 
   // Back the camera off until the whole tray, frame included, fits the screen.
@@ -443,6 +446,9 @@
   function clearFx() { fx.splice(0).forEach((f) => f.dispose()); }
 
   // ---------- aiming: slingshot band, arrow and launch marker ----------
+  // Change the tray picture (Customize). Repaints at once if the tray is already up.
+  function setTray(url) { if (url === trayPic) return; trayPic = url; if (tray?.material.map) paintTray(); }
+
   function makeAim() {
     const s = new THREE.Shape();
     s.moveTo(0, -0.18); s.lineTo(0.82, -0.18); s.lineTo(0.82, -0.46); s.lineTo(1.25, 0); s.lineTo(0.82, 0.46); s.lineTo(0.82, 0.18); s.lineTo(0, 0.18); s.closePath();
@@ -525,7 +531,7 @@
   }
 
   A.tray = {
-    init, layout, setDie, removeDie, clearDice, restAt, hover, simulate, makeThrow, playback, tip, flash, ghosts, spark,
+    init, setTray, layout, setDie, removeDie, clearDice, restAt, hover, simulate, makeThrow, playback, tip, flash, ghosts, spark,
     showAim, hideAim, tableAt, screenAt, screenOf, sound, setZones, zoneBounds, posOf,
     get dims() { return dims; },
     get busy() { return !!play || !!tipping; },

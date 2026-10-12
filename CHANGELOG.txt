@@ -5,6 +5,19 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.21.0-alpha (2026-10-12)
+- Clack Arena v0.7.0: Customize. Start a run (or Customize on the title screen) opens a "Your die" screen first:
+  - Colour: 12 body colours, from Clack Attack's dice templates (Caltrop red is the default).
+  - Numbers: 6 colours for the numbers on the faces.
+  - Finish: Matte, Satin, Glossy, Metal, Pearl or Glass, the same finishes the enemies use.
+  - Tray: any of Clack Attack's 18 trays, with thumbnails. The tray changes behind the screen as you pick.
+  A preview shows your faces in the new look. Looks only: nothing changes how the die plays, and your yellow ring
+  and zone stay so you can always find yourself. The choice is remembered on that device; Reset goes back to
+  Caltrop red on the Green Felt.
+- tools/build_arena_art.py also writes the tray thumbnails (games/clack-arena/play/ui/trays/).
+- Clack Arena for Windows goes to 0.7.0 and packs every tray so Customize works offline; the Download for Windows
+  button points at the clack-arena-v0.7.0 release.
+
 v0.20.0-alpha (2026-10-12)
 - Clack Arena v0.6.0: the rules explain themselves as they happen.
   - The first time a Clack, a Pin, Guard, a Pierce through Guard, Charge, Thorns, or your own Skull or Smooth

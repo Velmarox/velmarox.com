@@ -7,6 +7,7 @@
 #   ui/cat-<enemy>-idle@2.png the whole idle loop as one strip at 2x, for the animated cats on the map cards.
 #   ui/coin.png, coin@2.png  the chip icon: first frame of the coin spin (art/coins/coin-spin.png, 5 frames of 16x16),
 #                            3x and 2x; ui/coin-spin@2.png is the whole spin at 2x, for the reward screen.
+#   ui/trays/<tray>.jpg      208px-wide thumbnails of Clack Attack's trays, for the Customize picker.
 # Only the source files the game uses are kept in art/. Run from the repo root:  python3 tools/build_arena_art.py
 from PIL import Image
 import os
@@ -50,4 +51,9 @@ cell = coin.height
 coin.crop((0, 0, cell, cell)).resize((cell * 3, cell * 3), Image.NEAREST).save(f'{PLAY}/ui/coin.png', optimize=True)
 coin.crop((0, 0, cell, cell)).resize((cell * 2, cell * 2), Image.NEAREST).save(f'{PLAY}/ui/coin@2.png', optimize=True)
 coin.resize((coin.width * 2, cell * 2), Image.NEAREST).save(f'{PLAY}/ui/coin-spin@2.png', optimize=True)
-print(len(ICONS), 'icons,', len(CATS), 'cats and the coin written to', PLAY)
+TRAYS = 'docs/tools/clack-attack/play/Table/Trays'
+os.makedirs(f'{PLAY}/ui/trays', exist_ok=True)
+for f in sorted(os.listdir(TRAYS)):
+    im = Image.open(f'{TRAYS}/{f}').convert('RGB')
+    im.resize((208, round(208 * im.height / im.width)), Image.LANCZOS).save(f'{PLAY}/ui/trays/{f}', quality=80, optimize=True)
+print(len(ICONS), 'icons,', len(CATS), 'cats, the coin and the tray thumbnails written to', PLAY)
