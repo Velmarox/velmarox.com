@@ -241,6 +241,8 @@ img { display: block; max-width: 100%; }
 .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s; }
 .card:hover .card-img img { transform: scale(1.05); }
 .card-img::after { content: ""; position: absolute; inset: 40% 0 0; background: linear-gradient(transparent, var(--panel)); }
+/* Over a game you can't play or download yet (site.js veil()) */
+.veil { position: absolute; inset: 0; z-index: 1; background: rgba(110, 110, 120, 0.5); pointer-events: none; }
 .card-icon {
   position: absolute; right: 10px; top: 10px; z-index: 2; width: 40px; height: 40px; overflow: hidden;
   border: 2px solid var(--edge); background: var(--panel);

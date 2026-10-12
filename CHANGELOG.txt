@@ -5,6 +5,11 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.22.2-alpha (2026-10-12)
+- A game with no browser version and no download link yet (PokéDungeon, for now) gets a translucent grey veil over
+  its picture on game cards, tool banners and the featured banner. It lifts on its own once the game has a play
+  link or a download URL.
+
 v0.22.1-alpha (2026-10-12)
 - Clack Arena v0.8.1:
   - Phone held sideways (landscape, 500px tall or less): the enemy and player panels share a column on the left
