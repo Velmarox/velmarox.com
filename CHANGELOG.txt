@@ -5,6 +5,20 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.19.0-alpha (2026-10-12)
+- Clack Arena v0.5.0: pixel art faces and cat enemies.
+  - Face icons are now pixel art from the Fantasy RPG Icon Pack by Franuka (CC BY 4.0): Strike is a steel sword,
+    Pierce a steel arrow, Guard a steel shield, Mend a healing potion, Charge fire, Thorn a thorn whip, Skull a
+    skull and The House's Jackpot a crown. They're drawn without smoothing on the 3D dice, the face chips, the Forge
+    and the rules page. Pips keeps its plain pips. The game waits for the icons before the title screen.
+  - Every enemy is a cat on the map: Pips the white cat, Glassjaw the blue-collar cat, Snake Eyes & Boxcars the
+    Siamese, Tumbler the tiger, Iron Mike the vampire cat and The House the Egyptian cat. Map cards play the cat's
+    idle loop; the route strip shows a still. Reduce motion (or the system setting) stops the loop.
+  - Credits on the rules page and the game page.
+- tools/build_arena_art.py cuts the icons and cats from the source files in art/fantasy-rpg-icons/ and
+  art/all-cats-3/ (only the files the game uses are kept) into games/clack-arena/play/icons/ and ui/.
+- Clack Arena for Windows goes to 0.5.0; the Download for Windows button points at the clack-arena-v0.5.0 release.
+
 v0.18.0-alpha (2026-10-12)
 - Clack Arena v0.4.0: the map, the Forge, the Tavern, Rest and the after-fight screen each open with a short
   panel the first time they come up, saying what that screen is for and how to use it. It stays while you're on

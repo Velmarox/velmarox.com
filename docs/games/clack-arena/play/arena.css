@@ -243,6 +243,14 @@ button.tag { cursor: help; }
 .node { display: flex; gap: 12px; align-items: flex-start; text-align: left; border: 0; background: var(--panel-2); padding: 12px 14px; cursor: pointer; border-left: 4px solid var(--line); position: relative; }
 .node:hover::after { content: ""; position: absolute; inset: -4px; border: 12px solid transparent; border-image: url('ui/glow-orange@2.png') 12 / 12px / 0 stretch; image-rendering: pixelated; pointer-events: none; }
 .node-ico { height: 40px; width: auto; flex: none; }
+/* enemy cats: 7-frame idle loop at 2x (56x44; The House 60x46) */
+.node-ico.cat-idle { width: 56px; height: 44px; background: var(--strip) 0 0 / auto 100% no-repeat; image-rendering: pixelated; animation: cat-idle 1s steps(7) infinite; }
+.node.boss .node-ico.cat-idle { width: 60px; height: 46px; }
+@keyframes cat-idle { to { background-position: calc(100% * 7 / 6) 0; } }   /* 7 frames: past the last so steps(7) lands on each */
+@media (prefers-reduced-motion: reduce) { .node-ico.cat-idle { animation: none; } }
+.calm .node-ico.cat-idle { animation: none; }
+.mini-node img.cat { height: 22px; }
+.cat, .cat-idle { filter: drop-shadow(0 0 1px rgba(255, 255, 255, .55)); }   /* black cats on dark panels */
 .node-text { display: flex; flex-direction: column; gap: 3px; }
 .node b { font-family: var(--px); font-size: 28px; font-weight: 400; line-height: 1; }
 .node .who { font-size: 15px; color: #fff; font-weight: 600; }
@@ -288,6 +296,8 @@ button.tag { cursor: help; }
 .overlay.won .sheet { border-image-source: url('ui/frame-brown@2.png'); }
 
 /* rules, settings */
+.sheet p.small { font-size: 13px; color: var(--muted); }
+.sheet p.small a { color: inherit; }
 .gloss { display: grid; grid-template-columns: 130px 1fr; gap: 6px 14px; margin: 0; }
 .gloss dt { font-family: var(--px); font-size: 22px; color: var(--yellow); }
 .gloss dd { margin: 0; color: #d8d8de; line-height: 1.45; }
