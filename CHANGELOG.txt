@@ -5,6 +5,18 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.23.3-alpha (2026-10-12)
+- Phones: pages no longer run off the right edge. Grids that stacked to one column used a plain 1fr, which can't
+  shrink below its widest child (the game page's screenshot strip, a long title), so the whole column got wider than
+  the screen. They now use minmax(0, 1fr). Shows up most with the phone's text size turned up.
+  Fixed on game and tool pages, the games list, the tools page and the home page. Long titles and detail values
+  (Platforms) wrap instead of overflowing.
+- Clack Arena on a phone held upright:
+  - The die panel on the map, tavern and rest screens stacks into one column like the fight panels. Before, items
+    and chips sat in a second column that ran off the right edge and left a gap under the name.
+  - Screens start below the VRX badge and the ? / Settings buttons instead of under them.
+  - The fight log stays left of centre so it no longer covers the enemy's die; the throw hint wraps on narrow screens.
+
 v0.23.2-alpha (2026-10-12)
 - Clack Arena v0.8.4:
   - Phone held sideways (landscape, 500px tall or less): the enemy and player panels share a column on the left

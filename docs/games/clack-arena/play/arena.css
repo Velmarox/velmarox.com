@@ -364,7 +364,7 @@ button.tag { cursor: help; }
 .vrx-badge img { display: block; width: 100%; height: auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
 
 @media (max-width: 900px) {
-  .fcard { grid-template-columns: 1fr; grid-template-areas: "head" "hp" "dice" "foot"; gap: 4px; }
+  .fcard, .sheet .fcard { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "hp" "dice" "foot"; gap: 4px; }
   .ffoot { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
   .items, .relics { justify-content: flex-start; }
 }
@@ -383,10 +383,12 @@ button.tag { cursor: help; }
   .fdie-head, .item-btn small, .threat { display: none; }
   .item-btn b { font-size: 16px; }
   .item-btn img { height: 22px; }
-  .log { top: 8px; left: 8px; right: auto; bottom: auto; width: 200px; font-size: 11px; }
+  /* the log stays left of centre: the enemy's die starts at the top middle of the tray */
+  .log { top: 8px; left: 8px; right: auto; bottom: auto; width: min(200px, calc(50% - 40px)); font-size: 11px; }
   .log p:nth-last-child(n+3) { display: none; }
-  .hint { font-size: 18px; bottom: 8px; }
+  .hint { font-size: 18px; bottom: 8px; max-width: calc(100% - 16px); white-space: normal; text-align: center; }
   .banner b { font-size: 40px; } .banner.big b { font-size: 52px; }
+  .overlay { padding: 44px 10px 16px; }   /* clear the VRX badge and the corner buttons */
   .sheet { padding: 8px 10px 14px; margin: 1vh auto; }
   .sheet h2 { font-size: 36px; }
   .gloss { grid-template-columns: 1fr; }
@@ -409,7 +411,7 @@ button.tag { cursor: help; }
   #player-bar { grid-area: player; border-top: 0; border-right: 2px solid var(--yellow); overflow-y: auto; padding: 4px 6px; }
   #tray-wrap { grid-area: tray; }
   #enemy-bar .fcard { padding-right: 0; }
-  .fcard { grid-template-columns: 1fr; grid-template-areas: "head" "hp" "dice" "foot"; gap: 3px; border-width: 8px; border-image-width: 8px; padding: 2px 4px; }
+  .fcard, .sheet .fcard { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "hp" "dice" "foot"; gap: 3px; border-width: 8px; border-image-width: 8px; padding: 2px 4px; }
   .fname { font-size: 22px; }
   .badge { height: 30px; }
   .hpnum { font-size: 18px; } .hpnum b { font-size: 20px; }
