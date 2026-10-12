@@ -444,9 +444,9 @@
   function blog() {
     var latest = [DEVLOG[0] && DEVLOG[0].date, updates()[0] && updates()[0].date].filter(Boolean).sort().pop();
     postList(BLOG, 'Blog', 'The <em>blog</em>', 'Thoughts and whatever else is on my mind.',
-      '<div class="panel dev-link"><div class="panel-in"><a class="row" href="/devlog/"><span class="row-ico">&#9654;</span>' +
-        '<span><b>The devlog</b><small>Build notes and every update to every game and tool' + (latest ? ' · last entry ' + date(latest) : '') + '</small></span>' +
-        '<span class="live y">Open</span></a></div></div>');
+      '<div class="panel dev-link"><div class="panel-in"><a class="dev-banner" href="/devlog/"><span class="tag y">Devlog</span>' +
+        '<b>The devlog</b><small>Build notes and every update to every game and tool' + (latest ? ' · last entry ' + date(latest) : '') + '</small>' +
+        '<span class="btn yellow">Open the devlog</span></a></div></div>');
   }
   function devlog() {
     var log = updates();

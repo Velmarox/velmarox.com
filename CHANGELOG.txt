@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.13.0-alpha (2026-10-11)
+- The devlog box on the Blog page is a banner now: a version log sheet and the pup on the right
+  (assets/brand/devlog-banner.jpg, 1800x360), the title, the last entry and an Open the devlog button on the left.
+
 v0.12.0-alpha (2026-10-11)
 - The footer's Site list has a Discord link with the Discord mark, on every page (same DISCORD invite).
 

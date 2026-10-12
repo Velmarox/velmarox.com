@@ -421,6 +421,19 @@ img { display: block; max-width: 100%; }
 .log-game { display: inline-block; margin-right: 10px; font: italic 800 0.9rem var(--display); text-transform: uppercase; color: var(--red-hot); text-decoration: none; }
 .log-game:hover { color: var(--yellow); }
 .dev-link { margin: 6px 0 4px; }
+.dev-link .panel-in { padding: 0; }
+.dev-banner {
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px;
+  min-height: 220px; padding: 26px 30px; color: var(--text); text-decoration: none;
+  background: var(--panel) url(/assets/brand/devlog-banner.jpg) right center / cover no-repeat;
+}
+.dev-banner b { font: italic 900 clamp(1.8rem, 4vw, 2.6rem)/1 var(--display); text-transform: uppercase; }
+.dev-banner small { max-width: 44ch; font: 600 0.85rem/1.4 var(--cond); color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+.dev-banner .btn { margin-top: 8px; }
+.dev-banner:hover .btn { background: #fff35a; transform: translateY(-1px); }
+@media (max-width: 760px) {
+  .dev-banner { background-image: linear-gradient(rgba(20,20,24,0.84), rgba(20,20,24,0.84)), url(/assets/brand/devlog-banner.jpg); padding: 22px 20px; }
+}
 
 .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
 @media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
