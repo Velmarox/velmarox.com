@@ -12,6 +12,8 @@ v0.17.0-alpha (2026-10-12)
   off skips it.
 - Clack Arena for Windows goes to 0.3.0 with it; the Download for Windows button points at the clack-arena-v0.3.0
   release, which the Windows workflow publishes when this reaches main.
+- Clack Arena's page: version 0.3.0, a v0.3.0 update entry, and a first How to play line about the first-run
+  how-to.
 
 v0.16.0-alpha (2026-10-12)
 - Clack Arena for Windows (desktop/clack-arena/, not published): an Electron app in a frameless window. The
