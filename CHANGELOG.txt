@@ -5,6 +5,9 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.12.0-alpha (2026-10-11)
+- The footer's Site list has a Discord link with the Discord mark, on every page (same DISCORD invite).
+
 v0.11.1-alpha (2026-10-11)
 - The Join the Discord button carries the Discord mark in black, and is yellow so the mark reads.
 
