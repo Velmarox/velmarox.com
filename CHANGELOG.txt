@@ -5,6 +5,18 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.14.0-alpha (2026-10-12)
+- New game: Clack Arena (games/clack-arena/), a dice-building roguelike and its first playable build (v0.1.0).
+  You are a die (a d4 called Caltrop). You and the enemy throw into one shared tray with real collisions,
+  and the face you land on is what you do. Hard hits mid-tumble deal Clack damage; a die left leaning on
+  another is Pinned. One run is nine stops on the Green Felt: fights, an elite, the Forge, the Tavern, a
+  rest and The House. Items: Nudge, Chalk, Talc, Lead Shot. Relics: Lead Core, Rubber Coat, Snake Oil,
+  Cracked Shell.
+- The game reuses Clack Attack's dice engine straight from tools/clack-attack/play/Table/ (the three.js +
+  cannon-es bundle, Dice_Geometry.js, the Green Felt tray picture and the dice sounds), so a change there
+  reaches Clack Arena too. Its own code is games/clack-arena/play/js/.
+- Game page with cover, thumb and two screenshots; games.js entry flagged "Early build".
+
 v0.13.0-alpha (2026-10-11)
 - The devlog box on the Blog page is a banner now: a version log sheet and the pup on the right
   (assets/brand/devlog-banner.jpg, 1800x360), the title, the last entry and an Open the devlog button on the left.

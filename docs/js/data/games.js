@@ -105,6 +105,19 @@ window.GAMES = [
     log: [{ date: '2026-10-11', text: 'Moved to velmarox.com.' }]
   },
   {
+    slug: 'clack-arena',
+    title: 'Clack Arena', tagline: 'You are a die. Throw into a shared tray, crash into the enemy, engrave your faces.',
+    genres: ['roguelike', 'strategy'], status: 'live', flag: 'Early build',
+    released: '2026-10-12', version: '0.1.0',
+    controls: 'Mouse or touch', platforms: 'Browser (desktop or phone)', session: '15-25 minutes a run',
+    play: '/games/clack-arena/play/',
+    thumb: '/games/clack-arena/thumb.jpg', banner: '/games/clack-arena/cover.jpg',
+    shots: ['/games/clack-arena/cover.jpg', '/games/clack-arena/shot-1.jpg', '/games/clack-arena/shot-2.jpg'],
+    about: "You are a die. You start as Caltrop, a d4, and every enemy is a die too. You both throw into the same tray at the same time, the dice crash into each other, and whatever face you land on is what you do.\n\nAim your throw: where from, which way, how hard. Hit an enemy die hard mid-tumble and it takes damage, and you might knock it off its best face. Leave a die leaning on another and it's Pinned.\n\nBetween fights, engrave new faces at the Forge, buy items and relics at the Tavern, and decide whether to grow into a d6. Bigger dice have room for more faces, but every face comes up less often.\n\nThe dice, the physics and the Green Felt tray come from Clack Attack. This is an early build: one tray, the d4 and the d6, six enemies and The House.",
+    howto: ['Press on your edge of the tray and drag the way you want to throw. Longer drag, harder throw.', 'Aim at the enemy die to Clack it, or throw soft into a corner for a calm landing.', 'Read the enemy\'s faces at the top before you throw. Some enemies try several throws in secret and keep the best.', 'Use items from the bar at the bottom: Chalk and Lead Shot before a throw, Nudge and Talc after landing.', 'Pick your route on the map. Beat The House at the end of the Green Felt.'],
+    log: [{ date: '2026-10-12', text: 'v0.1.0: first playable. The Green Felt, the d4 and the d6, six enemies, the Forge, the Tavern and The House.' }]
+  },
+  {
     slug: 'clack-attack',
     title: 'Clack Attack', tagline: 'Type a roll, watch real 3D dice tumble across a themed tray.',
     genres: ['tools'], status: 'live', trending: true,
