@@ -25,6 +25,9 @@ window.GISCUS = {
   categoryId: 'DIC_kwDOVFGvcM4DHmjD'
 };
 
+// The Discord invite: the Join the Discord button on /community/. Leave it '' to hide the button.
+window.DISCORD = 'https://discord.gg/dcsAHeymNd';
+
 window.BOARDS = ['General', 'Ideas', 'Bugs', 'Show off'];
 
 window.THREADS = [

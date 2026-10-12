@@ -5,6 +5,12 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.11.0-alpha (2026-10-11)
+- Community has a Join the Discord button under its heading (the invite is DISCORD in js/data/threads.js).
+- "Installers, patchers and a pixel dog" has a cover (blog/installers-patchers-and-a-pixel-dog/cover.jpg,
+  1600x900): a setup window in the site's colours with the pup running along the progress bar. It shows
+  on the post, its card and its link preview.
+
 v0.10.0-alpha (2026-10-11)
 - New blog post: "Installers, patchers and a pixel dog" (blog/installers-patchers-and-a-pixel-dog/), on
   learning installers, self-updating apps and the patcher while building things to play with Karmen.

@@ -395,7 +395,8 @@
     var list = THREADS.filter(function (t) { return !board || t.board === board; });
     $('main').innerHTML =
       '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Community</div>' +
-      '<h1>Community <em>threads</em></h1><p>Talk about the games, report bugs, pitch ideas.</p></div>' +
+      '<h1>Community <em>threads</em></h1><p>Talk about the games, report bugs, pitch ideas.</p>' +
+      (window.DISCORD ? '<p style="margin-top:14px"><a class="btn" href="' + esc(window.DISCORD) + '" target="_blank" rel="noopener">Join the Discord</a></p>' : '') + '</div>' +
       '<nav class="chips" aria-label="Boards"><a class="chip" href="/community/"' + (!board ? ' aria-current="true"' : '') + '>All <small>' + THREADS.length + '</small></a>' +
         boards.map(function (b) {
           var n = THREADS.filter(function (t) { return t.board === b; }).length;

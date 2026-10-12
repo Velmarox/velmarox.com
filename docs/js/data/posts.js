@@ -23,6 +23,7 @@ window.POSTS = [
   {
     slug: 'installers-patchers-and-a-pixel-dog',
     title: 'Installers, patchers and a pixel dog', date: '2026-10-11', tag: 'Thoughts',
+    cover: '/blog/installers-patchers-and-a-pixel-dog/cover.jpg',
     excerpt: 'I wanted to send Karmen a game without a zip and a list of instructions. Here is everything I ended up learning.'
   },
   {
