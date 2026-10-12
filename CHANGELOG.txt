@@ -5,6 +5,12 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.22.6-alpha (2026-10-12)
+- Animalism is off the site: its game page, the playable build, its card, and its line in the
+  "VRX Games is live" news post are removed. The Action and Arcade categories go with it (no other
+  game uses them). The sitemap and link previews are rebuilt.
+- Numbered 0.22.6 because 0.22.1 to 0.22.5 are taken by the Clack Arena branch that is still open.
+
 v0.22.0-alpha (2026-10-12)
 - Clack Arena v0.8.0: unlockable finishes.
   - Customize starts with Matte, Satin and Glossy. Glass, Pearl and Metal are locked, each showing who to beat:

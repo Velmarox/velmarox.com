@@ -115,19 +115,6 @@ window.GAMES = [
     log: [{ date: '2026-10-11', text: 'A new look: square corners and a wide-screen layout.' }, { date: '2026-10-11', text: 'Moved to velmarox.com.' }]
   },
   {
-    slug: 'animalism',
-    title: 'Animalism', tagline: 'A rock em sock em picture. Walk right and deal with whoever is in the way.',
-    genres: ['action', 'arcade'], status: 'live', featured: true, trending: true,
-    released: '2026-09-10',
-    controls: 'Keyboard or gamepad', platforms: 'Desktop',
-    play: '/games/animalism/play/',
-    thumb: '/games/animalism/thumb.jpg', banner: '/games/animalism/cover.jpg',
-    shots: ['/games/animalism/cover.jpg', '/games/animalism/shot-1.jpg'],
-    about: 'You are Animal. Walk right and deal with whoever is in the way.\n\nA belt-scroll beat \'em up with hand-drawn sprites, physics written from scratch and full controller support. Press F1 in-game to see the hitboxes.',
-    howto: ['Walk right.', 'Hit whoever is in the way.', 'Plug in a controller if you have one.', 'Press F1 to show the hitboxes.'],
-    log: [{ date: '2026-10-11', text: 'Moved to velmarox.com.' }]
-  },
-  {
     slug: 'clack-attack',
     title: 'Clack Attack', tagline: 'Type a roll, watch real 3D dice tumble across a themed tray.',
     genres: ['tools'], status: 'live', trending: true,
