@@ -5,6 +5,25 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.15.0-alpha (2026-10-12)
+- Clack Arena v0.2.0: a design overhaul aimed at making the game explain itself.
+  - Aiming is a slingshot: press your die, pull back, let go; the arrow shows where it will go and a pixel power
+    meter shows how hard. Settings can switch to point-and-drag aiming and hide the arrow.
+  - The tray shows who is who: a striped yellow zone you throw from (it pulses on your turn), a red one for the
+    enemy, and a ring in its owner's colour under every die.
+  - Hard Clacks spark and freeze for a beat. Enemies that preview their throws show a "tries 3 throws" spinner,
+    then the throws they threw away as fading red trails.
+  - Each turn resolves in visible beats (Clack, Guard, Hits, Thorn) with a phase strip, numbers floating off the
+    dice and health that drains one pip segment at a time. Tap the tray to speed it up.
+  - Die panels show health as pips, odds bars by kind of face, average hit, and every face can be tapped to read.
+  - One-time tips the first time you aim, land, Clack and see the map; a rules page; a Settings page (aim, arrow,
+    sound, dice speed, reduce motion, tips); synthesized sound effects for every kind of event.
+  - New map with the whole route and fact cards per stop; Forge shows odds before and after; Tavern says why you
+    can't buy something; reward, rest and end screens with stars.
+- GUI pieces cut from Pixel UI pack 3 (source sheets in art/pixel-ui-pack-3/, not published) by
+  tools/build_arena_ui.py into games/clack-arena/play/ui/ at 2x and 3x. Pixel font: ThaleahFat, copied from
+  Animalism.
+
 v0.14.0-alpha (2026-10-12)
 - New game: Clack Arena (games/clack-arena/), a dice-building roguelike and its first playable build (v0.1.0).
   You are a die (a d4 called Caltrop). You and the enemy throw into one shared tray with real collisions,

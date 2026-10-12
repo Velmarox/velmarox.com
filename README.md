@@ -5,7 +5,9 @@ Personal projects hub. Static site, no build step, hosted on GitHub Pages at
 
 ## Layout
 
-GitHub Pages publishes the `docs/` folder. README and CHANGELOG stay at the top and are not published.
+GitHub Pages publishes the `docs/` folder. README and CHANGELOG stay at the top and are not published, and so do
+`art/` (source art, such as the Pixel UI pack Clack Arena's GUI is cut from) and `tools/` (build scripts:
+`build_meta.mjs` below, and `build_arena_ui.py`, which cuts Clack Arena's GUI pieces from `art/pixel-ui-pack-3/`).
 
 ```
 docs/
