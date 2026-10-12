@@ -5,6 +5,12 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.17.0-alpha (2026-10-12)
+- Clack Arena: the first time you press Start a run, a short How to play comes up before the map: five numbered
+  steps (Throw, Land, Clack, Between fights, Win), with Let's go and Full rules. The Throw step matches your aim
+  setting. It shows once per device, like the tips; Settings > Show tips again brings it back, and turning tips
+  off skips it.
+
 v0.16.0-alpha (2026-10-12)
 - Clack Arena for Windows (desktop/clack-arena/, not published): an Electron app in a frameless window. The
   Windows title bar and menu bar are off; the app draws its own pixel title bar (drag, double-click to maximize,

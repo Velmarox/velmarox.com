@@ -119,6 +119,25 @@
       <p class="small center">Early build · the Green Felt · d4 and d6 · six enemies</p>`, 'title');
   }
 
+  // The first time you press Start a run, a short how-to comes before the map. Once per device, like the tips.
+  function showHowTo() {
+    phase = 'title';
+    const aim = A.settings.aim === 'point'
+      ? 'Drag from your die the way you want it to go, then let go.'
+      : 'Press your die, pull back like a slingshot, let go. Longer pull, harder throw.';
+    const steps = [
+      ['Throw', aim],
+      ['Land', 'The face on top is your move this turn: hit, guard, heal and more. Tap any face to read it.'],
+      ['Clack', "Smash into the enemy's die while it tumbles and it takes damage straight away."],
+      ['Between fights', 'Pick your next stop on the map. Fights pay chips, the Forge engraves new faces onto you, the Tavern sells items, Rest repairs pips.'],
+      ['Win', 'Beat The House at the end of the Green Felt. Run out of pips and the run is over.'],
+    ];
+    screen(`
+      <h2 class="pxfont">How to play</h2>
+      <ol class="howto">${steps.map(([k, v]) => `<li><b>${esc(k)}</b><span>${esc(v)}</span></li>`).join('')}</ol>
+      <div class="row center">${btn("Let's go", 'howto-go', 'big primary')}${btn('Full rules', 'rules')}</div>`, 'rules');
+  }
+
   function showRules() {
     const faces = Object.entries(A.FACE_TYPES).map(([t, T]) => {
       const f = A.F(t, T.valued ? 3 : 0);
@@ -788,7 +807,11 @@
     if (act !== 'coach-ok' && !b.closest('.pop')) U().closePop();
     if (act) sfx('click');
     if (act === 'coach-ok') { U().doneCoach(U().coachId()); return; }
-    if (act === 'start') { sfx('unlock'); newRun(); return; }
+    if (act === 'start') {
+      if (A.settings.tips && !U().seen('howto')) { showHowTo(); return; }
+      sfx('unlock'); newRun(); return;
+    }
+    if (act === 'howto-go') { U().doneCoach('howto'); sfx('unlock'); newRun(); return; }
     if (act === 'title') { showTitle(); return; }
     if (act === 'rules' || act === 'settings') { openSide(act); return; }
     if (act === 'back') { back(); return; }
