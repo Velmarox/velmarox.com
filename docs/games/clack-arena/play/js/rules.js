@@ -83,6 +83,7 @@
       else if (f.t === 'charge') chargeNext[a.side] = true;
       else if (f.t === 'thorn') thorn[a.side] += f.v;
       else if (f.t === 'skull' && a.side === 'p' && st.p.relics.includes('snakeoil')) { const n = Math.min(2, st.p.max - st.p.hp); st.p.hp += n; ev.push({ k: 'heal', side: 'p', n, why: 'snakeoil' }); }
+      else if (f.t === 'skull') hurt(a.side, A.SKULL_COST, 'skull', a.at);   // a fumble costs whoever lands it
     });
 
     // 5. Thorn

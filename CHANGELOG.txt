@@ -5,6 +5,14 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.22.5-alpha (2026-10-12)
+- Clack Arena v0.8.4: Skulls cost a pip. Whoever lands a Skull loses 1 (A.SKULL_COST), shown as FUMBLE −1 and in
+  the log. Guard doesn't stop it and it doesn't set off Thorns. Before, a Skull did nothing, exactly like a blank
+  face, so sanding one off was pointless.
+  - Snake Oil: your Skulls heal you for 2 instead of costing a pip.
+  - Sand off a Skull now has a reason: the blank it leaves costs nothing. Engraving over a Skull still works.
+  - The Skull tip, face text, Forge and Grow texts say what it costs.
+
 v0.22.4-alpha (2026-10-12)
 - Clack Arena v0.8.3: items renamed to fit their icons, and every action icon comes from Franuka's Fantasy RPG
   Icon Pack. Same mechanics.

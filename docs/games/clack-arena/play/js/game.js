@@ -312,7 +312,7 @@
       <div class="stamps">${stamps.map((f, k) => `<button type="button" class="stamp" data-stamp="${k}"><img alt="" src="${A.faceChip(f, run.die.look)}"><span><b>${esc(A.faceLabel(f))}</b><small>${esc(A.faceText(f))}</small></span></button>`).join('')}</div>
       <h3>Or</h3>
       <div class="stamps">
-        ${hasSkull ? `<button type="button" class="stamp" data-act="sand">${px('item-hammer', 3)}<span><b>Sand off a Skull</b><small>It becomes Smooth (blank): ready to engrave next time.</small></span></button>` : ''}
+        ${hasSkull ? `<button type="button" class="stamp" data-act="sand">${px('item-hammer', 3)}<span><b>Sand off a Skull</b><small>It becomes Smooth (blank): no more pip cost, ready to engrave next time.</small></span></button>` : ''}
         ${run.die.sides === 4 ? `<button type="button" class="stamp" data-act="grow">${px('item-grow', 3)}<span><b>Grow to a d6</b><small>Two new Skull faces. Each face: 25% → 17%.</small></span></button>` : ''}
       </div>
       <div class="row">${btn('Leave', 'leave')}</div>`, 'forge');
@@ -335,7 +335,7 @@
     const d = clone(run.die); d.sides = 6; d.faces.push(A.F('skull'), A.F('skull'));
     screen(`
       <h2 class="pxfont">Grow to a d6?</h2>
-      <p>You keep your four faces and gain two Skulls. Room for a bigger build once you engrave over them or sand them off. But every face comes up less often, so your best face lands 1 time in 6 instead of 1 in 4.</p>
+      <p>You keep your four faces and gain two Skulls, each costing you a pip when it lands. Room for a bigger build once you engrave over them or sand them off. But every face comes up less often, so your best face lands 1 time in 6 instead of 1 in 4.</p>
       <div class="compare"><div style="--faces:4"><small>d4 now</small>${U().oddsBar(run.die)}${U().net(run.die)}</div><div style="--faces:6"><small>d6 after</small>${U().oddsBar(d)}${U().net(d)}</div></div>
       <div class="row">${btn('Grow', 'grow-yes', 'primary')}${btn('Back', 'back-forge')}</div>`, 'forge');
   }
@@ -708,7 +708,7 @@
     if (pin) await teach('learn-pinned', `<b>Pinned.</b> ${who(pin.at)} landed leaning on another die, so ${pin.at.side === 'p' ? 'you do' : 'it does'} nothing this turn. The die holding it up gets <b>+1</b> to its face.`, keyOf(pin.at));
     const dud = ev.find((e) => e.k === 'face' && e.at.side === 'p' && ((e.face.t === 'skull' && !run.relics.includes('snakeoil')) || e.face.t === 'smooth'));
     if (dud) await teach('learn-' + dud.face.t, dud.face.t === 'skull'
-      ? '<b>Skull.</b> A fumble: your die does nothing this turn. The Forge can sand a Skull off, and Lead Shot keeps one throw off it.'
+      ? `<b>Skull.</b> A fumble: you lose <b>${A.SKULL_COST}</b> pip and do nothing else this turn. The Forge can engrave over a Skull or sand it off, and Lead Shot keeps one throw off it.`
       : '<b>Smooth.</b> A blank face: nothing happens. Engrave something onto it at the Forge.', PKEY);
 
     if (has.clack) {
@@ -736,6 +736,13 @@
           floatOn(onDie(e.side), `BLOCKED ${e.n}`, 'guard'); sfx('block');
           log(`${e.side === 'p' ? 'You block' : `${esc(fight.def.name)} blocks`} <b>${e.n}</b>.`);
           await wait(320);
+        } else if (e.k === 'dmg' && e.why === 'skull') {
+          const prev = fight.shown[e.side];
+          fight.shown[e.side] = Math.max(0, prev - e.n);
+          floatOn(onDie(e.side), `FUMBLE −${e.n}`, 'dmg'); sfx(e.side === 'p' ? 'hurt' : 'hit', e.n);
+          log(`${e.side === 'p' ? 'You fumble' : `${esc(fight.def.name)} fumbles`}: <b>−${e.n}</b>.`);
+          drawCards({ [e.side]: { prev, guard: guard[e.side] } });
+          await wait(420);
         } else if (e.k === 'dmg' && (e.why === 'strike' || e.why === 'pierce')) {
           if (e.at) A.tray.flash(keyOf(e.at), '#ffffff', 0.7);
           const prev = fight.shown[e.side], through = e.why === 'pierce' && guard[e.side] > 0;
