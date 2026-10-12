@@ -93,7 +93,8 @@
   function coach(id, html, at, place = 'above', opts = {}) {
     if (!A.settings.tips || seen.has(id)) return false;
     clearCoach();
-    coachEl = document.createElement('div'); coachEl.className = 'coach ' + place; coachEl.dataset.id = id;
+    coachEl = document.createElement('div'); coachEl.className = 'coach ' + place + (opts.cls ? ' ' + opts.cls : ''); coachEl.dataset.id = id;
+    coachEl.onClose = opts.onClose;
     coachEl.innerHTML = `${px('pointer', 2, 'coach-ptr')}<div class="coach-body">${html}${opts.button === false ? '' : '<button type="button" class="pbtn small" data-act="coach-ok">Got it</button>'}</div>`;
     document.body.append(coachEl);
     const w = coachEl.offsetWidth, h = coachEl.offsetHeight;
@@ -103,7 +104,8 @@
     return true;
   }
   function doneCoach(id) { if (id) { seen.add(id); saveSeen(); } clearCoach(); }
-  function clearCoach() { coachEl?.remove(); coachEl = null; hand(null); }
+  // onClose (from coach opts) runs however the tip goes away: Got it, or a screen opening over it.
+  function clearCoach() { const c = coachEl; coachEl = null; c?.remove(); hand(null); c?.onClose?.(); }
   const coachId = () => coachEl?.dataset.id;
   function resetTips() { seen = new Set(); saveSeen(); }
   const wasSeen = (id) => seen.has(id);
@@ -126,12 +128,14 @@
     host.innerHTML = `<b>${title}</b>${sub ? `<small>${sub}</small>` : ''}`;
     clearTimeout(banner.t); banner.t = setTimeout(() => (host.className = 'banner'), ms * (A.timeScale ?? 1));
   }
-  const PHASES = [['clack', 'Clack'], ['guard', 'Guard'], ['hits', 'Hits'], ['thorn', 'Thorn']];
+  // The four beats of a turn, in the order the rules apply them, with what the lit one is doing right now.
+  const PHASES = A.TURN_ORDER;
   function phases(active, has = {}) {
     const host = $('#phases');
     if (!active) { host.className = 'phases'; return; }
     host.className = 'phases show';
-    host.innerHTML = PHASES.map(([k, n]) => `<span class="${k === active ? 'on' : ''}${has[k] ? '' : ' none'}">${n}</span>`).join('<i>›</i>');
+    const now = PHASES.find(([k]) => k === active);
+    host.innerHTML = `<div class="ph-row">${PHASES.map(([k, n]) => `<span class="${k === active ? 'on' : ''}${has[k] ? '' : ' none'}">${n}</span>`).join('<i>›</i>')}</div>${now ? `<small>${esc(now[2])}</small>` : ''}`;
   }
 
   // Power meter beside your die while you pull: the pixel signal bars, 8 frames from full to empty.

@@ -92,9 +92,14 @@
   function tipDone(id) { tipsUp.delete(id); U().markSeen('screen-' + id); }
 
   const itemInfo = (id) => A.CONSUMABLES[id];
+  // Grey tags for how a die handles in the tray (weight, bounce, Clack modifiers). Tap one to read it.
+  const traitTags = (phys, clack) => A.traits(phys, clack).map(([name, text]) =>
+    `<button type="button" class="tag dim" data-inspect="1" data-name="${esc(name)}" data-text="${esc(text)}" data-odds="How this die handles in the tray">${esc(name)}</button>`);
   function playerCard(o = {}) {
     const st = fight?.st.p;
     const tags = [U().tag('d' + run.die.sides, 'dim')];
+    const lead = run.relics.includes('leadcore');
+    tags.push(...traitTags(playerPhys(), { deal: lead ? 1 : 0, take: lead ? -1 : 0 }));
     if (st?.charged) tags.push(U().tag('Charged ×2', 'hot', 'Your next face with a number is doubled'));
     if (fight?.lead) tags.push(U().tag('Lead Shot', 'hot', "This throw can't settle on Skull or Smooth"));
     if (o.guard) tags.push(U().tag('Guard ' + o.guard, 'blue'));
@@ -107,7 +112,7 @@
       side: 'p', name: A.PLAYER_START.name, badge: '', tags,
       hp: fight ? fight.shown.p : run.hp, max: fight ? fight.st.p.max : run.max, prev: o.prev,
       dice: [{ die: run.die, chalk: st?.chalk }],
-      foot: `<div class="ffoot"><div class="items">${items}</div><div class="relics">${relics}</div><span class="chips">${px('btn-yellow', 2)}<b>${run.chips}</b> chips</span></div>`,
+      foot: `<div class="ffoot"><div class="items">${items}</div><div class="relics">${relics}</div><span class="chips">${px('coin', 2)}<b>${run.chips}</b> chips</span></div>`,
     });
   }
   function enemyCard(o = {}) {
@@ -118,7 +123,7 @@
     if (def.previews > 1) tags.push(`<button type="button" class="tag dim" data-inspect="1" data-name="Previews ×${def.previews}" data-text="${esc(`Tries ${def.previews} throws in secret against yours and keeps the one that's best for it. The faint red paths are the ones it threw away.`)}">Previews ×${def.previews}</button>`);
     if (st.charged) tags.push(U().tag('Charged ×2', 'hot', 'Its next face with a number is doubled'));
     if (o.guard) tags.push(U().tag('Guard ' + o.guard, 'blue'));
-    if (def.clack) tags.push(U().tag(`Clack ${def.clack.deal >= 0 ? '+' : ''}${def.clack.deal} / takes ${def.clack.take >= 0 ? '+' : ''}${def.clack.take}`, 'dim', 'Changes Clack damage it deals and takes'));
+    tags.push(...traitTags(def.dice[0].phys, def.clack));
     const badge = def.boss ? px('crest-red', 2, 'badge') : def.elite ? px('shield-red', 2, 'badge') : '';
     return U().card({ side: 'e', name: def.name, badge, tags, hp: fight.shown.e, max: st.max, prev: o.prev, dice: def.dice.map((d) => ({ die: d, name: d.name })), threat: true });
   }
@@ -166,6 +171,9 @@
     screen(`
       <h2 class="pxfont">How to play</h2>
       <dl class="gloss">${A.GLOSSARY.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+      <h3>A turn, in order</h3>
+      <ol class="order">${A.TURN_ORDER.map(([, n, t]) => `<li><b>${esc(n)}</b><span>${esc(t)}</span></li>`).join('')}</ol>
+      <p class="small">The strip at the top of the tray lights each step as it happens. Steps with nothing in them are greyed out.</p>
       <h3>Faces</h3><div class="rule-faces">${faces}</div>
       <p class="small">Face icons: <a href="https://franuka.itch.io/" target="_blank" rel="noopener">Fantasy RPG Icon Pack by Franuka</a> (CC BY 4.0). Cats: All Cats pack.</p>
       <div class="row">${btn('Back', 'back', 'primary')}</div>`, 'rules');
@@ -305,7 +313,7 @@
       <h2 class="pxfont">Tavern</h2>
       ${screenTip('tavern')}
       <p class="npc">“${run.chips >= 18 ? 'Big spender. Sit down.' : run.chips >= 7 ? "You've got enough for something." : 'Not much on you. Look anyway.'}”</p>
-      <div class="purse">${px('btn-yellow', 2)}<b>${run.chips}</b> chips</div>
+      <div class="purse">${px('coin', 2)}<b>${run.chips}</b> chips</div>
       <div class="goods">${g.map((x, k) => {
         const name = x.kind === 'item' ? itemInfo(x.id).name : x.kind === 'relic' ? A.RELICS[x.id].name : `Mend ${A.MEND_AMOUNT} pips`;
         const text = x.kind === 'item' ? itemInfo(x.id).text : x.kind === 'relic' ? A.RELICS[x.id].text : `Back up to ${Math.min(run.max, run.hp + A.MEND_AMOUNT)} / ${run.max}.`;
@@ -419,13 +427,27 @@
       else if (fight.turn === 2) coachAt('clack', '<b>Clack!</b> Hit their die hard while it tumbles and it takes damage. Aim at it.', enemyScreen(), 'below');
     }, 950 * pace());
   }
-  const enemyScreen = () => { const at = A.tray.screenOf(EKEY(0), 0.4), r = el.trayWrap.getBoundingClientRect(); return at ? { x: r.left + at.x, y: r.top + at.y } : { x: innerWidth / 2, y: 100 }; };
+  const enemyScreen = () => dieAt(EKEY(0)) || { x: innerWidth / 2, y: 100 };
 
   // Tips: once per device, at the moment they matter.
   function coachAt(id, html, at, place = 'above', opts = {}) {
     let p = at;
     if (typeof at === 'string') { const n = $(at); if (!n) return false; const r = n.getBoundingClientRect(); p = { x: r.left + r.width / 2, y: place === 'above' ? r.top : r.bottom }; }
     return U().coach(id, html, p, place, opts);
+  }
+
+  // Where a die is on screen, in viewport pixels.
+  const dieAt = (key) => { const at = A.tray.screenOf(key, 0.4), r = el.trayWrap.getBoundingClientRect(); return at ? { x: r.left + at.x, y: r.top + at.y } : null; };
+  // The first time a mechanic happens, stop and say what it was, pointing at the die it happened to. Once per device;
+  // the turn carries on after Got it (or if a screen opens over the tip).
+  function teach(id, html, key) {
+    if (!A.settings.tips || U().seen(id)) return Promise.resolve();
+    const at = dieAt(key); if (!at) return Promise.resolve();
+    return new Promise((done) => {
+      const place = at.y > innerHeight * 0.45 ? 'above' : 'below';
+      if (!coachAt(id, html, at, place, { cls: 'teach', onClose: done })) done();
+      else sfx('turn');
+    });
   }
 
   // ---------- aiming ----------
@@ -514,6 +536,7 @@
       const paths = chosen.rejected.flatMap((r) => r.throws.slice(1).map((_, i) => r.sim.frames.filter((_, f) => f % 3 === 0).map((fr) => [fr[i + 1][0], fr[i + 1][2]])));
       A.tray.ghosts(paths);
       U().banner(`Best of ${N}`, `${esc(fight.def.name)} threw away ${chosen.rejected.length}`, 'red small', 1200);
+      await teach('learn-previews', `<b>Previews.</b> ${esc(fight.def.name)} tried ${N} throws in secret against the one you just made, and kept the best one for it. The faint red paths are the ones it threw away. Your throw is still yours.`, EKEY(0));
     }
     A.tray.playback(chosen.sim, chosen.throws, { onClack, onLand });
   }
@@ -633,7 +656,20 @@
     ev.filter((e) => e.k === 'pinned').forEach((e) => log(`${who(e.at)} ${e.at.side === 'p' ? 'are' : 'is'} <b>Pinned</b>: no move this turn.`));
     ev.filter((e) => e.k === 'face' && e.face.t !== 'smooth').forEach((e) => log(`${who(e.at)}: <b>${esc(A.faceLabel(e.face))}</b>${e.times > 1 ? ' ×2 (chalk)' : ''}${e.face.charged ? ' (charged ×2)' : ''}${e.pinBonus ? ` (+${e.pinBonus} from a pin)` : ''}.`));
 
-    if (has.clack) { U().phases('clack', has); await wait(350); }
+    // First time something happens, say what it was (once per device, if tips are on).
+    const pin = ev.find((e) => e.k === 'pinned');
+    if (pin) await teach('learn-pinned', `<b>Pinned.</b> ${who(pin.at)} landed leaning on another die, so ${pin.at.side === 'p' ? 'you do' : 'it does'} nothing this turn. The die holding it up gets <b>+1</b> to its face.`, keyOf(pin.at));
+    const dud = ev.find((e) => e.k === 'face' && e.at.side === 'p' && ((e.face.t === 'skull' && !run.relics.includes('snakeoil')) || e.face.t === 'smooth'));
+    if (dud) await teach('learn-' + dud.face.t, dud.face.t === 'skull'
+      ? '<b>Skull.</b> A fumble: your die does nothing this turn. The Forge can sand a Skull off, and Lead Shot keeps one throw off it.'
+      : '<b>Smooth.</b> A blank face: nothing happens. Engrave something onto it at the Forge.', PKEY);
+
+    if (has.clack) {
+      U().phases('clack', has);
+      const c = ev.find((e) => e.k === 'clack');
+      await teach('learn-clack', `<b>Clack.</b> ${who(c.from)} hit ${who(c.to, true)} hard while the dice were tumbling: <b>${c.n}</b> damage, dealt on the spot, before any face counts. Harder hits deal more (1 to 3). Dice on the same side never Clack each other.`, keyOf(c.to));
+      await wait(350);
+    }
     if (has.guard) {
       U().phases('guard', has);
       for (const e of ev.filter((x) => x.k === 'guard')) {
@@ -641,6 +677,7 @@
         dieKeys(e.side).forEach((k) => A.tray.flash(k, '#4fa3ff', 0.6));
         floatOn(onDie(e.side), `GUARD ${e.n}`, 'guard'); sfx('guard');
         drawCards({ p: { guard: guard.p }, e: { guard: guard.e } });
+        await teach('learn-guard', `<b>Guard ${e.n}.</b> It goes up before anything hits and soaks Strike damage this turn. Pierce goes straight through it. Whatever's left is gone at the end of the turn.`, onDie(e.side));
         await wait(420);
       }
     }
@@ -654,11 +691,13 @@
           await wait(320);
         } else if (e.k === 'dmg' && (e.why === 'strike' || e.why === 'pierce')) {
           if (e.at) A.tray.flash(keyOf(e.at), '#ffffff', 0.7);
-          const prev = fight.shown[e.side];
+          const prev = fight.shown[e.side], through = e.why === 'pierce' && guard[e.side] > 0;
           fight.shown[e.side] = Math.max(0, prev - e.n);
-          floatOn(onDie(e.side), `−${e.n}`, 'dmg' + (e.why === 'pierce' ? ' pierce' : ''));
+          floatOn(onDie(e.side), through ? `−${e.n} THROUGH GUARD` : `−${e.n}`, 'dmg' + (e.why === 'pierce' ? ' pierce' : ''));
+          if (through) log(`Pierce goes through ${e.side === 'p' ? 'your' : 'their'} Guard.`);
           if (e.side === 'p') { sfx('hurt', e.n); if (!A.settings.reduceMotion) shake(1); } else sfx('hit', e.n);
           drawCards({ [e.side]: { prev, guard: guard[e.side] }, [e.side === 'p' ? 'e' : 'p']: { guard: guard[e.side === 'p' ? 'e' : 'p'] } });
+          if (through) await teach('learn-pierce', '<b>Pierce.</b> It ignores Guard and hits for its full number. Guard only stops Strikes.', onDie(e.side));
           await wait(460);
         } else if (e.k === 'heal' && e.n) {
           fight.shown[e.side] = Math.min(fight.st[e.side].max, fight.shown[e.side] + e.n);
@@ -670,6 +709,7 @@
           floatOn(onDie(e.side), 'CHARGED', 'charge'); sfx('charge');
           log(`${e.side === 'p' ? 'You are' : `${esc(fight.def.name)} is`} <b>charged</b>: next face ×2.`);
           drawCards({ p: { guard: guard.p }, e: { guard: guard.e } });
+          await teach('learn-charge', `<b>Charged.</b> Next turn, the first face with a number ${e.side === 'p' ? 'you land' : `${esc(fight.def.name)} lands`} is doubled. Look for the ×2 tag on the panel.`, onDie(e.side));
           await wait(380);
         }
       }
@@ -682,6 +722,7 @@
         floatOn(onDie(hurt), `THORN −${e.n}`, 'thorn'); sfx('thorn');
         log(`Thorns: <b>${e.n}</b> back.`);
         drawCards({ [hurt]: { prev } });
+        await teach('learn-thorn', `<b>Thorns.</b> ${e.side === 'p' ? `${esc(fight.def.name)} got a hit through to you` : `You got a hit through to ${esc(fight.def.name)}`}, so ${e.side === 'p' ? 'it takes' : 'you take'} <b>${e.n}</b> back. Clacks and fully blocked hits don't set Thorns off.`, onDie(hurt));
         await wait(420);
       }
     }
@@ -729,7 +770,7 @@
     sfx('coin');
     screen(`<h2 class="pxfont">${esc(name)} is out.</h2>
       ${screenTip('reward')}
-      <div class="reward">${px('btn-yellow', 3)}<b class="pxfont">+${chips}</b><span>chips (you have ${run.chips})</span></div>
+      <div class="reward"><span class="coin-spin" role="img" aria-label="Chips"></span><b class="pxfont">+${chips}</b><span>chips (you have ${run.chips})</span></div>
       ${found}${relicChoice}
       <h3>Your die</h3>${playerCard()}
       <div class="row">${btn('Move on', 'leave', 'big primary')}</div>`, 'reward-screen');
@@ -787,17 +828,26 @@
     floatAt({ x: p.x + 44, y: p.y + r * 40 }, text, cls + ' side');
   }
 
-  // A label over each landed die saying what it rolled, in its owner's colour.
+  // A label over each landed die saying what it will actually do, in its owner's colour: the number after pins and
+  // Charge, and why it changed (the same sums rules.js makes, so the label never disagrees with the result).
   let labels = [];
   function showFaceLabels() {
     clearLabels();
-    fight.outcome.dice.forEach((d) => {
+    const oc = fight.outcome, bonus = oc.dice.map(() => 0), charged = { p: fight.st.p.charged, e: fight.st.e.charged };
+    oc.dice.forEach((d) => { if (d.status === 'pinned' && d.on >= 0) bonus[d.on] += 1; });
+    oc.dice.forEach((d, i) => {
       const key = keyOf(d), dieDef = fight.st[d.side].dice[d.die];
-      const f = A.effFace(fight.st, d.side, d.die, d.face);
-      const chalk = d.side === 'p' && fight.st.p.chalk.includes(d.face);
+      const f = A.effFace(fight.st, d.side, d.die, d.face), T = A.FACE_TYPES[f.t];
+      const why = [];
+      if (d.status !== 'pinned' && T.valued) {
+        if (bonus[i]) { f.v += bonus[i]; why.push(`+${bonus[i]} pin`); }
+        if (charged[d.side]) { f.v *= 2; charged[d.side] = false; why.push('×2 charge'); }
+      }
+      if (d.status !== 'pinned' && d.side === 'p' && fight.st.p.chalk.includes(d.face)) why.push('twice: chalk');
       const div = document.createElement('div');
       div.className = 'face-label ' + (d.side === 'p' ? 'mine' : 'theirs') + (d.status === 'pinned' ? ' pinned' : '');
-      div.innerHTML = d.status === 'pinned' ? '<b>PINNED</b><small>no move</small>' : `<img alt="" src="${A.faceChip(f, dieDef.look, 28)}"><b>${esc(A.faceLabel(f))}</b>${chalk ? '<small>×2</small>' : ''}`;
+      const under = d.status === 'pinned' && oc.dice[d.on] ? `no move · +1 to ${who(oc.dice[d.on], true)}` : 'no move';
+      div.innerHTML = d.status === 'pinned' ? `<b>PINNED</b><small>${esc(under)}</small>` : `<img alt="" src="${A.faceChip(f, dieDef.look, 28)}"><b>${esc(A.faceLabel(f))}</b>${why.length ? `<small>${esc(why.join(' · '))}</small>` : ''}`;
       el.labels.append(div);
       labels.push({ key, div });
     });

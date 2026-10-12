@@ -5,6 +5,27 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.20.0-alpha (2026-10-12)
+- Clack Arena v0.6.0: the rules explain themselves as they happen.
+  - The first time a Clack, a Pin, Guard, a Pierce through Guard, Charge, Thorns, or your own Skull or Smooth
+    comes up in a fight, the turn pauses on a tip pointing at that die: what just happened and why. Once per
+    device; Settings > Show tips again brings them back, tips off skips them. The first "Best of N" from an
+    enemy that previews its throws gets the same treatment.
+  - Face labels over landed dice show the number that will actually count, and why it changed: +1 from a pin,
+    x2 from Charge, twice from Chalk. A Pinned label says which die gets its +1.
+  - The turn strip (Clack > Guard > Hits > Thorn) says under it what the lit step is doing. A Pierce that goes
+    through Guard floats THROUGH GUARD.
+  - Dice panels have tags for how a die handles in the tray: Heavy, Light, Bouncy, Low bounce, and Clack
+    modifiers in plain words (Clack +1, Takes -1). Tap one to read it. Relics like Lead Core and Rubber Coat
+    show up on your own die the same way.
+  - Clearer face text: Guard only stops Strikes, Pierce goes through, Charge doubles next turn's number, Thorns
+    only fire when a Strike or Pierce gets through.
+  - Rules page: a four-step "A turn, in order" panel, and entries for Guard and Pierce, Thorn, Charge, and weight
+    and bounce.
+  - Chips are coins: a pixel coin replaces the yellow button on the panels, the Tavern purse and the Tavern stop,
+    and spins on the after-fight reward. Source in art/coins/; tools/build_arena_art.py cuts it.
+- Clack Arena for Windows goes to 0.6.0; the Download for Windows button points at the clack-arena-v0.6.0 release.
+
 v0.19.0-alpha (2026-10-12)
 - Clack Arena v0.5.0: pixel art faces and cat enemies.
   - Face icons are now pixel art from the Fantasy RPG Icon Pack by Franuka (CC BY 4.0): Strike is a steel sword,

@@ -67,7 +67,7 @@ img.px, .px { image-rendering: pixelated; image-rendering: crisp-edges; display:
 .ffoot { grid-area: foot; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 .items, .relics { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .chips { display: inline-flex; align-items: center; gap: 4px; font-family: var(--px); font-size: 22px; color: var(--yellow); }
-.chips img { height: 22px; width: auto; }
+.chips img { height: 32px; width: auto; margin: -6px -2px; }   /* the coin at its 2x size: pixel art stays crisp */
 
 /* pips: one segment per point of health */
 .pips { flex: 1; display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; height: 30px; padding: 0;
@@ -148,9 +148,11 @@ button.tag { cursor: help; }
 .banner.small { top: 22%; }
 .banner.big b { font-size: 72px; }
 
-.phases { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); z-index: 3; display: none; gap: 4px; align-items: center; pointer-events: none;
-  padding: 4px 10px; background: rgba(11,11,13,.85); }
+.phases { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); z-index: 3; display: none; flex-direction: column; gap: 2px; align-items: center; pointer-events: none;
+  padding: 4px 10px 5px; background: rgba(11,11,13,.85); max-width: calc(100% - 20px); }
 .phases.show { display: flex; }
+.ph-row { display: flex; gap: 4px; align-items: center; }
+.phases small { font-family: var(--cond); font-size: 13px; color: #e8e8ee; text-align: center; letter-spacing: .02em; }
 .phases span { font-family: var(--px); font-size: 20px; color: #6d6d78; padding: 0 6px; }
 .phases span.none { opacity: .35; }
 .phases span.on { color: #111; background: var(--yellow); }
@@ -194,6 +196,7 @@ button.tag { cursor: help; }
 .coach.above .coach-ptr { bottom: -20px; transform: rotate(-90deg) scaleX(-1); }
 .coach.below .coach-ptr { top: -20px; transform: rotate(90deg) scaleX(-1); }
 .coach { animation: coachIn .3s ease-out; }
+.coach.teach .coach-body { border-color: var(--yellow); box-shadow: 0 0 0 3px #111, 0 6px 0 rgba(0,0,0,.4); }
 @keyframes coachIn { from { opacity: 0; transform: translateY(6px); } }
 .hand { position: fixed; z-index: 39; left: 0; top: 0; pointer-events: none; animation: hand 1.8s ease-in-out infinite; }
 .hand-dot { display: block; width: 34px; height: 34px; margin: -17px; border-radius: 50%; border: 4px solid #fff; background: rgba(245,228,0,.45); box-shadow: 0 0 0 4px rgba(0,0,0,.35); }
@@ -243,6 +246,7 @@ button.tag { cursor: help; }
 .node { display: flex; gap: 12px; align-items: flex-start; text-align: left; border: 0; background: var(--panel-2); padding: 12px 14px; cursor: pointer; border-left: 4px solid var(--line); position: relative; }
 .node:hover::after { content: ""; position: absolute; inset: -4px; border: 12px solid transparent; border-image: url('ui/glow-orange@2.png') 12 / 12px / 0 stretch; image-rendering: pixelated; pointer-events: none; }
 .node-ico { height: 40px; width: auto; flex: none; }
+.node.tavern .node-ico { height: 32px; margin: 4px; }   /* the coin at its 2x size */
 /* enemy cats: 7-frame idle loop at 2x (56x44; The House 60x46) */
 .node-ico.cat-idle { width: 56px; height: 44px; background: var(--strip) 0 0 / auto 100% no-repeat; image-rendering: pixelated; animation: cat-idle 1s steps(7) infinite; }
 .node.boss .node-ico.cat-idle { width: 60px; height: 46px; }
@@ -250,6 +254,7 @@ button.tag { cursor: help; }
 @media (prefers-reduced-motion: reduce) { .node-ico.cat-idle { animation: none; } }
 .calm .node-ico.cat-idle { animation: none; }
 .mini-node img.cat { height: 22px; }
+.mini-node img[src*="coin"] { height: 16px; margin: 4px 0; }
 .cat, .cat-idle { filter: drop-shadow(0 0 1px rgba(255, 255, 255, .55)); }   /* black cats on dark panels */
 .node-text { display: flex; flex-direction: column; gap: 3px; }
 .node b { font-family: var(--px); font-size: 28px; font-weight: 400; line-height: 1; }
@@ -273,6 +278,12 @@ button.tag { cursor: help; }
 
 /* tavern, rewards */
 .purse, .reward, .rest-gain { display: flex; align-items: center; gap: 10px; margin: 6px 0 14px; }
+.purse img { width: 32px; height: 32px; }
+/* the reward coin spins: 5 frames of 16x16 at 3x */
+.coin-spin { display: inline-block; width: 48px; height: 48px; flex: none; background: url('ui/coin-spin@2.png') 0 0 / 240px 48px no-repeat; image-rendering: pixelated; animation: coin-spin .6s steps(5) infinite; }
+@keyframes coin-spin { to { background-position: -240px 0; } }
+.calm .coin-spin { animation: none; }
+@media (prefers-reduced-motion: reduce) { .coin-spin { animation: none; } }
 .purse b { font-family: var(--px); font-size: 32px; font-weight: 400; color: var(--yellow); }
 .reward b, .rest-gain b { font-size: 56px; color: var(--yellow); line-height: 1; }
 .rest-gain b { color: var(--green); }
@@ -313,6 +324,11 @@ button.tag { cursor: help; }
 .screen-tip p { margin: 2px 0 0; color: #d8d8de; line-height: 1.45; }
 .screen-tip .pbtn { flex: none; align-self: center; }
 @media (max-width: 560px) { .screen-tip { flex-wrap: wrap; } .screen-tip > div { flex-basis: calc(100% - 50px); } .screen-tip .pbtn { margin-left: auto; } }
+.order { list-style: none; margin: 0 0 6px; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; counter-reset: beat; }
+.order li { counter-increment: beat; background: var(--panel-2); padding: 8px 10px; border-top: 3px solid var(--yellow); }
+.order b { display: block; font-family: var(--px); font-size: 22px; font-weight: 400; color: #fff; }
+.order b::before { content: counter(beat) ". "; color: var(--yellow); }
+.order span { font-size: 13px; color: #d8d8de; line-height: 1.4; }
 .rule-faces { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
 .rule-face { display: flex; gap: 10px; align-items: center; background: var(--panel-2); padding: 6px; }
 .rule-face img { width: 44px; height: 44px; }
@@ -357,6 +373,8 @@ button.tag { cursor: help; }
   .sheet h2 { font-size: 36px; }
   .gloss { grid-template-columns: 1fr; }
   .compare { grid-template-columns: 1fr; }
+  .order { grid-template-columns: 1fr 1fr; }
+  .phases small { font-size: 11px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .setting { flex-direction: column; align-items: flex-start; }
   .pbtn.big { font-size: 24px; }
