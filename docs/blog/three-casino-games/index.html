@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="version" content="v0.23.0-alpha">
+  <meta name="theme-color" content="#0b0b0d">
+  <title>Three casino games, and the maths is the hard part | VRX Games</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Saira:ital,wght@0,400;0,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css">
+  <!-- meta -->
+  <link rel="canonical" href="https://velmarox.com/blog/three-casino-games/">
+  <meta name="description" content="A slot and two kenos, built to Montana machine limits. Why I made them, how they differ, and why the cash-outs still do not match.">
+  <meta property="og:site_name" content="VRX Games">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://velmarox.com/blog/three-casino-games/">
+  <meta property="og:title" content="Three casino games, and the maths is the hard part | VRX Games">
+  <meta property="og:description" content="A slot and two kenos, built to Montana machine limits. Why I made them, how they differ, and why the cash-outs still do not match.">
+  <meta property="og:image" content="https://velmarox.com/games/keno/cover.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- /meta -->
+</head>
+<body data-page="post" data-slug="three-casino-games">
+  <main>
+    <article id="post-content">
+      <p>There are three casino games on this site: <a href="/games/safari-time/">Safari Time</a>, <a href="/games/keno/">Wyrmhoard Keno</a> and <a href="/games/elos-hoard/">Elo's Hoard</a>. They are far from done. They work, though, and that is enough to put them up.</p>
+      <p>All three are play money. Nothing here takes or pays a cent.</p>
+
+      <h2>Why casino games</h2>
+      <p>I watch a lot of gambling machines. Montana has them everywhere, and after enough hours you stop seeing the lights and start asking questions. Why did that keno card pay the bet back for catching nothing? Why does the bonus always seem one symbol away?</p>
+      <p>Every one of those has an answer, and the answer is a number. A casino game is the only kind of game I know where the design has to add up to a figure you can check. I wanted to see if I could make one that did.</p>
+
+      <h2>The two rules that shape everything</h2>
+      <p>I built all three to Montana's machine limits: a $2.00 top bet and an $800 top payout on one play.</p>
+      <p>Put those together and a $2 player can never win more than 400 times their bet. A nickel player can win 16,000 times theirs. So the same game needs a different pay table at every bet size, and at the high bets the top prizes all press up against the same ceiling. Most of the work in these games is deciding where the money goes once it can't go to the jackpot.</p>
+
+      <h2>Safari Time: the slot</h2>
+      <p>Five reels, three rows, ten lines. A wild fills its whole reel, and in the free games a wild stays put until the feature ends.</p>
+      <p>I started from a real machine's pay table and halved it, because Montana's top line bet is half of what that machine was published at. Then I left the pay table alone. On a slot you don't tune the return by changing what a lion pays. You tune it by changing how often the lion shows up. Each reel has 100 stops, which is ten billion combinations, and the return comes out of how the symbols are spread across them.</p>
+      <p>It lands at 92.13%. About 71 points come from line wins, 6.5 from the scatter, and 14 from the free games. The first two I could work out exactly. The free games I couldn't, because a wild that sticks changes every spin after it, so those are played out a million times and averaged.</p>
+      <p>The free games also run on their own reels with fewer wilds. With the normal reels, three locked wild reels would be routine and the feature would pay far too much.</p>
+
+      <h2>Wyrmhoard Keno: the big one</h2>
+      <p>Eighty numbers, twenty drawn, pick four to ten. Montana-style keno, done with a dragon.</p>
+      <p>Keno maths is exact. No reels, no simulation, only counting how many ways twenty numbers can fall. The hard part is the number of tables. Every bet size and every count of picks needs its own, each one has to stay under $800, and each has to climb, so that catching more never pays less.</p>
+      <p>The best thing in it is the eggs. They sit on numbers you didn't pick. Every egg that gets drawn is a ball that missed your card, so you end up cheering for your own misses. Four eggs open a run of free games.</p>
+      <p>You don't have to take my word for any of it. There's a <a href="/games/keno/play/verify.html">verify page</a> that plays as many rounds as you like in your browser and shows the return it got next to the return the pay table claims.</p>
+
+      <h2>Elo's Hoard: the cabinet</h2>
+      <p>Also keno, but this one is about a feel. I wanted the look of an old Montana keno cabinet: the pay table down the left, the board split into two blocks of forty, every button in one strip along the bottom. The art, the theme and the maths are mine.</p>
+      <p>Three coins are hidden in the draw. The first one you collect pays nothing. It lights up, shows a big multiplier, and that's all it does. The second one multiplies your win. The third opens the Hoard, which comes around about once in 685 games with ten numbers marked.</p>
+      <p>My first version tied the coins to your own picks. With three numbers marked, any win meant you already had two coins, so the multiplier fired every single time and the game paid back more than double what it should. Moving the coins fixed it.</p>
+      <p>The other bug I liked: catching nine out of ten paid the same as catching all ten, because both had hit the $800 ceiling. A jackpot has to stand clear of the prize under it, so now only the top prize is allowed to reach $800.</p>
+
+      <h2>How they differ</h2>
+      <ul>
+        <li><strong>Safari Time</strong> is a slot. The pay table is fixed and the reels are tuned. Part of its return can only be found by simulation.</li>
+        <li><strong>Wyrmhoard Keno</strong> is keno built wide: many bet sizes, many tables, a free games bonus, and a page that checks the maths in front of you.</li>
+        <li><strong>Elo's Hoard</strong> is keno built narrow: one cabinet, one coin mechanic, every figure worked out exactly.</li>
+      </ul>
+
+      <h2>What isn't right yet</h2>
+      <p>The cash-outs don't look the same from game to game. I know. Believe it or not, the maths is the hard part, and it's where the time went. A cash-out screen is an afternoon. A bonus that pays exactly what it should, at every bet, without ever going over $800, took weeks.</p>
+      <p>So: mismatched in places, and a long way from finished. But the numbers hold, and you can play all three right now.</p>
+    </article>
+  </main>
+  <script src="/js/data/games.js"></script>
+  <script src="/js/data/posts.js"></script>
+  <script src="/js/data/threads.js"></script>
+  <script src="/js/data/products.js"></script>
+  <script src="/js/site.js"></script>
+</body>
+</html>
