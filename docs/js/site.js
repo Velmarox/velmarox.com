@@ -2,8 +2,10 @@
   // Anything in the 'tools' category lives on /tools/ instead of with the games.
   var ALL = window.GAMES || [];
   function isTool(g) { return (g.genres || []).indexOf('tools') > -1; }
-  var GAMES = ALL.filter(function (g) { return !isTool(g); });
-  var TOOLS = ALL.filter(isTool);
+  // unlisted: true keeps a game's page up at its own link but leaves it out of every list.
+  var LISTED = ALL.filter(function (g) { return !g.unlisted; });
+  var GAMES = LISTED.filter(function (g) { return !isTool(g); });
+  var TOOLS = LISTED.filter(isTool);
   var POSTS = (window.POSTS || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
   var CATS = window.CATEGORIES || {};
   // Posts tagged Devlog live on /devlog/; the blog list keeps everything else.
@@ -438,7 +440,7 @@
   // Every game and tool's devlog entries in one list, newest first.
   function updates() {
     var out = [];
-    ALL.forEach(function (g) { (g.log || []).forEach(function (l) { out.push({ g: g, date: l.date, text: l.text }); }); });
+    LISTED.forEach(function (g) { (g.log || []).forEach(function (l) { out.push({ g: g, date: l.date, text: l.text }); }); });
     return out.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
   }
   function blog() {

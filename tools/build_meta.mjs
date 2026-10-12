@@ -17,7 +17,7 @@ const { GAMES = [], POSTS = [], THREADS = [] } = ctx.window;
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const abs = u => (u ? (u.startsWith('http') ? u : SITE + u) : SITE + '/assets/brand/og-default.jpg');
 const pages = [];
-const add = (url, title, desc, image, type = 'website') => pages.push({ url, title, desc, image: abs(image), type });
+const add = (url, title, desc, image, type = 'website', unlisted = false) => pages.push({ url, title, desc, image: abs(image), type, unlisted });
 
 add('/', 'VRX Games', 'Games, tools and devlogs, made by one person. Play in your browser, no installs, no ads.');
 add('/games/', 'All games | VRX Games', 'Every game and tool on VRX Games, from finished to half-built.');
@@ -28,7 +28,7 @@ add('/news/', 'News | VRX Games', 'Releases, updates and announcements.');
 add('/community/', 'Community | VRX Games', 'Talk about the games, report bugs, pitch ideas.');
 add('/shop/', 'Shop | VRX Games', 'Soundtracks, extras and merch. Coming soon.');
 const isTool = g => (g.genres || []).includes('tools');
-for (const g of GAMES) add(`/${isTool(g) ? 'tools' : 'games'}/${g.slug}/`, `${g.title} | VRX Games`, g.tagline || '', g.banner || g.thumb);
+for (const g of GAMES) add(`/${isTool(g) ? 'tools' : 'games'}/${g.slug}/`, `${g.title} | VRX Games`, g.tagline || '', g.banner || g.thumb, 'website', !!g.unlisted);
 for (const p of POSTS) {
   const g = GAMES.find(x => x.slug === p.game);
   add(`/${p.type === 'news' ? 'news' : 'blog'}/${p.slug}/`, `${p.title} | VRX Games`, p.excerpt || '', p.cover || (g && (g.banner || g.thumb)), 'article');
@@ -51,6 +51,8 @@ for (const p of pages) {
     `  <meta property="og:description" content="${esc(p.desc)}">`,
     `  <meta property="og:image" content="${esc(p.image)}">`,
     `  <meta name="twitter:card" content="summary_large_image">`,
+    // Unlisted pages stay reachable by direct link but out of search results and the sitemap.
+    ...(p.unlisted ? ['  <meta name="robots" content="noindex">'] : []),
     '  <!-- /meta -->'
   ].join('\n');
   html = html.replace(/\s*<meta name="description" content="[^"]*">/, '');
@@ -63,7 +65,7 @@ for (const p of pages) {
 }
 fs.writeFileSync(path.join(ROOT, 'sitemap.xml'),
   '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-  pages.map(p => `  <url><loc>${SITE}${p.url}</loc></url>`).join('\n') + '\n</urlset>\n');
+  pages.filter(p => !p.unlisted).map(p => `  <url><loc>${SITE}${p.url}</loc></url>`).join('\n') + '\n</urlset>\n');
 fs.writeFileSync(path.join(ROOT, 'robots.txt'),
   `User-agent: *\nDisallow: /games/_template/\nDisallow: /blog/_template/\nDisallow: /news/_template/\nDisallow: /community/_template/\n\nSitemap: ${SITE}/sitemap.xml\n`);
-console.log(`meta written to ${n} pages; sitemap has ${pages.length} urls`);
+console.log(`meta written to ${n} pages; sitemap has ${pages.filter(p => !p.unlisted).length} urls`);

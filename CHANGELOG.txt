@@ -5,6 +5,14 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.23.0-alpha (2026-10-12)
+- New blog post: "Three casino games, and the maths is the hard part" (blog/three-casino-games/), on Safari Time,
+  Wyrmhoard Keno and Elo's Hoard.
+- Animalism is unlisted. Its page and build still work at /games/animalism/ and /games/animalism/play/, but it is
+  gone from the home page, the games list, the Games dropdown, More games, the devlog and the sitemap, and its
+  page is marked noindex. The launch news post no longer links to it.
+- New game field `unlisted: true` (games.js) does all of the above; build_meta.mjs honours it.
+
 v0.22.0-alpha (2026-10-12)
 - Clack Arena v0.8.0: unlockable finishes.
   - Customize starts with Matte, Satin and Glossy. Glass, Pearl and Metal are locked, each showing who to beat:

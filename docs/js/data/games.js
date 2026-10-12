@@ -33,6 +33,7 @@
 //   download   { label: 'Download for Windows', url: '...', note: '...' } (url blank = "no public download yet")
 //   flag       short badge on cards, e.g. 'Fan game'
 //   warning    { title: '...', text: '...' } big hazard banner at the top of the game page
+//   unlisted   true = the page still works at /games/<slug>/, but nothing on the site links to it
 //
 // Missing images show a placeholder frame, so a game can go up before its art is ready.
 
@@ -117,7 +118,7 @@ window.GAMES = [
   {
     slug: 'animalism',
     title: 'Animalism', tagline: 'A rock em sock em picture. Walk right and deal with whoever is in the way.',
-    genres: ['action', 'arcade'], status: 'live', featured: true, trending: true,
+    genres: ['action', 'arcade'], status: 'live', unlisted: true,
     released: '2026-09-10',
     controls: 'Keyboard or gamepad', platforms: 'Desktop',
     play: '/games/animalism/play/',

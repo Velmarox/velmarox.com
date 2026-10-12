@@ -69,6 +69,9 @@ Header and footer are added by `site.js`, so every page gets the same nav automa
 | banner | 1600x900  | home banner (featured games), game page |
 | shots  | 16:9      | game page gallery |
 
+To take a game off the site without breaking its link, add `unlisted: true`: the page and build stay up at
+their own URLs, but no list, dropdown, devlog or sitemap entry points to them (Animalism is set this way).
+
 Missing images show a placeholder frame. Categories in the dropdown come from the games' `genres`;
 add new category names to `CATEGORIES` at the top of games.js.
 
