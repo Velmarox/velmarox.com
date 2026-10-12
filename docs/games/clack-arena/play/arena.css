@@ -306,6 +306,24 @@ button.tag { cursor: help; }
 .stats b { display: block; font-size: 40px; color: var(--yellow); line-height: 1; }
 .overlay.won .sheet { border-image-source: url('ui/frame-brown@2.png'); }
 
+/* customize */
+.cust-preview { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 12px; background: var(--panel-2); margin: 6px 0 10px; }
+.cust-preview .chip { width: 56px; height: 56px; }
+.cust { display: grid; grid-template-columns: 110px 1fr; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.cust > b { font-family: var(--px); font-size: 24px; font-weight: 400; }
+.swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.swatch { width: 34px; height: 34px; padding: 0; border: 3px solid #111; outline: 2px solid var(--line); background: var(--sw); cursor: pointer; }
+.swatch:hover { outline-color: #8a8a94; }
+.swatch.on { outline: 3px solid var(--yellow); }
+.segs.wrap { flex-wrap: wrap; flex: 1; }
+.trays { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; }
+.tray-pick { position: relative; padding: 0; border: 0; background: #000; cursor: pointer; outline: 2px solid var(--line); text-align: left; }
+.tray-pick img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.tray-pick span { position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 6px; background: rgba(11,11,13,.8); font-family: var(--cond); font-size: 12px; text-transform: uppercase; }
+.tray-pick:hover { outline-color: #8a8a94; }
+.tray-pick.on { outline: 3px solid var(--yellow); }
+.tray-pick.on span { color: var(--yellow); }
+
 /* rules, settings */
 .sheet p.small { font-size: 13px; color: var(--muted); }
 .sheet p.small a { color: inherit; }
@@ -372,6 +390,8 @@ button.tag { cursor: help; }
   .sheet { padding: 8px 10px 14px; margin: 1vh auto; }
   .sheet h2 { font-size: 36px; }
   .gloss { grid-template-columns: 1fr; }
+  .cust { grid-template-columns: 1fr; gap: 6px; }
+  .cust-preview .chip { width: 44px; height: 44px; }
   .compare { grid-template-columns: 1fr; }
   .order { grid-template-columns: 1fr 1fr; }
   .phases small { font-size: 11px; }

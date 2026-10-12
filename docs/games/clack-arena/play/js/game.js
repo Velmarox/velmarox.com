@@ -34,11 +34,29 @@
     document.documentElement.classList.toggle('calm', !!A.settings.reduceMotion);
   }
 
+  // ---------- your look (Customize) ----------
+  // Picked before a run and kept on this device: die colour, number colour, finish and tray.
+  function loadStyle() {
+    let s = {};
+    try { s = JSON.parse(localStorage.getItem('clackArena.style') || '{}'); } catch { /* storage off */ }
+    const ok = (list, v) => list.some(([c]) => c === v);
+    A.style = { ...A.STYLE_DEFAULT, ...s };
+    if (!ok(A.DIE_COLORS, A.style.color)) A.style.color = A.STYLE_DEFAULT.color;
+    if (!ok(A.INK_COLORS, A.style.ink)) A.style.ink = A.STYLE_DEFAULT.ink;
+    if (!A.FINISHES[A.style.finish]) A.style.finish = A.STYLE_DEFAULT.finish;
+    if (!A.TRAYS.includes(A.style.tray)) A.style.tray = A.STYLE_DEFAULT.tray;
+  }
+  function saveStyle() {
+    try { localStorage.setItem('clackArena.style', JSON.stringify(A.style)); } catch { /* storage off */ }
+    A.tray.setTray(A.trayPic(A.style.tray));
+  }
+  const myLook = () => ({ color: A.style.color, ink: A.style.ink, finish: A.style.finish });
+
   // ---------- run ----------
   function newRun() {
     fight = null; A.tray.clearDice(); A.tray.setZones(false); clearLabels(); el.log.innerHTML = ''; el.after.className = 'after'; hint(''); U().phases(null);
     run = {
-      hp: A.PLAYER_START.hp, max: A.PLAYER_START.hp, die: clone(A.PLAYER_START.die),
+      hp: A.PLAYER_START.hp, max: A.PLAYER_START.hp, die: { ...clone(A.PLAYER_START.die), look: myLook() },
       relics: [], items: ['nudge', 'chalk'], chips: 0, step: 0, map: makeMap(), path: [],
       stats: { fights: 0, turns: 0, clacks: 0, dealt: 0, taken: 0 },
     };
@@ -140,7 +158,7 @@
       <div class="title-art">${px('wings-silver', 3, 'wings')}<h1 class="pxfont">Clack <em>Arena</em></h1><span class="hz"></span></div>
       <p class="lead">You are a die. Everyone else is too.</p>
       <p>Throw into a shared tray. Crash into the enemy. Whatever face you land on is what you do. Between fights, engrave new faces onto yourself.</p>
-      <div class="row center">${btn('Start a run', 'start', 'big primary')}${btn('How to play', 'rules')}${btn('Settings', 'settings')}</div>
+      <div class="row center">${btn('Start a run', 'start', 'big primary')}${btn('Customize', 'customize')}${btn('How to play', 'rules')}${btn('Settings', 'settings')}</div>
       <p class="small center">Early build · the Green Felt · d4 and d6 · six enemies</p>`, 'title');
   }
 
@@ -161,6 +179,24 @@
       <h2 class="pxfont">How to play</h2>
       <ol class="howto">${steps.map(([k, v]) => `<li><b>${esc(k)}</b><span>${esc(v)}</span></li>`).join('')}</ol>
       <div class="row center">${btn("Let's go", 'howto-go', 'big primary')}${btn('Full rules', 'rules')}</div>`, 'rules');
+  }
+
+  // Before every run: how your die and the tray look. Only looks, nothing here changes how the game plays.
+  function showCustomize() {
+    phase = 'title';
+    const st = A.style, die = { ...A.PLAYER_START.die, look: myLook() };
+    const sw = (key, val, label, fill) => `<button type="button" class="swatch${st[key] === val ? ' on' : ''}" data-style="${key}" data-val="${esc(val)}" title="${esc(label)}" aria-label="${esc(label)}" aria-pressed="${st[key] === val}" style="--sw:${fill}"></button>`;
+    const seg = (key, val, label) => `<button type="button" class="seg${st[key] === val ? ' on' : ''}" data-style="${key}" data-val="${esc(val)}">${esc(label)}</button>`;
+    const name = (list, v) => list.find(([c]) => c === v)?.[1] || '';
+    screen(`
+      <h2 class="pxfont">Your die</h2>
+      <p>How ${esc(A.PLAYER_START.name)} looks this run. Looks only: nothing here changes how it plays. The yellow ring stays, so you can always find yourself.</p>
+      <div class="cust-preview"><div style="--faces:${die.faces.length}">${U().net(die)}</div><span class="dim">${esc(name(A.DIE_COLORS, st.color))} · ${esc(A.FINISH_NAMES[st.finish])} · ${esc(name(A.INK_COLORS, st.ink))} numbers</span></div>
+      <div class="cust"><b>Colour</b><div class="swatches">${A.DIE_COLORS.map(([c, n]) => sw('color', c, n, c)).join('')}</div></div>
+      <div class="cust"><b>Numbers</b><div class="swatches">${A.INK_COLORS.map(([c, n]) => sw('ink', c, n, c)).join('')}</div></div>
+      <div class="cust"><b>Finish</b><div class="segs wrap">${Object.keys(A.FINISHES).map((f) => seg('finish', f, A.FINISH_NAMES[f] || f)).join('')}</div></div>
+      <div class="cust"><b>Tray</b><div class="trays">${A.TRAYS.map((t) => `<button type="button" class="tray-pick${st.tray === t ? ' on' : ''}" data-style="tray" data-val="${t}" aria-pressed="${st.tray === t}"><img alt="" loading="lazy" src="ui/trays/${t}.jpg"><span>${esc(A.trayName(t))}</span></button>`).join('')}</div></div>
+      <div class="row">${btn('Start the run', 'cust-go', 'big primary')}${btn('Reset', 'cust-reset')}${btn('Back', 'title')}</div>`, 'customize');
   }
 
   function showRules() {
@@ -889,10 +925,14 @@
     if (act === 'tip-ok') { tipDone(b.dataset.tip); b.closest('.screen-tip').remove(); return; }
     if (act === 'start') {
       if (A.settings.tips && !U().seen('howto')) { showHowTo(); return; }
-      sfx('unlock'); newRun(); return;
+      showCustomize(); return;
     }
-    if (act === 'howto-go') { U().doneCoach('howto'); sfx('unlock'); newRun(); return; }
+    if (act === 'howto-go') { U().doneCoach('howto'); showCustomize(); return; }
+    if (b.dataset.style) { A.style[b.dataset.style] = b.dataset.val; saveStyle(); const y = el.overlay.scrollTop; showCustomize(); el.overlay.scrollTop = y; return; }
+    if (act === 'cust-reset') { A.style = { ...A.STYLE_DEFAULT }; saveStyle(); showCustomize(); return; }
+    if (act === 'cust-go') { sfx('unlock'); newRun(); return; }
     if (act === 'title') { showTitle(); return; }
+    if (act === 'customize') { showCustomize(); return; }
     if (act === 'rules' || act === 'settings') { openSide(act); return; }
     if (act === 'back') { back(); return; }
     if (b.dataset.set) {
@@ -929,6 +969,7 @@
 
   function boot() {
     loadSettings();
+    loadStyle();
     Object.assign(el, {
       overlay: $('#overlay'), enemy: $('#enemy-bar'), player: $('#player-bar'), trayWrap: $('#tray-wrap'), labels: $('#labels'),
       hint: $('#hint'), log: $('#log'), after: $('#after'), say: $('#say'),
@@ -936,6 +977,7 @@
     if (!window.THREE || !window.CANNON || !window.RP?.dieShape) { el.overlay.className = 'overlay show'; el.overlay.innerHTML = '<div class="sheet"><h2>Couldn\'t load the dice.</h2><p>The 3D engine didn\'t load. Check your connection and reload.</p></div>'; return; }
     try { A.tray.init(el.trayWrap); } catch (err) { console.error(err); el.overlay.className = 'overlay show'; el.overlay.innerHTML = '<div class="sheet"><h2>No 3D here.</h2><p>This browser can\'t draw WebGL, which the tray needs.</p></div>'; return; }
     A.tray.onFrame = onFrame;
+    A.tray.setTray(A.trayPic(A.style.tray));
     document.addEventListener('click', onClick);
     document.addEventListener('mouseover', onOver);
     el.trayWrap.addEventListener('pointerdown', onDown);
