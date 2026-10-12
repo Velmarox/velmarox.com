@@ -41,7 +41,7 @@
 
       <h2>Updates that install themselves</h2>
       <p>Next I wanted to stop sending new copies at all. The player app checks a releases page on GitHub when it opens, downloads a new version in the background, and asks to restart. To do that I learned to keep two repos: a private one with the code, and a public one that holds nothing but the finished downloads.</p>
-      <p>I also learned that an app can't replace its own exe while it's running. <a href="/games/clack-attack/">Clack Attack</a> taught me that the hard way. My first updater closed the app and then did nothing, because the little script meant to do the swap quit the instant it started. One version later it works, and anyone on the broken version had to download the fix by hand. Sorry about that.</p>
+      <p>I also learned that an app can't replace its own exe while it's running. <a href="/tools/clack-attack/">Clack Attack</a> taught me that the hard way. My first updater closed the app and then did nothing, because the little script meant to do the swap quit the instant it started. One version later it works, and anyone on the broken version had to download the fix by hand. Sorry about that.</p>
 
       <h2>The patcher</h2>
       <p>An updater is no help to someone whose copy is too old to have one. So there's a patcher: one exe, one big button. It says Install if you don't have the app, Update if you're behind, and Open if you're current. It carries an installer inside it so it works with no internet, and it can put an older version back if a new one misbehaves.</p>

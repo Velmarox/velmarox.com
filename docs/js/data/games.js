@@ -3,6 +3,9 @@
 // Add a game:
 //   1. Add an entry below.
 //   2. Copy docs/games/_template/ to docs/games/<slug>/ (the folder name must match `slug`).
+//      A tool (genres includes 'tools') lives on the Tools page instead: use docs/tools/<slug>/
+//      and set data-page="game" in its index.html as usual. Tools show Download first; `play`
+//      becomes a "Try it in the browser" button.
 //   3. Put its images in that folder and point icon/thumb/banner/shots at them.
 //   4. Put the playable build in docs/games/<slug>/play/ and set play: '/games/<slug>/play/'.
 //
@@ -10,7 +13,7 @@
 //   slug       url name: /games/<slug>/
 //   title      shown everywhere
 //   tagline    one short line under the title on cards
-//   genres     category keys from CATEGORIES below; they fill the Games dropdown
+//   genres     category keys from CATEGORIES below; they fill the Games dropdown ('tools' = Tools page)
 //   status     "live" (playable), "wip" (in the workshop) or "idea"
 //   progress   0-100, only for "wip": the bar in the workshop panel
 //   featured   true = rotates in the big home banner
@@ -107,11 +110,11 @@ window.GAMES = [
     genres: ['tools'], status: 'live', trending: true,
     released: '2026-10-09', updated: '2026-10-09', version: '1.3.0',
     controls: 'Touch, or keyboard and mouse', platforms: 'Browser (phone or desktop), Windows app',
-    play: '/games/clack-attack/play/',
-    download: { label: 'Windows app', url: 'https://github.com/Velmarox/clack-attack-releases/releases/latest', note: 'The Windows app updates itself and can stay on top of other windows.' },
-    thumb: '/games/clack-attack/thumb.jpg', banner: '/games/clack-attack/cover.jpg',
-    shots: ['/games/clack-attack/cover.jpg', '/games/clack-attack/shot-2.jpg', '/games/clack-attack/shot-3.jpg', '/games/clack-attack/shot-4.jpg'],
-    about: 'The 3D dice from the Warrior Codex as a small app of their own. Type a roll or click a dice button, watch the dice tumble across a themed tray, and keep a log of every roll.\n\nNineteen trays, from green felt and a forest floor to cyberpunk and a nineties carpet, plus colours, skins, face icons and presets for the dice themselves.\n\nPlay it here in the browser, or grab the Windows app.',
+    play: '/tools/clack-attack/play/',
+    download: { label: 'Download for Windows', url: 'https://github.com/Velmarox/clack-attack-releases/releases/latest', note: 'The Windows app updates itself and can stay on top of other windows.' },
+    thumb: '/tools/clack-attack/thumb.jpg', banner: '/tools/clack-attack/cover.jpg',
+    shots: ['/tools/clack-attack/cover.jpg', '/tools/clack-attack/shot-2.jpg', '/tools/clack-attack/shot-3.jpg', '/tools/clack-attack/shot-4.jpg'],
+    about: 'The 3D dice from the Warrior Codex as a small app of their own. Type a roll or click a dice button, watch the dice tumble across a themed tray, and keep a log of every roll.\n\nNineteen trays, from green felt and a forest floor to cyberpunk and a nineties carpet, plus colours, skins, face icons and presets for the dice themselves.\n\nGrab the Windows app, or try it here in the browser first.',
     howto: ['Type dice like 1d20, 2d6+3 or 4d6kh3 and press Enter, or click a quick dice button.', 'Adv / Dis rolls 2d20 and keeps the higher or lower.', 'Pick a tray from the top bar, and change the dice in Dice look.', 'Esc clears the dice off the tray.'],
     log: [
       { date: '2026-10-11', text: 'Phone layout: tray on top, bigger buttons, tap the tray to clear the dice.' },
@@ -148,8 +151,8 @@ window.GAMES = [
     released: '2026-09-13', updated: '2026-09-13', version: '0.2.0-alpha',
     controls: 'Keyboard and mouse', platforms: 'Windows 10 and 11',
     download: { label: 'Download for Windows', url: 'https://github.com/Velmarox/NotePadSupreme/releases/latest', note: 'Free. Installer or portable exe, no admin rights needed.' },
-    icon: '/games/notepadsupreme/icon.png', thumb: '/games/notepadsupreme/thumb.jpg', banner: '/games/notepadsupreme/cover.jpg',
-    shots: ['/games/notepadsupreme/shot-dark.png', '/games/notepadsupreme/shot-light.png', '/games/notepadsupreme/shot-installer.png'],
+    icon: '/tools/notepadsupreme/icon.png', thumb: '/tools/notepadsupreme/thumb.jpg', banner: '/tools/notepadsupreme/cover.jpg',
+    shots: ['/tools/notepadsupreme/shot-dark.png', '/tools/notepadsupreme/shot-light.png', '/tools/notepadsupreme/shot-installer.png'],
     about: "I made this because I hated Windows Notepad, and Notepad++ wasn't what I wanted either. I just wanted a little notepad. That is all this is: a simple, better notepad with formatting and light/dark mode. Free, and always will be.\n\nBold, italic, underline, strikethrough, colours, highlights, alignment, bullets and indents. Light and dark themes with matching title bar and scrollbars, word wrap and a focus mode.\n\nPlain .txt stays plain: it keeps its encoding and line endings, and if you add formatting it offers to save a formatted .rtf copy instead of silently dropping it.",
     howto: ['Download NotePadSupreme-Setup.exe and run it. It installs just for your Windows account.', 'If Windows says "Windows protected your PC", click More info, then Run anyway. The app just isn\'t code-signed.', 'Ctrl+V pastes as plain text; Ctrl+Shift+V keeps formatting.', 'F11 for focus mode.', 'To open .txt files with it: right-click a .txt, Open with, Choose another app, NotePadSupreme, Always.'],
     log: [

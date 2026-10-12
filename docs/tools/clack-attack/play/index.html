@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080B17">
+<title>Clack Attack</title>
+<link rel="stylesheet" href="Table/Styles/Table.css">
+<link rel="stylesheet" href="Clack.css">
+<link rel="stylesheet" href="Mobile.css">
+</head>
+<body class="rp">
+<!-- Clack Attack: the Warrior Codex's 3D dice, tray and roller, on their own. The dice code is the Codex's (Table/);
+     App.js is the small shell around it: the tray, the roll bar and the log. -->
+<script>window.CLACK_ATTACK = true;</script>
+<script src="Table/Vendor/Dice_Vendor.js"></script>
+<script src="Table/Scripts/Core.js"></script>
+<script src="Table/Scripts/Format.js"></script>
+<script src="Table/Scripts/Roll_Engine.js"></script>
+<script src="Table/Scripts/Dice_Geometry.js"></script>
+<script src="Table/Scripts/Dice_Skins.js"></script>
+<script src="Table/Scripts/Dice_Presets.js"></script>
+<script src="Table/Scripts/Dice_Themes.js"></script>
+<script src="Table/Scripts/Dice_Tray.js"></script>
+<script src="Table/Scripts/Dice_Portrait.js"></script>
+<script src="Table/Scripts/Dice_Look.js"></script>
+<script src="App.js"></script>
+<script src="Mobile.js"></script>
+<style>
+.vrx-badge{position:fixed;left:10px;top:10px;z-index:2147483000;display:block;width:88px;opacity:.72;transition:opacity .15s}
+.vrx-badge:hover{opacity:1}
+.vrx-badge img{display:block;width:100%;height:auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+@media (max-width:640px){.vrx-badge{width:64px;left:6px;top:6px}}
+</style>
+<style>.vrx-badge{top:auto!important;bottom:10px}</style><a class="vrx-badge" href="../" aria-label="Back to the game page"><picture><source srcset="/assets/brand/vrx-badge.webp" type="image/webp"><img src="/assets/brand/vrx-badge.png" width="180" height="85" alt="VRX Games" decoding="async"></picture></a>
+</body>
+</html>

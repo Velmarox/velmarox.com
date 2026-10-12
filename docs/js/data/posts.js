@@ -29,6 +29,7 @@ window.POSTS = [
   {
     slug: 'vrx-games-is-live', type: 'news',
     title: 'VRX Games is live', date: '2026-10-11', tag: 'Site',
+    cover: '/news/vrx-games-is-live/cover.jpg',
     excerpt: 'Everything I make, in one place: four browser games, a dice roller, a notepad and a roguelike.'
   },
   {

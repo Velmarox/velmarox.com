@@ -1,8 +1,16 @@
 (function () {
-  var GAMES = window.GAMES || [];
+  // Anything in the 'tools' category lives on /tools/ instead of with the games.
+  var ALL = window.GAMES || [];
+  function isTool(g) { return (g.genres || []).indexOf('tools') > -1; }
+  var GAMES = ALL.filter(function (g) { return !isTool(g); });
+  var TOOLS = ALL.filter(isTool);
   var POSTS = (window.POSTS || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
   var CATS = window.CATEGORIES || {};
-  var BLOG = POSTS.filter(function (p) { return p.type !== 'news'; });
+  // Posts tagged Devlog live on /devlog/; the blog list keeps everything else.
+  function isDevlog(p) { return p.type !== 'news' && /^devlog$/i.test(p.tag || ''); }
+  var WRITING = POSTS.filter(function (p) { return p.type !== 'news'; });
+  var BLOG = WRITING.filter(function (p) { return !isDevlog(p); });
+  var DEVLOG = WRITING.filter(isDevlog);
   var NEWS = POSTS.filter(function (p) { return p.type === 'news'; });
   var THREADS = (window.THREADS || []).slice().sort(function (a, b) {
     return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (a.date < b.date ? 1 : -1);
@@ -31,10 +39,10 @@
     return t.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
   function recent(d) { return d && (Date.now() - new Date(d + 'T12:00:00')) < 30 * DAY; }
-  function gameUrl(g) { return '/games/' + g.slug + '/'; }
+  function gameUrl(g) { return (isTool(g) ? '/tools/' : '/games/') + g.slug + '/'; }
   function postUrl(p) { return (p.type === 'news' ? '/news/' : '/blog/') + p.slug + '/'; }
   function threadUrl(t) { return '/community/' + t.slug + '/'; }
-  function findGame(s) { return GAMES.filter(function (g) { return g.slug === s; })[0]; }
+  function findGame(s) { return ALL.filter(function (g) { return g.slug === s; })[0]; }
   function playable(g) { return g.status === 'live' && g.play && g.play !== '#'; }
   function img(src, alt, label) {
     return src
@@ -51,7 +59,8 @@
     return out.length ? '<div class="badge-row">' + out.join('') + '</div>' : '';
   }
   function statusTag(g) {
-    if (g.status === 'live' && !g.play) return '<span class="tag">' + ((g.genres || []).indexOf('tools') > -1 ? 'Free download' : 'Desktop game') + '</span>';
+    if (g.status === 'live' && isTool(g)) return '<span class="tag">Free download</span>';
+    if (g.status === 'live' && !g.play) return '<span class="tag">Desktop game</span>';
     if (g.status === 'live') return '<span class="tag">Free to play</span>';
     if (g.status === 'wip') return '<span class="tag">In the workshop</span>';
     return '<span class="tag dim">Idea</span>';
@@ -136,7 +145,8 @@
     return f ? gameUrl(f) : '/games/';
   }
   function chrome() {
-    var cur = { game: 'games', thread: 'community' }[page] || page;
+    var cur = { game: 'games', thread: 'community', devlog: 'blog' }[page] || page;
+    if (page === 'game' && findGame(slug) && isTool(findGame(slug))) cur = 'tools';
     if (page === 'post') {
       var me = POSTS.filter(function (p) { return p.slug === slug; })[0];
       cur = me && me.type === 'news' ? 'news' : 'blog';
@@ -155,6 +165,7 @@
           a('home', '/', 'Home') +
           '<div class="drop"><button type="button" aria-expanded="false"' + (cur === 'games' ? ' aria-current="page"' : '') + '>Games <i class="caret"></i></button>' +
             '<div class="drop-menu"><a href="/games/">All games <small>' + GAMES.length + '</small></a><div class="sep"></div>' + cats + '</div></div>' +
+          (TOOLS.length ? a('tools', '/tools/', 'Tools') : '') +
           a('blog', '/blog/', 'Blog') +
           a('news', '/news/', 'News') +
           a('community', '/community/', 'Community') +
@@ -201,7 +212,7 @@
         '<div><h4>Games</h4><ul><li><a href="/games/">All games</a></li>' +
           categoryCounts().slice(0, 5).map(function (c) { return '<li><a href="/games/?cat=' + c[0] + '">' + esc(catName(c[0])) + '</a></li>'; }).join('') +
         '</ul></div>' +
-        '<div><h4>Site</h4><ul><li><a href="/">Home</a></li><li><a href="/blog/">Blog</a></li><li><a href="/news/">News</a></li>' +
+        '<div><h4>Site</h4><ul><li><a href="/">Home</a></li>' + (TOOLS.length ? '<li><a href="/tools/">Tools</a></li>' : '') + '<li><a href="/blog/">Blog</a></li><li><a href="/news/">News</a></li>' +
           '<li><a href="/community/">Community</a></li><li><a href="/shop/">Shop</a></li>' +
           (window.DISCORD ? '<li><a class="foot-discord" href="' + esc(window.DISCORD) + '" target="_blank" rel="noopener">' + DISCORD_ICON + 'Discord</a></li>' : '') + '</ul></div>' +
       '</div>' +
@@ -242,9 +253,9 @@
       (THREADS.length ? secHead('Community', ['Threads', '/community/'], true) + '<div class="panel"><div class="panel-in">' + THREADS.slice(0, 4).map(threadRow).join('') + '</div></div>' : '') +
       (wip.length ? secHead('In the workshop', null, true) + '<div class="panel"><div class="panel-in">' + wip.map(workshopRow).join('') + '</div></div>' : '') +
       '</aside></div>';
-    if (BLOG.length) {
+    if (WRITING.length) {
       html += '<section class="sec wrap">' + secHead('From the blog', ['All posts', '/blog/']) +
-        '<ul class="posts">' + BLOG.slice(0, 3).map(postCard).join('') + '</ul></section>';
+        '<ul class="posts">' + WRITING.slice(0, 3).map(postCard).join('') + '</ul></section>';
     }
     var shopPick = !SHOP_OPEN ? [] : PRODUCTS.filter(function (p) { return (p.status || 'available') !== 'sold-out'; }).slice(0, 4);
     if (shopPick.length) {
@@ -287,21 +298,57 @@
   function games() {
     var main = $('main');
     var cat = new URLSearchParams(location.search).get('cat');
+    if (cat === 'tools') { location.replace('/tools/'); return; }
     if (cat && !GAMES.some(function (g) { return (g.genres || []).indexOf(cat) > -1; })) cat = null;
     var list = GAMES.filter(function (g) { return !cat || (g.genres || []).indexOf(cat) > -1; });
     var order = { live: 0, wip: 1, idea: 2 };
     list.sort(function (a, b) { return (order[a.status] || 0) - (order[b.status] || 0) || ((b.updated || b.released || '') > (a.updated || a.released || '') ? 1 : -1); });
-    document.title = (cat === 'tools' ? 'Tools' : cat ? catName(cat) + ' games' : 'All games') + ' | VRX Games';
+    document.title = (cat ? catName(cat) + ' games' : 'All games') + ' | VRX Games';
     main.innerHTML =
       '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Games</div>' +
-      '<h1>' + (cat === 'tools' ? 'The <em>tools</em>' : cat ? esc(catName(cat)) + ' <em>games</em>' : 'All <em>games</em>') + '</h1>' +
-      '<p>' + (cat === 'tools' ? 'Small apps I made because I wanted them.'
-        : list.length + ' game' + (list.length === 1 ? '' : 's') + (cat ? ' in this category.' : ', from finished to half-built.')) + '</p></div>' +
+      '<h1>' + (cat ? esc(catName(cat)) + ' <em>games</em>' : 'All <em>games</em>') + '</h1>' +
+      '<p>' + list.length + ' game' + (list.length === 1 ? '' : 's') + (cat ? ' in this category.' : ', from finished to half-built.') + '</p></div>' +
       '<nav class="chips" aria-label="Categories"><a class="chip" href="/games/"' + (!cat ? ' aria-current="true"' : '') + '>All <small>' + GAMES.length + '</small></a>' +
         categoryCounts().map(function (c) {
           return '<a class="chip" href="/games/?cat=' + c[0] + '"' + (cat === c[0] ? ' aria-current="true"' : '') + '>' + esc(catName(c[0])) + ' <small>' + c[1] + '</small></a>';
         }).join('') + '</nav>' +
       '<section class="sec">' + (list.length ? '<ul class="cards">' + list.map(gameCard).join('') + '</ul>' : '<p class="empty-note">No games here yet.</p>') + '</section></div>';
+  }
+
+  // ---------- tools ----------
+  // Tools are downloads first; a browser build, if there is one, is the preview.
+  function toolButtons(g, stacked) {
+    var d = g.download || {};
+    var big = stacked ? ' big' : '';
+    var gap = stacked ? ' style="margin-top:10px"' : '';
+    return (d.url
+        ? '<a class="btn' + big + '" href="' + esc(d.url) + '" rel="noopener">' + esc(d.label || 'Download') + '</a>'
+        : '<a class="btn' + big + '" aria-disabled="true">' + esc(d.label || 'Download') + '</a>') +
+      (playable(g) ? '<a class="btn ghost"' + gap + ' href="' + esc(g.play) + '">Try it in the browser</a>' : '') +
+      (stacked
+        ? '<small>' + esc(d.note || (d.url ? 'Free download' : 'No public download yet')) + '</small>'
+        : '<a class="btn ghost" href="' + gameUrl(g) + '">Details</a>');
+  }
+  function toolBanner(g) {
+    var first = (g.about || '').split(/\n\s*\n/)[0];
+    return '<li class="tool"><div class="tool-in">' +
+      '<a class="tool-img" href="' + gameUrl(g) + '" tabindex="-1" aria-hidden="true">' + img(g.banner || g.thumb, '', 'Banner') + badges(g) + '</a>' +
+      '<div class="tool-body">' +
+        '<div class="game-id">' + (g.icon ? '<div class="game-icon"><div>' + img(g.icon, '') + '</div></div>' : '') +
+          '<div><div class="tags">' + statusTag(g) + (g.version ? '<span class="tag dim">v' + esc(g.version) + '</span>' : '') + '</div>' +
+          '<h2><a href="' + gameUrl(g) + '">' + esc(g.title) + '</a></h2>' +
+          (g.tagline ? '<p class="line">' + esc(g.tagline) + '</p>' : '') + '</div></div>' +
+        (first ? '<p class="ex">' + esc(first) + '</p>' : '') +
+        '<div class="tool-actions">' + toolButtons(g, false) + '</div>' +
+        '<p class="note">' + esc([g.platforms, g.download && g.download.note].filter(Boolean).join(' · ')) + '</p>' +
+      '</div></div></li>';
+  }
+  function tools() {
+    var list = TOOLS.slice().sort(function (a, b) { return (b.updated || b.released || '') > (a.updated || a.released || '') ? 1 : -1; });
+    $('main').innerHTML =
+      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Tools</div>' +
+      '<h1>The <em>tools</em></h1><p>Small apps I made because I wanted them. Free to download.</p></div>' +
+      '<section class="sec">' + (list.length ? '<ul class="tools">' + list.map(toolBanner).join('') + '</ul>' : '<p class="empty-note">No tools yet.</p>') + '</section></div>';
   }
 
   // ---------- single game ----------
@@ -314,15 +361,17 @@
     }
     document.title = g.title + ' | VRX Games';
     var shots = (g.shots && g.shots.length) ? g.shots : [g.banner || g.thumb || null];
+    var tool = isTool(g);
+    var pool = tool ? TOOLS : GAMES;
     var related = POSTS.filter(function (p) { return p.game === g.slug; });
-    var more = GAMES.filter(function (x) {
+    var more = pool.filter(function (x) {
       return x.slug !== g.slug && (x.genres || []).some(function (k) { return (g.genres || []).indexOf(k) > -1; });
     });
-    if (more.length < 3) more = more.concat(GAMES.filter(function (x) { return x.slug !== g.slug && more.indexOf(x) < 0; }));
+    if (more.length < 3) more = more.concat(pool.filter(function (x) { return x.slug !== g.slug && more.indexOf(x) < 0; }));
     more = more.slice(0, 4);
 
     var rows = [
-      ['Status', g.status === 'live' ? (g.play ? 'Playable' : 'Released (desktop)') : g.status === 'wip' ? 'In development' + (g.progress != null ? ' (' + g.progress + '%)' : '') : 'Idea'],
+      ['Status', g.status === 'live' ? (tool ? 'Released' : g.play ? 'Playable' : 'Released (desktop)') : g.status === 'wip' ? 'In development' + (g.progress != null ? ' (' + g.progress + '%)' : '') : 'Idea'],
       ['Genre', (g.genres || []).map(catName).join(', ')],
       ['Controls', g.controls], ['Platforms', g.platforms], ['Session', g.session],
       ['Version', g.version], ['Released', date(g.released)], ['Updated', date(g.updated)]
@@ -332,7 +381,7 @@
 
     main.innerHTML =
       '<div class="wrap">' +
-      '<div class="page-head" style="padding-bottom:0"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/games/">Games</a><span>/</span>' + esc(g.title) + '</div></div>' +
+      '<div class="page-head" style="padding-bottom:0"><div class="crumbs"><a href="/">Home</a><span>/</span>' + (tool ? '<a href="/tools/">Tools</a>' : '<a href="/games/">Games</a>') + '<span>/</span>' + esc(g.title) + '</div></div>' +
       (g.warning ? '<aside class="warning" role="note"><div class="warning-in"><div class="warning-mark" aria-hidden="true">!</div><div>' +
         '<h2>' + esc(g.warning.title || 'Warning') + '</h2><p>' + esc(g.warning.text || '') + '</p></div></div></aside>' : '') +
       '<div class="game-top"><div>' +
@@ -345,7 +394,7 @@
         }).join('') + '</div>' : '') +
       '</div><aside>' +
         '<div class="panel details"><div class="panel-in">' +
-          '<div class="play-box">' + (g.download && !playable(g)
+          '<div class="play-box">' + (tool ? toolButtons(g, true) : g.download && !playable(g)
             ? (g.download.url
               ? '<a class="btn big" href="' + esc(g.download.url) + '" rel="noopener">' + esc(g.download.label || 'Download') + '</a>'
               : '<a class="btn big" aria-disabled="true">' + esc(g.download.label || 'Download') + '</a>') +
@@ -361,14 +410,14 @@
       '</aside></div>' +
       '<div class="two sec">' +
         '<section>' + secHead('About') + '<div class="prose">' + (aboutHtml || '<p>No description yet.</p>') + '</div>' +
-          (g.howto && g.howto.length ? '<div style="margin-top:28px">' + secHead('How to play', null, true) + '<ol class="steps">' + g.howto.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol></div>' : '') +
+          (g.howto && g.howto.length ? '<div style="margin-top:28px">' + secHead(tool ? 'How to use' : 'How to play', null, true) + '<ol class="steps">' + g.howto.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol></div>' : '') +
         '</section>' +
         '<section>' + secHead('Devlog') +
           (g.log && g.log.length ? '<ul class="log">' + g.log.map(function (l) { return '<li><time>' + date(l.date) + '</time><span>' + esc(l.text) + '</span></li>'; }).join('') + '</ul>' : '<p class="empty-note">No updates yet.</p>') +
           (related.length ? '<div style="margin-top:28px">' + secHead('Posts', null, true) + '<div class="panel"><div class="panel-in">' + related.map(postRow).join('') + '</div></div></div>' : '') +
         '</section>' +
       '</div>' +
-      (more.length ? '<section class="sec">' + secHead('More games', ['All games', '/games/']) + '<ul class="cards">' + more.map(gameCard).join('') + '</ul></section>' : '') +
+      (more.length ? '<section class="sec">' + secHead(tool ? 'More tools' : 'More games', tool ? ['All tools', '/tools/'] : ['All games', '/games/']) + '<ul class="cards">' + more.map(gameCard).join('') + '</ul></section>' : '') +
       '</div>';
 
     main.querySelectorAll('.gallery-thumbs button').forEach(function (b) {
@@ -380,13 +429,37 @@
   }
 
   // ---------- blog list ----------
-  function postList(list, crumb, h1, intro) {
+  function postList(list, crumb, h1, intro, extra) {
     $('main').innerHTML =
       '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>' + crumb + '</div>' +
-      '<h1>' + h1 + '</h1><p>' + intro + '</p></div>' +
+      '<h1>' + h1 + '</h1><p>' + intro + '</p></div>' + (extra || '') +
       '<section class="sec">' + (list.length ? '<ul class="posts">' + list.map(postCard).join('') + '</ul>' : '<p class="empty-note">Nothing posted yet.</p>') + '</section></div>';
   }
-  function blog() { postList(BLOG, 'Blog', 'The <em>blog</em>', 'Devlogs, thoughts and whatever else is on my mind.'); }
+  // Every game and tool's devlog entries in one list, newest first.
+  function updates() {
+    var out = [];
+    ALL.forEach(function (g) { (g.log || []).forEach(function (l) { out.push({ g: g, date: l.date, text: l.text }); }); });
+    return out.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  }
+  function blog() {
+    var latest = [DEVLOG[0] && DEVLOG[0].date, updates()[0] && updates()[0].date].filter(Boolean).sort().pop();
+    postList(BLOG, 'Blog', 'The <em>blog</em>', 'Thoughts and whatever else is on my mind.',
+      '<div class="panel dev-link"><div class="panel-in"><a class="row" href="/devlog/"><span class="row-ico">&#9654;</span>' +
+        '<span><b>The devlog</b><small>Build notes and every update to every game and tool' + (latest ? ' · last entry ' + date(latest) : '') + '</small></span>' +
+        '<span class="live y">Open</span></a></div></div>');
+  }
+  function devlog() {
+    var log = updates();
+    $('main').innerHTML =
+      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/blog/">Blog</a><span>/</span>Devlog</div>' +
+      '<h1>The <em>devlog</em></h1><p>Build notes, and every update to every game and tool.</p></div>' +
+      '<section class="sec">' + secHead('Devlog posts') +
+        (DEVLOG.length ? '<ul class="posts">' + DEVLOG.map(postCard).join('') + '</ul>' : '<p class="empty-note">No devlog posts yet.</p>') + '</section>' +
+      '<section class="sec">' + secHead('Every update', null, true) +
+        (log.length ? '<div class="panel"><div class="panel-in"><ul class="log all-log">' + log.map(function (l) {
+          return '<li><time>' + date(l.date) + '</time><span><a class="log-game" href="' + gameUrl(l.g) + '">' + esc(l.g.title) + '</a>' + esc(l.text) + '</span></li>';
+        }).join('') + '</ul></div></div>' : '<p class="empty-note">No updates yet.</p>') + '</section></div>';
+  }
   function news() { postList(NEWS, 'News', 'Latest <em>news</em>', 'Releases, updates and announcements.'); }
 
   // ---------- community ----------
@@ -504,17 +577,18 @@
     if (p.title) document.title = p.title + ' | VRX Games';
     var idx = POSTS.indexOf(p);
     var isNews = p.type === 'news';
-    var others = (isNews ? NEWS : BLOG).filter(function (x) { return x !== p; }).slice(0, 3);
+    var isDev = isDevlog(p);
+    var others = (isNews ? NEWS : isDev ? DEVLOG : BLOG).filter(function (x) { return x !== p; }).slice(0, 3);
     var wrap = document.createElement('div');
     wrap.className = 'wrap';
     wrap.innerHTML =
-      '<header class="post-head"><div class="crumbs"><a href="/">Home</a><span>/</span>' + (isNews ? '<a href="/news/">News</a>' : '<a href="/blog/">Blog</a>') + '</div>' +
+      '<header class="post-head"><div class="crumbs"><a href="/">Home</a><span>/</span>' + (isNews ? '<a href="/news/">News</a>' : '<a href="/blog/">Blog</a>' + (isDev ? '<span>/</span><a href="/devlog/">Devlog</a>' : '')) + '</div>' +
         '<div class="tags"><span class="tag solid">' + esc(p.tag || 'Post') + '</span>' + (g ? '<a class="tag" href="' + gameUrl(g) + '">' + esc(g.title) + '</a>' : '') + '</div>' +
         '<h1>' + esc(p.title || document.title) + '</h1>' +
         '<div class="post-meta"><span>' + date(p.date) + '</span></div></header>' +
       (p.cover ? '<div class="post-cover screen"><div class="screen-in">' + img(p.cover, '') + '</div></div>' : '') +
       '<div class="post-body"></div>' +
-      (others.length ? '<section class="sec">' + secHead(isNews ? 'More news' : 'More posts', isNews ? ['All news', '/news/'] : ['All posts', '/blog/']) + '<ul class="posts">' + others.map(postCard).join('') + '</ul></section>' : '');
+      (others.length ? '<section class="sec">' + secHead(isNews ? 'More news' : isDev ? 'More devlog' : 'More posts', isNews ? ['All news', '/news/'] : isDev ? ['Devlog', '/devlog/'] : ['All posts', '/blog/']) + '<ul class="posts">' + others.map(postCard).join('') + '</ul></section>' : '');
     article.classList.add('prose');
     $('.post-body', wrap).appendChild(article);
     main.appendChild(wrap);
@@ -527,6 +601,6 @@
   }
 
   chrome();
-  ({ home: home, games: games, game: game, blog: blog, news: news, post: post,
+  ({ home: home, games: games, tools: tools, game: game, blog: blog, devlog: devlog, news: news, post: post,
      community: community, thread: thread, shop: shop, '404': notFound }[page] || function () {})();
 })();
