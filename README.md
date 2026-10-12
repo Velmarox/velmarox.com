@@ -18,6 +18,7 @@ docs/
   blog/index.html         all posts
   blog/<slug>/            one folder per post: the post text lives in its index.html
   blog/_template/         copy this to start a new post
+  devlog/index.html       devlog page: blog posts tagged "Devlog" + every game's `log` entries; linked from the blog
   news/                   same as blog, for short announcements (news/_template/ to start one)
   community/index.html    thread list with board filters
   community/<slug>/       one folder per thread: opening post in index.html, replies via giscus

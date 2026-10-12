@@ -23,6 +23,7 @@ add('/', 'VRX Games', 'Games, tools and devlogs, made by one person. Play in you
 add('/games/', 'All games | VRX Games', 'Every game and tool on VRX Games, from finished to half-built.');
 add('/tools/', 'Tools | VRX Games', 'Small apps I made because I wanted them. Free to download.');
 add('/blog/', 'Blog | VRX Games', 'Devlogs, thoughts and whatever else is on my mind.');
+add('/devlog/', 'Devlog | VRX Games', 'Build notes, and every update to every game and tool.');
 add('/news/', 'News | VRX Games', 'Releases, updates and announcements.');
 add('/community/', 'Community | VRX Games', 'Talk about the games, report bugs, pitch ideas.');
 add('/shop/', 'Shop | VRX Games', 'Soundtracks, extras and merch. Coming soon.');

@@ -416,6 +416,11 @@ img { display: block; max-width: 100%; }
 .log li { display: grid; grid-template-columns: 110px 1fr; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .log time { font: 700 0.8rem var(--cond); letter-spacing: 0.08em; color: var(--yellow); text-transform: uppercase; padding-top: 2px; }
 @media (max-width: 520px) { .log li { grid-template-columns: 1fr; gap: 2px; } }
+.all-log li { padding: 10px 12px; }
+.all-log li:last-child { border-bottom: 0; }
+.log-game { display: inline-block; margin-right: 10px; font: italic 800 0.9rem var(--display); text-transform: uppercase; color: var(--red-hot); text-decoration: none; }
+.log-game:hover { color: var(--yellow); }
+.dev-link { margin: 6px 0 4px; }
 
 .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
 @media (max-width: 860px) { .two { grid-template-columns: 1fr; } }

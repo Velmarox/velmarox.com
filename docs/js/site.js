@@ -6,7 +6,11 @@
   var TOOLS = ALL.filter(isTool);
   var POSTS = (window.POSTS || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
   var CATS = window.CATEGORIES || {};
-  var BLOG = POSTS.filter(function (p) { return p.type !== 'news'; });
+  // Posts tagged Devlog live on /devlog/; the blog list keeps everything else.
+  function isDevlog(p) { return p.type !== 'news' && /^devlog$/i.test(p.tag || ''); }
+  var WRITING = POSTS.filter(function (p) { return p.type !== 'news'; });
+  var BLOG = WRITING.filter(function (p) { return !isDevlog(p); });
+  var DEVLOG = WRITING.filter(isDevlog);
   var NEWS = POSTS.filter(function (p) { return p.type === 'news'; });
   var THREADS = (window.THREADS || []).slice().sort(function (a, b) {
     return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (a.date < b.date ? 1 : -1);
@@ -141,7 +145,7 @@
     return f ? gameUrl(f) : '/games/';
   }
   function chrome() {
-    var cur = { game: 'games', thread: 'community' }[page] || page;
+    var cur = { game: 'games', thread: 'community', devlog: 'blog' }[page] || page;
     if (page === 'game' && findGame(slug) && isTool(findGame(slug))) cur = 'tools';
     if (page === 'post') {
       var me = POSTS.filter(function (p) { return p.slug === slug; })[0];
@@ -249,9 +253,9 @@
       (THREADS.length ? secHead('Community', ['Threads', '/community/'], true) + '<div class="panel"><div class="panel-in">' + THREADS.slice(0, 4).map(threadRow).join('') + '</div></div>' : '') +
       (wip.length ? secHead('In the workshop', null, true) + '<div class="panel"><div class="panel-in">' + wip.map(workshopRow).join('') + '</div></div>' : '') +
       '</aside></div>';
-    if (BLOG.length) {
+    if (WRITING.length) {
       html += '<section class="sec wrap">' + secHead('From the blog', ['All posts', '/blog/']) +
-        '<ul class="posts">' + BLOG.slice(0, 3).map(postCard).join('') + '</ul></section>';
+        '<ul class="posts">' + WRITING.slice(0, 3).map(postCard).join('') + '</ul></section>';
     }
     var shopPick = !SHOP_OPEN ? [] : PRODUCTS.filter(function (p) { return (p.status || 'available') !== 'sold-out'; }).slice(0, 4);
     if (shopPick.length) {
@@ -425,13 +429,37 @@
   }
 
   // ---------- blog list ----------
-  function postList(list, crumb, h1, intro) {
+  function postList(list, crumb, h1, intro, extra) {
     $('main').innerHTML =
       '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>' + crumb + '</div>' +
-      '<h1>' + h1 + '</h1><p>' + intro + '</p></div>' +
+      '<h1>' + h1 + '</h1><p>' + intro + '</p></div>' + (extra || '') +
       '<section class="sec">' + (list.length ? '<ul class="posts">' + list.map(postCard).join('') + '</ul>' : '<p class="empty-note">Nothing posted yet.</p>') + '</section></div>';
   }
-  function blog() { postList(BLOG, 'Blog', 'The <em>blog</em>', 'Devlogs, thoughts and whatever else is on my mind.'); }
+  // Every game and tool's devlog entries in one list, newest first.
+  function updates() {
+    var out = [];
+    ALL.forEach(function (g) { (g.log || []).forEach(function (l) { out.push({ g: g, date: l.date, text: l.text }); }); });
+    return out.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  }
+  function blog() {
+    var latest = [DEVLOG[0] && DEVLOG[0].date, updates()[0] && updates()[0].date].filter(Boolean).sort().pop();
+    postList(BLOG, 'Blog', 'The <em>blog</em>', 'Thoughts and whatever else is on my mind.',
+      '<div class="panel dev-link"><div class="panel-in"><a class="row" href="/devlog/"><span class="row-ico">&#9654;</span>' +
+        '<span><b>The devlog</b><small>Build notes and every update to every game and tool' + (latest ? ' · last entry ' + date(latest) : '') + '</small></span>' +
+        '<span class="live y">Open</span></a></div></div>');
+  }
+  function devlog() {
+    var log = updates();
+    $('main').innerHTML =
+      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/blog/">Blog</a><span>/</span>Devlog</div>' +
+      '<h1>The <em>devlog</em></h1><p>Build notes, and every update to every game and tool.</p></div>' +
+      '<section class="sec">' + secHead('Devlog posts') +
+        (DEVLOG.length ? '<ul class="posts">' + DEVLOG.map(postCard).join('') + '</ul>' : '<p class="empty-note">No devlog posts yet.</p>') + '</section>' +
+      '<section class="sec">' + secHead('Every update', null, true) +
+        (log.length ? '<div class="panel"><div class="panel-in"><ul class="log all-log">' + log.map(function (l) {
+          return '<li><time>' + date(l.date) + '</time><span><a class="log-game" href="' + gameUrl(l.g) + '">' + esc(l.g.title) + '</a>' + esc(l.text) + '</span></li>';
+        }).join('') + '</ul></div></div>' : '<p class="empty-note">No updates yet.</p>') + '</section></div>';
+  }
   function news() { postList(NEWS, 'News', 'Latest <em>news</em>', 'Releases, updates and announcements.'); }
 
   // ---------- community ----------
@@ -549,17 +577,18 @@
     if (p.title) document.title = p.title + ' | VRX Games';
     var idx = POSTS.indexOf(p);
     var isNews = p.type === 'news';
-    var others = (isNews ? NEWS : BLOG).filter(function (x) { return x !== p; }).slice(0, 3);
+    var isDev = isDevlog(p);
+    var others = (isNews ? NEWS : isDev ? DEVLOG : BLOG).filter(function (x) { return x !== p; }).slice(0, 3);
     var wrap = document.createElement('div');
     wrap.className = 'wrap';
     wrap.innerHTML =
-      '<header class="post-head"><div class="crumbs"><a href="/">Home</a><span>/</span>' + (isNews ? '<a href="/news/">News</a>' : '<a href="/blog/">Blog</a>') + '</div>' +
+      '<header class="post-head"><div class="crumbs"><a href="/">Home</a><span>/</span>' + (isNews ? '<a href="/news/">News</a>' : '<a href="/blog/">Blog</a>' + (isDev ? '<span>/</span><a href="/devlog/">Devlog</a>' : '')) + '</div>' +
         '<div class="tags"><span class="tag solid">' + esc(p.tag || 'Post') + '</span>' + (g ? '<a class="tag" href="' + gameUrl(g) + '">' + esc(g.title) + '</a>' : '') + '</div>' +
         '<h1>' + esc(p.title || document.title) + '</h1>' +
         '<div class="post-meta"><span>' + date(p.date) + '</span></div></header>' +
       (p.cover ? '<div class="post-cover screen"><div class="screen-in">' + img(p.cover, '') + '</div></div>' : '') +
       '<div class="post-body"></div>' +
-      (others.length ? '<section class="sec">' + secHead(isNews ? 'More news' : 'More posts', isNews ? ['All news', '/news/'] : ['All posts', '/blog/']) + '<ul class="posts">' + others.map(postCard).join('') + '</ul></section>' : '');
+      (others.length ? '<section class="sec">' + secHead(isNews ? 'More news' : isDev ? 'More devlog' : 'More posts', isNews ? ['All news', '/news/'] : isDev ? ['Devlog', '/devlog/'] : ['All posts', '/blog/']) + '<ul class="posts">' + others.map(postCard).join('') + '</ul></section>' : '');
     article.classList.add('prose');
     $('.post-body', wrap).appendChild(article);
     main.appendChild(wrap);
@@ -572,6 +601,6 @@
   }
 
   chrome();
-  ({ home: home, games: games, tools: tools, game: game, blog: blog, news: news, post: post,
+  ({ home: home, games: games, tools: tools, game: game, blog: blog, devlog: devlog, news: news, post: post,
      community: community, thread: thread, shop: shop, '404': notFound }[page] || function () {})();
 })();
