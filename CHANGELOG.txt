@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.23.1-alpha (2026-10-12)
+- Casino games post: new section "The basic maths" (return, how keno odds work, how reel stops set slot odds,
+  and why two games with the same return can feel different).
+
 v0.23.0-alpha (2026-10-12)
 - New blog post: "Three casino games, and the maths is the hard part" (blog/three-casino-games/), on Safari Time,
   Wyrmhoard Keno and Elo's Hoard.
