@@ -5,6 +5,9 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.24.0-alpha (2026-10-12)
+- New blog post: "You Can Make Anything You Want (Terms and Conditions Apply)" (blog/you-can-make-anything-you-want/).
+
 v0.23.2-alpha (2026-10-12)
 - Clack Arena v0.8.4:
   - Phone held sideways (landscape, 500px tall or less): the enemy and player panels share a column on the left
