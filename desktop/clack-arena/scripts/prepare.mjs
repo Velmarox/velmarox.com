@@ -13,9 +13,8 @@ fs.rmSync(WWW, { recursive: true, force: true });
 const copy = (from, to = from) => fs.cpSync(path.join(SITE, from), path.join(WWW, to), { recursive: true });
 
 copy('games/clack-arena/play');
-for (const f of ['Vendor/Dice_Vendor.js', 'Scripts/Dice_Geometry.js', 'Sounds/Die_Hit.wav', 'Sounds/Dice_Clatter.wav'])
+for (const f of ['Vendor/Dice_Vendor.js', 'Scripts/Dice_Geometry.js', 'Trays/Green_Felt.jpg', 'Sounds/Die_Hit.wav', 'Sounds/Dice_Clatter.wav'])
   copy('tools/clack-attack/play/Table/' + f);
-copy('tools/clack-attack/play/Table/Trays');   // every tray: Customize lets you pick one
 copy('assets/favicon.svg');
 copy('assets/brand/vrx-badge.png'); copy('assets/brand/vrx-badge.webp');
 fs.cpSync(path.join(ROOT, 'shell'), path.join(WWW, 'shell'), { recursive: true });

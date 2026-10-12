@@ -159,8 +159,8 @@ window.ARENA = window.ARENA || {};
     ['Pips and chips', 'Pips are your health. Chips are money for the Tavern.'],
   ];
 
-  // What you can pick before a run: your die's colour, its number colour, its finish (A.FINISHES) and the tray, all from
-  // what the game already has. The colours come from Clack Attack's dice templates; the trays are Clack Attack's.
+  // What you can pick before a run: your die's colour, its number colour and its finish (A.FINISHES). The colours come
+  // from Clack Attack's dice templates.
   A.DIE_COLORS = [
     ['#c8102e', 'Caltrop red'], ['#f1ead8', 'Ivory'], ['#1d1b22', 'Obsidian'], ['#ff5fa2', 'Pink'], ['#d4a73a', 'Gold'],
     ['#8fd3ff', 'Frost'], ['#6b4bd6', 'Violet'], ['#3f5a2e', 'Moss'], ['#4f7f78', 'Floodwater'], ['#9c5a34', 'Rust'],
@@ -168,12 +168,9 @@ window.ARENA = window.ARENA || {};
   ];
   A.INK_COLORS = [['#ffffff', 'White'], ['#2a2320', 'Ink black'], ['#e2b84f', 'Gold'], ['#9fe3ff', 'Ice'], ['#ff8a1f', 'Orange'], ['#b98cff', 'Lilac']];
   A.FINISH_NAMES = { matte: 'Matte', satin: 'Satin', glossy: 'Glossy', metal: 'Metal', pearl: 'Pearl', glass: 'Glass' };
-  A.TRAYS = ['Green_Felt', 'Magenta_Felt', 'Fantasy_Tavern', 'Arctic_Ice', 'Autumn_Harvest', 'Candy_Sweet', 'Celestial_Angel',
-    'Cosmic_Space', 'Cyberpunk', 'Egyptian_Gold', 'Eldritch_Horror', 'Forest_Druid', 'Gothic_Vampire', 'Nineties', 'Retro_8Bit',
-    'SciFi_Mech', 'Sea_Pirate', 'Steampunk'];
-  A.trayPic = (id) => `/tools/clack-attack/play/Table/Trays/${id}.jpg`;
-  A.trayName = (id) => id.replace('_', ' ').replace('SciFi', 'Sci-Fi').replace('Retro 8Bit', 'Retro 8-bit');
-  A.STYLE_DEFAULT = { color: '#c8102e', ink: '#ffffff', finish: 'satin', tray: 'Green_Felt' };
+  // Finishes you start without: beat the enemy whose die has that finish to unlock it (once per device).
+  A.FINISH_UNLOCKS = { glass: 'glassjaw', pearl: 'tumbler', metal: 'ironmike' };
+  A.STYLE_DEFAULT = { color: '#c8102e', ink: '#ffffff', finish: 'satin' };
 
   A.SETTINGS_DEFAULT = { aim: 'sling', arrow: true, sound: true, reduceMotion: false, fast: false, tips: true };
 

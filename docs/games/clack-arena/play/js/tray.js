@@ -446,7 +446,8 @@
   function clearFx() { fx.splice(0).forEach((f) => f.dispose()); }
 
   // ---------- aiming: slingshot band, arrow and launch marker ----------
-  // Change the tray picture (Customize). Repaints at once if the tray is already up.
+  // Change the tray picture. Repaints at once if the tray is already up. (Nothing calls it yet: other trays are kept
+  // for difficulty levels.)
   function setTray(url) { if (url === trayPic) return; trayPic = url; if (tray?.material.map) paintTray(); }
 
   function makeAim() {

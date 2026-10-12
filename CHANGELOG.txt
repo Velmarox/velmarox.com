@@ -5,6 +5,16 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.22.0-alpha (2026-10-12)
+- Clack Arena v0.8.0: unlockable finishes.
+  - Customize starts with Matte, Satin and Glossy. Glass, Pearl and Metal are locked, each showing who to beat:
+    Glassjaw for Glass, Tumbler for Pearl, Iron Mike for Metal (the enemies whose dice are made of them).
+  - Beating that enemy unlocks the finish for good on that device; the after-fight screen says so.
+  - A saved look with a finish that's still locked falls back to Satin.
+- The tray picker is out of Customize: the other trays are being kept for difficulty levels. Everyone plays on the
+  Green Felt again. The tray thumbnails and their build step are gone, and the Windows app packs only the Green Felt.
+- Clack Arena for Windows goes to 0.8.0; the Download for Windows button points at the clack-arena-v0.8.0 release.
+
 v0.21.0-alpha (2026-10-12)
 - Clack Arena v0.7.0: Customize. Start a run (or Customize on the title screen) opens a "Your die" screen first:
   - Colour: 12 body colours, from Clack Attack's dice templates (Caltrop red is the default).
