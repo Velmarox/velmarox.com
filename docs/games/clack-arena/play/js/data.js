@@ -8,11 +8,11 @@ window.ARENA = window.ARENA || {};
   // A face is { t: type, v: value } plus optional icon/name overrides (The House's Jackpot is a Strike with a crown).
   A.FACE_TYPES = {
     strike: { name: 'Strike', icon: 'claw', color: '#ff2a43', valued: true, text: (v) => `Deal ${v}.` },
-    guard: { name: 'Guard', icon: 'shield', color: '#4fa3ff', valued: true, text: (v) => `Block ${v} this round.` },
-    pierce: { name: 'Pierce', icon: 'arrow', color: '#ff8a1f', valued: true, text: (v) => `Deal ${v}, ignores Guard.` },
+    guard: { name: 'Guard', icon: 'shield', color: '#4fa3ff', valued: true, text: (v) => `Block ${v} Strike damage this turn. Pierce goes through.` },
+    pierce: { name: 'Pierce', icon: 'arrow', color: '#ff8a1f', valued: true, text: (v) => `Deal ${v}. Goes straight through Guard.` },
     mend: { name: 'Mend', icon: 'heart', color: '#3ddc84', valued: true, text: (v) => `Heal ${v} pips.` },
-    charge: { name: 'Charge', icon: 'flame', color: '#f5e400', valued: false, text: () => 'Your next face is doubled.' },
-    thorn: { name: 'Thorn', icon: 'thorns', color: '#b98cff', valued: true, text: (v) => `Whoever hits you this round takes ${v}.` },
+    charge: { name: 'Charge', icon: 'flame', color: '#f5e400', valued: false, text: () => 'Next turn, the number on your face is doubled.' },
+    thorn: { name: 'Thorn', icon: 'thorns', color: '#b98cff', valued: true, text: (v) => `If a Strike or Pierce hurts you this turn, the attacker takes ${v}.` },
     skull: { name: 'Skull', icon: 'skull', color: '#9a9aa6', valued: false, text: () => 'A fumble. Nothing happens.' },
     smooth: { name: 'Smooth', icon: '', color: '#5a5a66', valued: false, text: () => 'Blank. Engrave it at the Forge.' },
   };
@@ -117,12 +117,32 @@ window.ARENA = window.ARENA || {};
     fight: { name: 'Fight', icon: 'btn-red', text: 'A die looking for trouble. Win chips, maybe an item.' },
     elite: { name: 'Elite', icon: 'shield-red', text: 'A hard fight. Win a relic.' },
     forge: { name: 'Forge', icon: 'rank-orange', text: 'Engrave a face, sand off a Skull, or grow.' },
-    tavern: { name: 'Tavern', icon: 'btn-yellow', text: 'Spend chips on items, relics and pips.' },
+    tavern: { name: 'Tavern', icon: 'coin', text: 'Spend chips on items, relics and pips.' },
     rest: { name: 'Rest', icon: 'btn-green', text: 'Repair some pips.' },
     boss: { name: 'The House', icon: 'crest-red', text: 'The boss of the Green Felt.' },
   };
   A.ITEM_ICON = { nudge: 'chevron', chalk: 'gem-cyan', talc: 'gem-green', lead: 'gem-orange' };
   A.RELIC_ICON = 'rank-cyan';
+
+  // The four beats a turn resolves in: key, name, what happens in it (shown under the phase strip and on the rules page).
+  A.TURN_ORDER = [
+    ['clack', 'Clack', 'Hard hits while the dice tumbled. Already dealt.'],
+    ['guard', 'Guard', 'Guard goes up before anything hits.'],
+    ['hits', 'Hits', 'Strikes hit Guard first. Pierce goes through. Heals and Charge.'],
+    ['thorn', 'Thorn', 'Thorns hurt whoever got a Strike or Pierce through.'],
+  ];
+
+  // What a die's weight, bounce and Clack modifiers mean, as tags on its panel. phys: { mass, bounce }; clack: { deal, take }.
+  A.traits = (phys = {}, clack = {}) => {
+    const t = [], P = { ...A.PHYS, ...phys }, n = (x) => (x > 0 ? '+' : '−') + Math.abs(x);
+    if (P.mass >= 1.4) t.push(['Heavy', 'Shoves other dice out of its way and barely moves when they hit it.']);
+    else if (P.mass <= 0.7) t.push(['Light', 'Gets knocked a long way when another die hits it.']);
+    if (P.bounce >= 1.4) t.push(['Bouncy', 'Bounces high and far: long, wild throws that run into things.']);
+    else if (P.bounce <= 0.75) t.push(['Low bounce', 'Lands fast and stays close to where it was thrown.']);
+    if (clack.deal) t.push([`Clack ${n(clack.deal)}`, `Its Clacks deal ${Math.abs(clack.deal)} ${clack.deal > 0 ? 'more' : 'less'} damage.`]);
+    if (clack.take) t.push([`Takes ${n(clack.take)}`, `Clacks against it deal ${Math.abs(clack.take)} ${clack.take > 0 ? 'more' : 'less'} damage.`]);
+    return t;
+  };
 
   // The rules sheet: every term the game uses, in one place.
   A.GLOSSARY = [
@@ -130,7 +150,10 @@ window.ARENA = window.ARENA || {};
     ['Faces', 'The face that ends up on top is what your die does this turn. Tap any face, on a die panel or on the map, to read it.'],
     ['Clack', "Hit an enemy die hard while it's tumbling and it takes damage straight away: 1 for a solid hit, 2 for a hard one, 3 for a smash. Their dice can Clack you too."],
     ['Pinned', 'A die left leaning on another die does nothing this turn. The die holding it up gets +1 to its face.'],
-    ['Order', 'Each turn resolves in order: Clack, then Guard, then hits and heals, then Thorn.'],
+    ['Guard and Pierce', 'Guard soaks Strike damage for this turn only. Pierce goes straight through it. Guard left over at the end of the turn is gone.'],
+    ['Thorn', 'If the other side gets a Strike or Pierce through to you this turn, they take the Thorn number back. Clacks and blocked hits don\'t set it off.'],
+    ['Charge', 'Next turn, the first face with a number on that side is doubled: Strike 3 hits for 6, Guard 2 blocks 4.'],
+    ['Weight and bounce', 'Dice are not all the same. Heavy dice shove others aside, light ones get knocked around, bouncy ones go far. The grey tags on a die\'s panel say which; tap them to read.'],
     ['Previews', 'Some enemies try several throws in secret against yours and keep the best one. You see the ones they threw away as faint red paths.'],
     ['Odds', 'Every face on a die is equally likely. A d4 shows each face 1 time in 4; a d6, 1 in 6. The bars under each die show the odds by kind of face.'],
     ['Pips and chips', 'Pips are your health. Chips are money for the Tavern.'],

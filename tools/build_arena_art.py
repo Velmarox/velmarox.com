@@ -5,6 +5,8 @@
 #   ui/cat-<enemy>.png       the enemy's cat (All Cats pack, art/all-cats-3/), first idle frame, 3x and @2 at 2x,
 #                            so A.px() can draw it like any other GUI piece.
 #   ui/cat-<enemy>-idle@2.png the whole idle loop as one strip at 2x, for the animated cats on the map cards.
+#   ui/coin.png, coin@2.png  the chip icon: first frame of the coin spin (art/coins/coin-spin.png, 5 frames of 16x16),
+#                            3x and 2x; ui/coin-spin@2.png is the whole spin at 2x, for the reward screen.
 # Only the source files the game uses are kept in art/. Run from the repo root:  python3 tools/build_arena_art.py
 from PIL import Image
 import os
@@ -43,4 +45,9 @@ for enemy, cat in CATS.items():
     for k, f in enumerate(frames): strip.paste(f, (k * w, 0))
     strip.resize((w * n * 2, h * 2), Image.NEAREST).save(f'{PLAY}/ui/cat-{enemy}-idle@2.png', optimize=True)
     print(f'cat-{enemy}: {cat}, {n} frames of {w}x{h}')
-print(len(ICONS), 'icons and', len(CATS), 'cats written to', PLAY)
+coin = Image.open('art/coins/coin-spin.png').convert('RGBA')
+cell = coin.height
+coin.crop((0, 0, cell, cell)).resize((cell * 3, cell * 3), Image.NEAREST).save(f'{PLAY}/ui/coin.png', optimize=True)
+coin.crop((0, 0, cell, cell)).resize((cell * 2, cell * 2), Image.NEAREST).save(f'{PLAY}/ui/coin@2.png', optimize=True)
+coin.resize((coin.width * 2, cell * 2), Image.NEAREST).save(f'{PLAY}/ui/coin-spin@2.png', optimize=True)
+print(len(ICONS), 'icons,', len(CATS), 'cats and the coin written to', PLAY)
