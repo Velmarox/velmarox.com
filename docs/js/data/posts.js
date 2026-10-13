@@ -21,6 +21,12 @@
 
 window.POSTS = [
   {
+    slug: 'your-passion-is-not-a-waste-of-time',
+    title: 'Your passion is not a waste of time', date: '2026-10-13', tag: 'Thoughts',
+    cover: '/blog/your-passion-is-not-a-waste-of-time/cover.jpg',
+    excerpt: 'For six years I was told the things I love were holding us back. Then I started my own business and had a client in the first week.'
+  },
+  {
     slug: 'one-long-day',
     title: 'One long day: dice on stream, and an app that opens twice', date: '2026-10-13', tag: 'Roundup',
     cover: '/blog/one-long-day/cover.jpg',
