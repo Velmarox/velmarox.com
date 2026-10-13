@@ -28,7 +28,7 @@ window.POSTS = [
   },
   {
     slug: 'one-long-day',
-    title: 'One long day: dice on stream, and an app that opens twice', date: '2026-10-13', tag: 'Roundup',
+    title: 'One long day: dice on stream, and an app that opens twice', date: '2026-10-13', tag: 'Devlog',
     cover: '/blog/one-long-day/cover.jpg',
     excerpt: 'Everything I worked on in one day: Clack Attack gets an OBS overlay, the Warrior Codex player app is fixed, and a new game exists on paper.'
   },
