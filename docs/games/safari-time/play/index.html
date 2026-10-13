@@ -711,16 +711,19 @@
     const betCents = () => D.betLevelsCents[state.betIdx];
     const lineBet = () => betCents() / D.lines;
 
+    const WALLET = "vrx.casino.credits";
     function load() {
       try {
-        const c = parseInt(localStorage.getItem("st.credits"), 10);
-        state.credits = Number.isFinite(c) ? c : 10000;
+        // VRX Casino: one balance for every casino game on the site, in cents, kept in this browser.
+        // st.credits is this game's own balance from before that; it seeds the shared one once.
+        const w = parseInt(localStorage.getItem(WALLET), 10), c = parseInt(localStorage.getItem("st.credits"), 10);
+        state.credits = Number.isFinite(w) && w > 0 ? w : Number.isFinite(c) && c > 0 ? c : 10000;
         const b = parseInt(localStorage.getItem("st.bet"), 10);
         state.betIdx = Number.isFinite(b) && b >= 0 && b < D.betLevelsCents.length ? b : 0;
       } catch (e) { state.credits = 10000; }
     }
     function save() {
-      try { localStorage.setItem("st.credits", state.credits); localStorage.setItem("st.bet", state.betIdx); } catch (e) {}
+      try { localStorage.setItem(WALLET, state.credits); localStorage.setItem("st.bet", state.betIdx); } catch (e) {}
     }
 
     // ---------------------------------------------------------------- render
@@ -1148,6 +1151,12 @@
     $("betUp").addEventListener("click", () => { if (!state.busy && state.betIdx < D.betLevelsCents.length - 1) { state.betIdx++; save(); renderMeters(); } });
     $("helpBtn").addEventListener("click", () => { if (!state.busy) { showCard(helpHtml()); waitDismiss(0); } });
     $("addCredits").addEventListener("click", (e) => { e.preventDefault(); state.credits += 2000; save(); renderMeters(); setMsg("$20.00 ADDED"); });
+    // The VRX Casino cabinet adds credits to the game it is showing by message.
+    window.addEventListener("message", (e) => {
+      const d = e.data;
+      if (e.origin !== location.origin || !d || d.vrx !== "add" || !(d.cents > 0)) return;
+      state.credits += Math.round(d.cents); save(); renderMeters();
+    });
     $("muteBtn").addEventListener("click", (e) => { e.stopPropagation(); toggleMute(); });
     $("muteBgmBtn").addEventListener("click", (e) => { e.stopPropagation(); toggleMuteBgm(); });
     // Browsers only let audio start after a gesture; the first tap or key anywhere unlocks it.

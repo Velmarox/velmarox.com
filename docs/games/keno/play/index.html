@@ -10,7 +10,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-  <meta name="version" content="v1.30.0">
+  <meta name="version" content="v1.31.0">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wyrmhoard Keno</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -965,9 +965,14 @@ if (FORCE_BONUS || FORCE_CLIP) {
 }
 
 /* ----------------------------------------------------------------- state */
+/* VRX Casino: one balance for every casino game on the site, in cents, kept in this browser.
+   Empty or missing, it starts at $100, the same in all three games. */
+var WALLET_KEY = 'vrx.casino.credits';
+function walletRead() { try { var c = parseInt(localStorage.getItem(WALLET_KEY), 10); return isFinite(c) && c > 0 ? c : null; } catch (e) { return null; } }
+function walletWrite(c) { try { localStorage.setItem(WALLET_KEY, String(Math.max(0, Math.round(c)))); } catch (e) {} }
 var rng = W.cryptoRng();
 var S = {
-  phase:'PICKING', denom:'0.25', spots:7, want:7, step:25, picks:[], credits:M.startCredits,
+  phase:'PICKING', denom:'0.25', spots:7, want:7, step:25, picks:[], credits:walletRead() || 10000,
   drawn:[], drawnSet:{}, eggs:[], chests:[], layout:null, depth:0, busy:false,
   hoard:0, speed:SPEED_DEFAULT, timers:[], skip:null
 };
@@ -1087,6 +1092,12 @@ $('speed').onclick   = function (e) {
   catch (er) {}
   paint();
 };
+/* The VRX Casino cabinet adds credits to the game it is showing by message. */
+window.addEventListener('message', function (e) {
+  var d = e.data;
+  if (e.origin !== location.origin || !d || d.vrx !== 'add' || !(d.cents > 0)) return;
+  S.credits += Math.round(d.cents); paint();
+});
 $('cashout').onclick = function (e) { e.stopPropagation(); if (S.phase === 'PICKING') { A.play('cashout'); say('Cashed out', fmtC(S.credits)); } };
 $('menu').onclick    = function (e) { e.stopPropagation(); A.play('pick_off'); say('No menu in the prototype'); };
 // The fader.  Off / Quiet / Normal / Loud, Normal = 0.5 and the level the trim
@@ -1195,6 +1206,7 @@ function paint() {
   }
 
   $('credits').textContent = fmtC(S.credits);
+  walletWrite(S.credits);
   $('betamt').textContent  = fmtC(betCents());
   $('marked').textContent  = S.picks.length;
   var enough = S.picks.length >= 4;
@@ -1374,7 +1386,7 @@ function placeBet() {
   syncSpots();
   clearTimers();
   A.play('bet');
-  S.credits -= betCents();
+  S.credits -= betCents(); walletWrite(S.credits);
   S.freeCents = 0; S.freeWonCount = 0; S.paidRound = null;
   spin(false);
 }
@@ -1671,7 +1683,7 @@ function settle(r) {
        that shows nothing moving for thirty games is a bonus nobody believes is paying. */
     S.free.won += r.award;
     S.freeCents += cents(r.award);
-    S.credits += cents(r.award);
+    S.credits += cents(r.award); walletWrite(S.credits);
     paintFree();
   } else {
     /* Hold on to the PAID round. Free games overwrite S.drawn, S.eggs and S.chests --
@@ -1937,7 +1949,7 @@ function roundEnd() {
   r.freeGamesRun = S.freeWonCount || 0;
   r.picksRun = S.picksRun || 0;
   var paidC = cents(r.award);
-  S.credits += paidC;
+  S.credits += paidC; walletWrite(S.credits);
   LEDGER.rounds++; LEDGER.bets += betCents(); LEDGER.awards += paidC + freeC;
   meterRound(betCents(), paidC + freeC, r);
   /* Casino ledger: the same numbers the hard meters just took, sent to the shared

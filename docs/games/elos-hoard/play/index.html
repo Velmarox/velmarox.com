@@ -644,7 +644,7 @@ button.b.errorx .n{color:#E8907A}
         <h3>Getting paid</h3>
         <p>Wins go onto your <b>credit</b> straight away. With an account you also get a
            <b>bank</b>: press <b>Bank</b> to move money in or cash your credits out, and take
-           <b>$200</b> more each day. Guests just refresh for a fresh $100.</p>
+           <b>$200</b> more each day. Out of credits as a guest? Refresh for a fresh $100.</p>
       </div></div>
     </div>
 
@@ -866,12 +866,24 @@ var S={credits:100,bank:0,betIdx:3,speedIdx:1,marks:[],drawn:[],coinNums:[],show
        stats:{draws:0,bet:0,won:0,coins1:0,coins2:0,bonus:0,best:0,capped:0,
               netIn:0,         /* inserted minus cashed out - a public metric */
               inserted:0,cashedOut:0}};
-/* A guest's money is deliberately not persisted - refreshing is how you get another
-   $100. Only the speed preference survives. Signed-in players live in the cloud. */
+/* VRX Casino: one balance for every casino game on the site, in cents, kept in this browser.
+   Credits are what is on the machine: guest or signed in, they are that balance (dollars here,
+   cents there). Empty or missing, it starts at $100. A signed-in player's bank still lives in
+   the cloud; the speed preference is kept here too. */
+var WALLET_KEY='vrx.casino.credits';
+function walletRead(){try{var c=parseInt(localStorage.getItem(WALLET_KEY),10);return isFinite(c)&&c>0?c:null;}catch(e){return null;}}
+function walletWrite(d){try{localStorage.setItem(WALLET_KEY,String(Math.max(0,Math.round(d*100))));}catch(e){}}
 try{
   var sv=JSON.parse(localStorage.getItem('elos-hoard-prefs')||'null');
   if(sv&&typeof sv.speedIdx==='number')S.speedIdx=sv.speedIdx;
 }catch(e){}
+(function(){var wc=walletRead();if(wc!=null)S.credits=wc/100;})();
+/* the VRX Casino cabinet adds credits to the game it is showing by message */
+window.addEventListener('message',function(e){
+  var d=e.data;
+  if(e.origin!==location.origin||!d||d.vrx!=='add'||!(d.cents>0))return;
+  S.credits+=Math.round(d.cents)/100;save();render();
+});
 function save(){
   try{localStorage.setItem('elos-hoard-prefs',JSON.stringify({speedIdx:S.speedIdx}));}catch(e){}
   if(S.account&&window.EloCloud&&window.EloCloud.queue)window.EloCloud.queue();
@@ -1013,6 +1025,7 @@ function buildPay(){
 }
 function render(){
   $('vCred').textContent=money(S.credits);
+  walletWrite(S.credits);
   $('vBet').textContent=money(bet());
   $('den').textContent=money(bet());
   $('vMark').textContent=S.marks.length;
@@ -1315,7 +1328,7 @@ window.EloGame={
   },
   applyState:function(o){
     if(!o)return;
-    if(typeof o.credits==='number'&&isFinite(o.credits))S.credits=o.credits;
+    /* credits are not restored from the account: they are the machine's shared balance */
     if(typeof o.bank==='number'&&isFinite(o.bank))S.bank=o.bank;
     if(typeof o.lastAllowance==='string')S.lastAllowance=o.lastAllowance;
     if(typeof o.betIdx==='number'&&o.betIdx>=0&&o.betIdx<BETS.length)S.betIdx=o.betIdx;
