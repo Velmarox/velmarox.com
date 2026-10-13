@@ -5,6 +5,16 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.30.0-alpha (2026-10-13)
+- New game: Contract Zero v0.1.0 (games/contract-zero/). A physics game about one guy taking creature bounties by
+  throwing things: 2D physics drawn in low-poly 3D, with 16-bit style menus. Plays with keyboard and mouse or a
+  controller. Featured and trending on the home page.
+- Its build is a copy of the project's app/ folder (index.html, css, fonts, img, lib, src) in play/, with the VRX
+  badge block added before the script tag in play/index.html. Re-add that block after copying a new build.
+- Its images are screenshots taken by the game's own picture mode: open play/#shot-cover, #shot-fight, #shot-boss,
+  #shot-board or #shot-title in headless Edge at 1600x900 (the same flags as tools/build_banners.ps1).
+- New devlog post: "Contract Zero: from a design on paper to a first build" (blog/contract-zero-first-build/).
+
 v0.29.1-alpha (2026-10-13)
 - "One long day" moves from the blog to the devlog: its tag is Devlog now (was Roundup).
 

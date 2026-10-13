@@ -27,6 +27,12 @@ window.POSTS = [
     excerpt: 'For six years I was told the things I love were holding us back. Then I started my own business and had a client in the first week.'
   },
   {
+    slug: 'contract-zero-first-build', game: 'contract-zero',
+    title: 'Contract Zero: from a design on paper to a first build', date: '2026-10-13', tag: 'Devlog',
+    cover: '/blog/contract-zero-first-build/cover.jpg',
+    excerpt: 'One guy, creature bounties, and the only way to win is to throw stuff into things. How the first playable build came together, and what is still untested.'
+  },
+  {
     slug: 'one-long-day',
     title: 'One long day: dice on stream, and an app that opens twice', date: '2026-10-13', tag: 'Devlog',
     cover: '/blog/one-long-day/cover.jpg',

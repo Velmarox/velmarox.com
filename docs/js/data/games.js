@@ -53,6 +53,21 @@ window.CATEGORIES = {
 
 window.GAMES = [
   {
+    slug: 'contract-zero',
+    title: 'Contract Zero', tagline: 'Creature bounties. One guy. The only way to win is to throw stuff into things.',
+    genres: ['action', 'arcade', 'roguelike'], status: 'live', featured: true, trending: true, flag: 'Early build',
+    released: '2026-10-13', updated: '2026-10-13', version: '0.1.0',
+    controls: 'Keyboard and mouse, or a controller', platforms: 'Browser (desktop)', session: '15-30 minutes a streak',
+    play: '/games/contract-zero/play/',
+    thumb: '/games/contract-zero/thumb.jpg', banner: '/games/contract-zero/cover.jpg',
+    shots: ['/games/contract-zero/shot-1.jpg', '/games/contract-zero/shot-2.jpg', '/games/contract-zero/shot-3.jpg', '/games/contract-zero/shot-4.jpg'],
+    about: "You are one guy taking creature bounties, and hitting things does nothing. Damage comes from impact: a crate into a creature, a creature into a wall, a creature into another creature.\n\nEvery attack is drawn on the floor before it lands, and time slows while you line up a throw, so you win by reading the room and picking your moment, not by fast hands.\n\nContracts chain into a streak. After each one you choose: cash out and bank the score, or push on to something nastier. Lose and you carry an injury; the third one ends the streak and you keep half. Deeper contracts add new rules instead of bigger health bars: a creature that throws your own crates back, one armoured across the front, a spike wall, a pit, ice. Every fifth contract is a Big One that changes what it does as it gets hurt.\n\nGear you pick up changes what a throw does (it sticks, it snaps back to your hands, it bounces at full speed) and is gone when the streak ends. Rep is what you keep, and it buys new creatures, objects and rooms. None of it makes you stronger.\n\nThis is the first build and it has been balanced against bots, not people, so expect rough edges. There is no sound yet. Scores are saved in your browser only.\n\nPhysics by Planck.js and drawing by three.js (both MIT). Pixel fonts from the Not Jam font pack (CC0). Controller button sprites from the Pixel SNES Controller Pack by Dead Revolver.",
+    howto: ['The first time you press Start you get Contract Zero, a short training job: walk to a crate, hold to pick it up, let go to throw.', 'WASD to move, mouse to aim. Hold the left mouse button near something to grab it and charge the throw; release to throw. Time slows while you hold, until the ring around you runs out.', 'Right mouse or Space is a shove. It makes room, and it dazes small creatures so you can pick them up and throw them too.', 'A red shape on the floor is an attack about to land. Get out of it. A Charger that misses you and hits a wall hurts itself.', 'On a controller: D-pad to move and aim, hold R to stand still and aim, hold A to grab and charge, Y to shove, Start to pause.', 'Pick one of three contracts from the board. The card shows what you are up against before you commit.', 'After a win, take one of three rewards. After a loss, choose which injury to carry.', 'Cash out from the board whenever you like. The exit on the west wall opens 20 seconds into a fight if you want out: no score, no injury.'],
+    log: [
+      { date: '2026-10-13', text: 'v0.1.0: first build. Five creatures and a three-phase boss, four elite modifiers, five things to throw, six gear, four arena twists, three rooms, injuries, unlocks and a tutorial. 16-bit menus over low-poly 3D, and it plays on a controller.' }
+    ]
+  },
+  {
     slug: 'clack-arena',
     title: 'Clack Arena', tagline: 'You are a die. Throw into a shared tray, crash into the enemy, engrave your faces.',
     genres: ['roguelike', 'strategy'], status: 'live', featured: true, trending: true, flag: 'Early build',

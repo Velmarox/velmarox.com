@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contract Zero | VRX Games</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="stage">
+    <canvas id="arena3d" aria-label="The arena. One guy, some objects, and creatures to beat."></canvas>
+    <div id="overlay"></div>
+  </div>
+
+  <div id="hud" role="status" hidden></div>
+  <div id="prompt" role="status" hidden></div>
+  <div id="banner" role="alert" hidden></div>
+
+  <div id="help" hidden>
+    <span class="for-keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
+    <span class="for-keys"><kbd>Hold left mouse</kbd> grab and charge</span>
+    <span class="for-keys"><kbd>Release</kbd> throw</span>
+    <span class="for-keys"><kbd>Space</kbd> or <kbd>Right mouse</kbd> shove</span>
+    <span class="for-keys"><kbd>Esc</kbd> pause</span>
+    <span class="for-pad"><img class="pad dpad" src="img/pad/dpad.png" alt="D-pad"> move</span>
+    <span class="for-pad"><img class="pad r" src="img/pad/r.png" alt="R"> hold to aim</span>
+    <span class="for-pad"><img class="pad a" src="img/pad/a.png" alt="A"> hold, then release to throw</span>
+    <span class="for-pad"><img class="pad y" src="img/pad/y.png" alt="Y"> shove</span>
+    <span class="for-pad"><img class="pad start" src="img/pad/start.png" alt="Start"> pause</span>
+  </div>
+
+  <main id="screen"></main>
+
+  <aside id="panel" hidden>
+    <h2>Advanced details</h2>
+    <div id="sliders"></div>
+    <h2>Last impact</h2>
+    <pre id="readout">Nothing yet.</pre>
+    <button id="copy" type="button">Copy these numbers</button>
+  </aside>
+
+  <!-- VRX badge: links back to the game's page on the site. Re-add this block after copying a new build. -->
+  <style>
+    .vrx-badge { position: fixed; left: 10px; bottom: 8px; z-index: 30; display: block; width: 84px; opacity: .72; }
+    .vrx-badge:hover { opacity: 1; }
+    .vrx-badge img { display: block; width: 100%; height: auto; }
+  </style>
+  <a class="vrx-badge" href="../" aria-label="Back to the game page"><picture><source srcset="/assets/brand/vrx-badge.webp" type="image/webp"><img src="/assets/brand/vrx-badge.png" width="180" height="85" alt="VRX Games" decoding="async"></picture></a>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

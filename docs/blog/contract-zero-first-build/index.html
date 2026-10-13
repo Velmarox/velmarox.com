@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="version" content="v0.30.0-alpha">
+  <meta name="theme-color" content="#0b0b0d">
+  <title>Contract Zero: from a design on paper to a first build | VRX Games</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Saira:ital,wght@0,400;0,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css">
+  <!-- meta -->
+  <link rel="canonical" href="https://velmarox.com/blog/contract-zero-first-build/">
+  <meta name="description" content="One guy, creature bounties, and the only way to win is to throw stuff into things. How the first playable build came together, and what is still untested.">
+  <meta property="og:site_name" content="VRX Games">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://velmarox.com/blog/contract-zero-first-build/">
+  <meta property="og:title" content="Contract Zero: from a design on paper to a first build | VRX Games">
+  <meta property="og:description" content="One guy, creature bounties, and the only way to win is to throw stuff into things. How the first playable build came together, and what is still untested.">
+  <meta property="og:image" content="https://velmarox.com/blog/contract-zero-first-build/cover.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- /meta -->
+</head>
+<body data-page="post" data-slug="contract-zero-first-build">
+  <main>
+    <article id="post-content">
+      <p><a href="/games/contract-zero/">Contract Zero</a> is up and playable. You are one guy taking creature bounties, and the only way to win is to throw stuff into things.</p>
+      <h2>Where it started</h2>
+      <p>The first design was a menu-driven RPG: six character types, three progression tracks, rivals, promotions. Most of that was cut before any code was written. What survived was one idea, little characters that really get shoved around by physics, and the rule that came out of it: hitting a creature does nothing, and damage only comes from impact.</p>
+      <h2>The throwing toy</h2>
+      <p>The first thing built was a room with one guy, some crates, tires and barrels, and a target. No score and no enemies. The only question was whether picking something up and throwing it felt good. It did, so everything else was built on top of it.</p>
+      <img src="/games/contract-zero/shot-1.jpg" alt="A fight: a Charger's attack is marked across the floor while the guy holds a crate over his head.">
+      <h2>Reading the room</h2>
+      <p>Every attack is drawn on the floor for its whole wind-up before it can hurt, and time slows while a throw is being lined up. A Charger marks its whole path; step out of it and it hits the wall and hurts itself. A Spitter marks a circle. A Thrower picks up one of your own crates and marks the line it will throw it along.</p>
+      <h2>Streaks</h2>
+      <p>Contracts chain. After each one you either cash out and bank the score, or push on. A loss costs an injury, and the third ends the streak with half the score. Deeper contracts add rules instead of health: armour that only covers the front, a spike wall, a pit that thrown things fly over, a strip of ice. Every fifth contract is a Big One with three phases.</p>
+      <img src="/games/contract-zero/shot-3.jpg" alt="The contract board: three contracts to choose from, with the creatures, room and pay shown on each.">
+      <h2>How it looks</h2>
+      <p>The fight is low-poly 3D seen from nearly overhead. The characters are faceted balls with stubby limbs, modelled on two reference sheets: a peach one with a small worried face, and a purple one with horns and a scowl. Their arms are on springs, so they flap when they run. The menus went the other way, to 16-bit console windows with pixel type and a pointing cursor.</p>
+      <h2>What is not tested</h2>
+      <p>The difficulty has been tuned against bots, not people. A bot that reacts a third of a second late and aims imperfectly wins most fights until the wind-ups get short, then falls off. Real players will find things no bot does. There is no sound yet, the scores stay in your browser, and it needs a desktop.</p>
+    </article>
+  </main>
+  <script src="/js/data/games.js"></script>
+  <script src="/js/data/posts.js"></script>
+  <script src="/js/data/threads.js"></script>
+  <script src="/js/data/products.js"></script>
+  <script src="/js/site.js"></script>
+</body>
+</html>
