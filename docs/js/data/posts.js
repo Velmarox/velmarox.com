@@ -21,6 +21,11 @@
 
 window.POSTS = [
   {
+    slug: 'one-long-day',
+    title: 'One long day: dice on stream, and an app that opens twice', date: '2026-10-13', tag: 'Roundup',
+    excerpt: 'Everything I worked on in one day: Clack Attack gets an OBS overlay, the Warrior Codex player app is fixed, and a new game exists on paper.'
+  },
+  {
     slug: 'you-can-make-anything-you-want',
     title: 'You Can Make Anything You Want (Terms and Conditions Apply)', date: '2026-10-12', tag: 'Thoughts',
     excerpt: 'My dad told me I could make anything that runs on a computer. He was right. He left out the fine print.'

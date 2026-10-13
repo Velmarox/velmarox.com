@@ -406,6 +406,9 @@ img { display: block; max-width: 100%; }
 .prose ul { margin: 0 0 14px; padding-left: 22px; color: #d4d4dc; }
 .prose li { margin-bottom: 6px; }
 .prose img { margin: 18px 0; border: 2px solid var(--line); }
+.prose .highlight { margin: 22px 0; padding: 16px 18px; border: 1px solid var(--yellow); border-left-width: 6px; background: rgba(255, 221, 0, 0.06); }
+.prose .highlight b { display: block; margin-bottom: 6px; font: 800 0.8rem var(--cond); letter-spacing: 0.12em; text-transform: uppercase; color: var(--yellow); }
+.prose .highlight p { margin: 0; }
 .prose blockquote { margin: 18px 0; padding: 4px 0 4px 16px; border-left: 3px solid var(--red); color: var(--muted); }
 .prose code { font-size: 0.9em; background: var(--panel-2); padding: 1px 5px; }
 .steps { list-style: none; counter-reset: s; padding: 0; margin: 0; }

@@ -5,6 +5,12 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.25.0-alpha (2026-10-13)
+- New blog post: "One long day: dice on stream, and an app that opens twice" (blog/one-long-day/), a roundup of one
+  day of work with a highlight box for the focus of the day.
+- Devlog: Clack Attack gets its entries for the Windows app v1.4.0, v1.5.0, v1.5.1 and v1.6.0; its page reads v1.6.0.
+- New post style: <aside class="highlight"> draws a yellow-edged box with a small heading.
+
 v0.24.1-alpha (2026-10-12)
 - "You Can Make Anything You Want" post: names the Warrior Codex and links back to the installers post.
 
