@@ -5,6 +5,59 @@ The number says which release you are on, not how far it is from a 1.0.
 The top entry here is the app's version: Build_Exe.mjs and Release.mjs both read it.
 Archived (outgoing-version) copies live in ../_version_archive/, never in this build folder.
 
+v1.6.0 (2026-10-12)
+- A menu bar, and every setting is in it: Dice (Dice look, saved looks, templates), Tray, Roll, Log (copy, clear), OBS
+  and Window (Keep on top). The buttons and lists that sat in the top bar are gone; the OBS panel is now the OBS menu.
+- Fix: the roll log stayed empty since 1.5.0. Rolls are written to it again, with the OBS overlay on or off.
+- What a roll is for now reads "Rolling to ..." wherever the roll shows: in the result box, in the log, and on the
+  OBS overlay in a box of its own. That box sits bottom centre; OBS > "Rolling to" box sits moves it to any corner,
+  top centre, or hides it.
+- Roll > Before what it's for, say: "Rolling to", "Rolling for", "Rolling", just what you typed, or your own words.
+  One choice changes the app and the overlay together.
+- OBS > Box size: the total box and the "Rolling to" box on the overlay, from 50% to 300%.
+- The result box under the roll bar can be dragged taller (its bottom right corner).
+- After an update, the overlay page already open in OBS loads the new one by itself. (Coming from 1.5.1, refresh
+  the Browser source in OBS once.)
+- Archived to _version_archive/Clack_Attack_v1.5.1/: App.js, App_Main.cjs, App_Preload.cjs, Clack.css, Overlay.html,
+  Overlay.js, CHANGELOG.txt
+
+v1.5.1 (2026-10-12)
+- Fix: the OBS overlay showed nothing when OBS was opened before Clack Attack, or before the overlay was turned on.
+  OBS tries a web address once and never again. The OBS panel now gives a file instead (Clack_Attack_Overlay.html,
+  kept with the app's settings): add it in OBS as a Browser Source with "Local file" ticked. It keeps trying until
+  Clack Attack answers, so the two can be opened in either order.
+- The overlay tells the app what went wrong on its side (OBS shows no errors of its own), and the OBS panel says it.
+- Archived to _version_archive/Clack_Attack_v1.5.0/: App_Main.cjs, App.js, Overlay.js, CHANGELOG.txt
+
+v1.5.0 (2026-10-12)
+- An overlay for OBS: your rolls on stream, drawn with the same dice and the same look as the tray, on a see-through
+  page. Press OBS in the top bar, turn it on, and add the address it shows as a Browser Source in OBS. The page is
+  served on this computer only, and only while the overlay is on.
+- Show as, Fixed spot: the dice in rows in one corner, each spinning down onto its rolled face.
+- Show as, Mirror the tray: the very throw the app made, played back over the whole overlay, with the tray's edges
+  as its edges. "Hold the tray to the overlay's shape" keeps the window's tray the shape of your OBS source, so the
+  mirror fills it edge to edge; off, the window is any shape and the tray is fitted inside the source.
+- The total sits beside the dice in a see-through tile, with what was rolled under it. A new roll takes its place.
+- Dice stay: until the next roll, or fade as they do in the app. Corner: any of the four.
+- The overlay makes no sound (OBS would hear the dice twice) and draws no tray, only the dice and their shadows.
+- New files: Overlay.html, Overlay.js. Build_Exe.mjs packs them.
+- Archived to _version_archive/Clack_Attack_v1.4.0/: App_Main.cjs, App_Preload.cjs, App.js, Clack.css, Build_Exe.mjs,
+  Table/Scripts/Dice_Tray.js, CHANGELOG.txt
+
+v1.4.0 (2026-10-12)
+- The dice catch up with the Warrior Codex (v6.30.2). Dice only: the trays, the roll bar and the log are unchanged.
+- Sketch finish: a drawing of a die, in flat colour with inked edges, hatching on its shaded side and an ink outline
+  round it. Three Sketch looks (Sketch, Sketch Inked, Sketch Rose) and a handwritten number font (Hand).
+- Stripes: bands of colour across the whole die (Dice look > Look > Stripes), with six striped looks: Pride,
+  Transgender, Nonbinary, Agender, Genderfluid and Genderqueer.
+- Number outline (Dice look > Numbers): Automatic, Always or Never.
+- Keep earlier rolls out (Dice look > Throw): up to three rolls stay in the tray and new dice knock against them.
+  On by default.
+- Face icons sit further inside their face; a custom picture is sized by its farthest corner, so it never spills over
+  an edge.
+- Archived to _version_archive/Clack_Attack_v1.3.0/: Table/Scripts/Core.js, Dice_Geometry.js, Dice_Look.js,
+  Dice_Portrait.js, Dice_Presets.js, Dice_Tray.js, CHANGELOG.txt
+
 v1.3.0 (2026-10-09)
 - Forest Druid gets its own painted tray (Table/Trays/Forest_Druid.jpg): a mossy forest floor with fallen leaves,
   mushrooms and dappled light, in a wooden frame wrapped in ivy. Every tray theme now has artwork.

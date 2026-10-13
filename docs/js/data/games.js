@@ -133,7 +133,7 @@ window.GAMES = [
     slug: 'clack-attack',
     title: 'Clack Attack', tagline: 'Type a roll, watch real 3D dice tumble across a themed tray.',
     genres: ['tools'], status: 'live', trending: true,
-    released: '2026-10-09', updated: '2026-10-12', version: '1.6.0',
+    released: '2026-10-09', updated: '2026-10-13', version: '1.6.0',
     controls: 'Touch, or keyboard and mouse', platforms: 'Browser (phone or desktop), Windows app',
     play: '/tools/clack-attack/play/',
     download: { label: 'Download for Windows', url: 'https://github.com/Velmarox/clack-attack-releases/releases/latest', note: 'The Windows app updates itself and can stay on top of other windows.' },
@@ -142,6 +142,7 @@ window.GAMES = [
     about: 'The 3D dice from the Warrior Codex as a small app of their own. Type a roll or click a dice button, watch the dice tumble across a themed tray, and keep a log of every roll.\n\nNineteen trays, from green felt and a forest floor to cyberpunk and a nineties carpet, plus colours, skins, face icons and presets for the dice themselves.\n\nGrab the Windows app, or try it here in the browser first.',
     howto: ['Type dice like 1d20, 2d6+3 or 4d6kh3 and press Enter, or click a quick dice button.', 'Adv / Dis rolls 2d20 and keeps the higher or lower.', 'Pick a tray from the top bar, and change the dice in Dice look.', 'Esc clears the dice off the tray.'],
     log: [
+      { date: '2026-10-13', text: 'The browser build here catches up with the Windows app, v1.6.0: Sketch and striped dice, the number outline setting, earlier rolls staying in the tray, and "Rolling to ..." on every roll. The OBS overlay and the menu bar are in the Windows app only.' },
       { date: '2026-10-12', text: 'Windows app v1.6.0: a menu bar with every setting in it (Dice, Tray, Roll, Log, OBS, Window). What a roll is for reads "Rolling to ..." in the app, the log and on the OBS overlay, and you can change the wording. The roll log, empty since 1.5.0, records rolls again.' },
       { date: '2026-10-12', text: 'Windows app v1.5.1: the OBS overlay is a file you add as a local Browser Source, so OBS and Clack Attack can be opened in either order.' },
       { date: '2026-10-12', text: 'Windows app v1.5.0: an overlay for OBS. Your rolls show on stream with the same dice and look as the tray, in a corner or as a replay of the exact throw.' },

@@ -55,6 +55,8 @@ window.RP = window.RP || {};
     diceInclusion: 'none',    // none | leaf | feather | moss | bone | paw: hanging inside the die
     diceWear: 0,              // 0 to 1: weathered edges and worn numbers
     diceNumberStyle: 'print', // print | engraved
+    diceNumberOutline: 'auto', // auto (on skins and stripes) | on | off: an edge round each number so it reads on a busy face
+    diceStripes: [],          // colours of stripes across the whole die, top to bottom ([] = none; see RP.DICE_STRIPES)
     diceTopSymbol: 'none',    // none | paw | claw | moon | star | clan | … | custom:<id>: in place of the highest number
     diceLowSymbol: 'skull',   // v6.20.0: the same, in place of the 1
     diceFaceIcons: 'none',    // v6.20.0: none | high | low | both: which faces get an icon
@@ -70,6 +72,7 @@ window.RP = window.RP || {};
     diceTheme: 'none',        // v6.14.1: a themed tray (Dice_Themes.js) in place of the table and tray above
     diceVolume: 0.7,
     diceLinger: 2.5,          // seconds the dice stay after landing
+    diceKeep: 'mine',         // earlier rolls stay out (three at most): off | mine
     diceScale: 1,
     // 3D dice look
     diceColorMode: 'theme',   // 'theme' | 'custom'
@@ -154,6 +157,7 @@ window.RP = window.RP || {};
       skinHash: s.diceSkin === 'custom' ? (RP.skins?.myCustomHash() || '') : '',
       /* v6.14.0 */
       color2: s.diceColor2 || '', inclusion: s.diceInclusion || 'none', wear: +s.diceWear || 0, numStyle: s.diceNumberStyle || 'print',
+      stripes: Array.isArray(s.diceStripes) && s.diceStripes.length > 1 ? s.diceStripes : undefined, numOutline: s.diceNumberOutline || 'auto',
       /* v6.20.0: an icon on the highest face, the lowest, both or neither (Settings > Dice > Icon faces) */
       ...(() => {
         const m = RP.faceMode(s), top = /high|both/.test(m) ? (s.diceTopSymbol || 'none') : 'none', low = /low|both/.test(m) ? (s.diceLowSymbol || 'none') : 'none';

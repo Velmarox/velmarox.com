@@ -36,7 +36,7 @@
 
   function keyOf(style) {
     return JSON.stringify([style.color, style.number, style.finish, style.font, style.multi, style.outline, RP.skins?.keyFor(style), style.tint, style.glitter,
-      style.color2, style.inclusion, style.wear, style.numStyle, style.top, style.low, style.clan, style.mixed && style.mixed[20]]);   // v6.14.0
+      style.color2, style.inclusion, style.wear, style.numStyle, style.top, style.low, style.clan, style.mixed && style.mixed[20], style.stripes, style.numOutline]);   // v6.14.0
   }
 
   // Render right now; returns a PNG data URL ('' if 3D isn't available).
@@ -53,6 +53,8 @@
       mesh.add(new THREE.LineSegments(shape.edges, edge));
       mats.push(edge);
     }
+    const rim = RP.diceKit.rimFor(shape, look, finish);   // a Sketch die's outline
+    if (rim) { mesh.add(rim); mats.push(rim.material); }
     // Turn the "20" face towards the viewer, tipped back a little so it looks 3D.
     const n = new THREE.Vector3(...shape.normals[19]);
     mesh.quaternion.setFromUnitVectors(n, new THREE.Vector3(0.12, 0.22, 1).normalize());
