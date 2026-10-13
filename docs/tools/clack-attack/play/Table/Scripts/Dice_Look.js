@@ -69,6 +69,13 @@
     mark();
     return h('div.srow.wide', { 'data-find': 'dice tray theme tavern cyberpunk druid pirate space vampire steampunk candy egyptian sci-fi eldritch celestial autumn retro arctic' }, grid);
   }
+  /** Stripes across the whole die: one of the sets, or none. Stripes that came with a preset and match no set stay as they are. */
+  function stripesRow() {
+    const sets = Object.entries(RP.DICE_STRIPES || {});
+    const cur = () => { const v = Array.isArray(s.diceStripes) ? s.diceStripes : []; return v.length < 2 ? 'none' : (sets.find(([, x]) => x[1].join() === v.join()) || ['own'])[0]; };
+    const opts = [['none', 'None'], ...sets.map(([k, x]) => [k, x[0]]), ...(cur() === 'own' ? [['own', 'From a preset']] : [])];
+    return chips('Stripes', 'Bands of colour across the whole die, in place of the dice colour. A skin covers them.', opts, cur, v => { if (v !== 'own') RP.set('diceStripes', v === 'none' ? [] : [...RP.DICE_STRIPES[v][1]]); });
+  }
   function mixedRows() {
     const fins = Object.entries(RP.DICE_FINISHES || {}).map(([k, v]) => [k, v.label]);
     const put = (sides, patch) => { const m = JSON.parse(JSON.stringify(s.diceMixed || {})); m[sides] = Object.assign({ c: s.diceColor, f: s.diceFinish }, m[sides], patch); RP.set('diceMixed', m); };
@@ -268,11 +275,12 @@
         section('Look',
           colourChoice('Dice colour', 'diceColorMode', 'diceColor', 'theme', 'Your colour'),
           colourChoice('Number colour', 'diceNumberMode', 'diceNumberColor', 'auto', 'Automatic', 'Automatic picks white or dark, whichever reads better.'),
-          select('Finish', 'diceFinish', finishes, 'Glass is see-through with solid numbers.'),
+          select('Finish', 'diceFinish', finishes, 'Glass is see-through with solid numbers. Sketch is a drawing of a die: flat colour, with its edges and hatching in the number colour.'),
           skinChooser(),
           slider('Skin tint', 'diceSkinTint', 0, 1, 0.05, pct),
           select('Number font', 'diceFont', fonts),
           toggle('Multicolour set', 'diceMulticolor', 'Each die type gets its own colour, starting from yours.'),
+          stripesRow(),
           toggle('Edge outlines', 'diceOutline'),
           toggle('Shadows', 'diceShadows')),
         /* v6.14.0: the dice update */
@@ -281,6 +289,7 @@
           slider('Weathered', 'diceWear', 0, 1, 0.05, v => (v ? pct(v) : 'new'), 'Chipped edges, grime and worn paint in the numbers, like old bone or river stone.')),
         section('Numbers',
           select('Numbers are', 'diceNumberStyle', [['print', 'Printed'], ['engraved', 'Engraved and inked']], 'Engraved numbers are cut in and filled with the number colour: try gold or silver.'),
+          select('Number outline', 'diceNumberOutline', [['auto', 'Automatic'], ['on', 'Always'], ['off', 'Never']], 'An edge round each number in a contrasting colour, so it reads on a face of several colours. Automatic adds it on stripes and skins.'),
           ...faceIconRows()),
         section('When you roll',
           toggle('A flare on a natural 20 or 1', 'diceCrit', 'A soft light rising from the die (100 or 1 on the Sphere).'),
@@ -304,7 +313,8 @@
           slider('Speed', 'diceSpeed', 0.4, 1.6, 0.05, v => (v < 0.95 ? 'slow-mo ' : '') + pct(v)),
           select('Thrown from', 'diceFrom', [['random', 'Random'], ['left', 'Left'], ['right', 'Right'], ['bottom', 'Bottom'], ['top', 'Top']]),
           slider('Dice size', 'diceScale', 0.6, 1.8, 0.05, pct),
-          slider('Stay on screen for', 'diceLinger', 0.5, 10, 0.5, v => v + 's')),
+          slider('Stay on screen for', 'diceLinger', 0.5, 10, 0.5, v => v + 's'),
+          select('Keep earlier rolls out', 'diceKeep', [['off', 'Off'], ['mine', 'On']], 'Up to three rolls stay on screen until they fade; a fourth bumps the oldest. Off: a new roll clears the last one.')),
         section('Sound', toggle('Dice sounds', 'diceSound'), slider('Dice volume', 'diceVolume', 0, 1, 0.05, pct)),
       ];
     }

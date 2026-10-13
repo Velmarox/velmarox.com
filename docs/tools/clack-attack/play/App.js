@@ -21,7 +21,13 @@
   const trayArea = h('section.tray-area', null, idle);
 
   /* ---------- the roll bar ---------- */
-  const labelIn = h('input.field', { type: 'text', placeholder: 'Rolling for… (optional)', value: RP.store.get('rollLabel', '') });
+  /* v1.6.0: the words before what a roll is for ("Rolling to hit"). Yours to choose (Roll menu); the same words
+     show in the result box, in the log and on the OBS overlay. '' = your words alone. */
+  let phrase = RP.store.get('rollPhrase', 'Rolling to');
+  if (typeof phrase !== 'string') phrase = 'Rolling to';
+  const sayWhat = what => (phrase ? `${phrase} ${what}` : what);
+  const labelHint = () => `${phrase || 'What it\'s for'}… (optional)`;
+  const labelIn = h('input.field', { type: 'text', placeholder: labelHint(), value: RP.store.get('rollLabel', '') });
   const exprIn = h('input.field.mono.expr', { type: 'text', placeholder: '1d20', value: RP.store.get('rollExpr', '1d20'), spellcheck: false, 'aria-label': 'Dice to roll' });
   const rollBtn = h('button.btn.primary', { type: 'button', text: 'Roll', onclick: () => doRoll() });
   const quick = h('div.quick-dice');
@@ -75,18 +81,19 @@
     exprIn.classList.remove('bad');
     let r;
     try { r = RP.roll({ expr }); } catch (e) { RP.toast(e.message); return; }
-    const label = labelIn.value.trim() || expr;
+    const what = labelIn.value.trim(), label = what || expr;   // v1.6.0: what you said it's for reads "Rolling to …" wherever the roll shows
     result.className = 'result muted'; result.replaceChildren(h('span.detail', { text: 'Rolling…' }));
     let shown = false;
     const show = () => {
       if (shown) return; shown = true;
       result.className = 'result' + (r.crit && s.critHighlight ? ' crit-' + r.crit : '');
-      result.replaceChildren(h('span.total', { text: r.total }), h('span.detail', { html: RP.renderMarkdown(r.detail) }));
-      addEntry({ id: RP.uid(), ts: Date.now(), label, expr, detail: r.detail, total: r.total, crit: s.critHighlight ? r.crit : null });
+      result.replaceChildren(h('span.total', { text: r.total }), h('span.detail', null, what ? h('span.what', { text: sayWhat(what), 'data-what': what }) : '', h('span', { html: RP.renderMarkdown(r.detail) })));
+      addEntry({ id: RP.uid(), ts: Date.now(), label, what, expr, detail: r.detail, total: r.total, crit: s.critHighlight ? r.crit : null });
     };
     const key = RP.uid();
     RP.diceTray.hold?.(key);
-    if (!RP.diceTray.throw(r.dice, { style: RP.myDiceStyle(), key, onLand: show })) { RP.diceTray.release?.(key); show(); }
+    const overlay = { total: r.total, detail: RP.stripMarkdown(r.detail).replace(/~~/g, ''), crit: r.crit || null, what };   // v1.5.0: what the OBS overlay's total tile says
+    if (!RP.diceTray.throw(r.dice, { style: RP.myDiceStyle(), key, onLand: show, overlay })) { RP.diceTray.release?.(key); show(); }
     else setTimeout(show, 12000);   // whatever happens to the dice, the line is written in the end
   }
 
@@ -96,7 +103,7 @@
   const clock = ts => new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   function buildRow(e) {
     const cls = ['entry', 'k-roll']; if (e.crit) cls.push('crit-' + e.crit);
-    const body = `<span class="die">&#x2684;</span> <strong>${RP.renderMarkdown(e.label)}</strong>: ${RP.renderMarkdown(e.detail)} = <strong>${e.total}</strong>`;
+    const body = `<span class="die">&#x2684;</span> ${e.what && phrase ? RP.renderMarkdown(phrase) + ' ' : ''}<strong>${RP.renderMarkdown(e.label)}</strong>: ${RP.renderMarkdown(e.detail)} = <strong>${e.total}</strong>`;
     return h('div.' + cls.join('.'), { title: new Date(e.ts).toLocaleString(), 'data-id': e.id },
       h('div.entry-body', { html: body }), h('span.when', { text: clock(e.ts) }),
       h('span.entry-actions', null, h('button.icon-btn', { type: 'button', title: 'Roll this again', html: '&#x21BB;', onclick: () => { exprIn.value = e.expr; labelIn.value = e.label === e.expr ? '' : e.label; doRoll(); } }),
@@ -109,7 +116,7 @@
     scroller.scrollTop = scroller.scrollHeight;
   }
   function addEntry(e) { entries.push(e); if (entries.length > KEEP) entries = entries.slice(-KEEP); persist(); draw(); }
-  function plain(e) { return `[${clock(e.ts)}] ${RP.stripMarkdown(e.label)}: ${RP.stripMarkdown(e.detail).replace(/~~/g, '')} = ${e.total}`; }
+  function plain(e) { return `[${clock(e.ts)}] ${e.what && phrase ? phrase + ' ' : ''}${RP.stripMarkdown(e.label)}: ${RP.stripMarkdown(e.detail).replace(/~~/g, '')} = ${e.total}`; }
   function copyLog() {
     if (!entries.length) return RP.toast('Nothing to copy yet.');
     RP.copy(entries.map(plain).join('\n')).then(() => RP.toast('Log copied.'), () => RP.toast('Couldn\'t copy.'));
@@ -166,6 +173,123 @@
     nat.updateState().then(showUpd).catch(() => {});
     updBtn.addEventListener('click', () => { updBtn.classList.add('installing'); nat.installUpdate().then(showUpd).catch(() => updBtn.classList.remove('installing')); });
   }
+
+  /* v1.5.0: the OBS overlay. The app serves a see-through page on this computer; OBS shows it as a Browser Source.
+     Every throw goes to it (the tray says 'dice:thrown'): as a fixed spot of dice in one corner, or as a mirror of
+     the tray, the very same throw played back with the tray's edges as its edges. v1.6.0: its settings are in the
+     menu bar's OBS menu. */
+  const ov = { on: false, mode: 'spot', corner: 'bl', stay: true, lock: false, size: 1, whatAt: 'bc', ...RP.store.get('clackOverlay', {}) };
+  let obsStatus = { on: false, url: '', file: '', clients: 0, size: null, error: '', said: '' }, sentConfig = '';
+  const obsConfig = () => JSON.stringify({ mode: ov.mode, corner: ov.corner, stay: ov.stay, size: ov.size, whatAt: ov.whatAt, phrase });
+  const obsState = () => obsStatus.error || (obsStatus.said ? `The overlay says: ${obsStatus.said}` : obsStatus.clients ? `OBS is showing it${obsStatus.size ? ` (${obsStatus.size.w} by ${obsStatus.size.h})` : ''}` : 'Waiting for OBS to open it');
+  const obsExtra = () => ({ side: side.getBoundingClientRect().width, top: top.getBoundingClientRect().height });
+  const applyObs = async () => {
+    RP.store.set('clackOverlay', ov);
+    if (!nat || !nat.overlaySet) return;
+    try { obsStatus = await nat.overlaySet({ on: ov.on, lock: ov.lock && ov.mode === 'mirror' }); } catch { obsStatus = { ...obsStatus, error: 'The overlay couldn\'t start.' }; }
+    if (ov.on) { sentConfig = obsConfig(); nat.overlaySend('config', sentConfig); nat.overlayFit(obsExtra()); }
+    refreshMenu();
+  };
+  if (nat && nat.overlaySet) {
+    const SENT = ['diceScale', 'diceSpeed', 'diceShadows', 'diceHighlight', 'diceLinger', 'diceKeep'];   // the settings a throw is drawn with
+    const round = (k, v) => (typeof v === 'number' ? Math.round(v * 1e5) / 1e5 : v);
+    nat.onOverlay(st => {
+      if (st.said && st.said !== obsStatus.said) RP.toast(`OBS overlay: ${st.said}`, null, 10000);   // OBS shows no errors of its own
+      obsStatus = st; refreshMenu();
+    });
+    let fitTimer = 0;
+    window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => { if (ov.on && ov.lock && ov.mode === 'mirror') nat.overlayFit(obsExtra()); }, 200); });
+    RP.on('dice:thrown', t => {
+      if (!ov.on || !obsStatus.clients) return;
+      if (obsConfig() !== sentConfig) { sentConfig = obsConfig(); nat.overlaySend('config', sentConfig); }
+      const style = { ...t.style };
+      if (style.skin === 'custom' && !style.skinUrl) style.skinUrl = RP.store.get('diceSkinImage', '');   // your own skin picture goes along
+      nat.overlaySend('roll', JSON.stringify({ list: t.list, style, replay: ov.mode === 'mirror' ? t.replay : null, lane: t.lane, info: t.info,
+        set: Object.fromEntries(SENT.map(k => [k, s[k]])) }, round));
+    });
+    RP.on('dice:cleared', () => { if (ov.on && obsStatus.clients) nat.overlaySend('clear', '{}'); });
+  }
+
+  /* v1.6.0: the menu bar. Every setting lives there: the dice look and saved looks, the tray, the OBS overlay, the
+     log, Keep on top. The page describes the menus (labels, ticks, what each one does) and the window draws them;
+     a click comes back by its id. The bar's own buttons step aside once the menus are up. */
+  const menuRuns = new Map();
+  let menuTimer = 0, onTop = false;
+  function menuModel() {
+    menuRuns.clear();
+    let n = 0;
+    const item = (label, run, more = {}) => { const id = 'm' + (++n); menuRuns.set(id, run); return { id, label, ...more }; };
+    const check = (label, on, run, more = {}) => item(label, run, { type: 'checkbox', checked: !!on, ...more });
+    const pick = (label, on, run) => item(label, run, { type: 'checkbox', checked: !!on });   // one of several: a tick, redrawn after every click
+    const sub = (label, items, more = {}) => ({ label, items, ...more }), sep = { sep: true };
+    const P = RP.dicePresets, active = P.activeId(), lookOf = p => pick(p.name, p.id === active, async () => { await P.apply(p); RP.toast(`Dice look: ${p.name}`); });
+    const setOv = (k, v) => () => { ov[k] = v; applyObs(); };
+    const themes = Object.entries(RP.TRAY_THEMES || {});
+    return [
+      sub('Dice', [
+        item('Dice look…', () => RP.openDiceLook(), { key: 'Ctrl+L' }),
+        sep,
+        ...(P.mine().length ? [sub('My looks', P.mine().map(lookOf))] : []),
+        sub('Templates', P.templates().map(lookOf)),
+      ]),
+      sub('Tray', [pick('Plain tray', (s.diceTheme || 'none') === 'none', () => RP.set('diceTheme', 'none')),
+        ...themes.map(([k, t]) => pick(String(t.name || k), s.diceTheme === k, () => RP.set('diceTheme', k)))]),
+      sub('Roll', [
+        sub('Before what it\'s for, say', [
+          ...PHRASES.map(([v, t]) => pick(t, phrase === v, () => setPhrase(v))),
+          pick(PHRASES.some(([v]) => v === phrase) ? 'Your own words…' : `Your own words: "${phrase}"…`, !PHRASES.some(([v]) => v === phrase), askPhrase),
+        ]),
+      ]),
+      sub('Log', [item('Copy the log', copyLog), item('Clear the log', clearLog)]),
+      sub('OBS', [
+        check('Show rolls in OBS', ov.on, () => { ov.on = !ov.on; applyObs(); }),
+        ...(ov.on ? [item(obsState(), () => {}, { enabled: false })] : []),
+        item('Copy the overlay file\'s path', () => RP.copy(obsStatus.file || '').then(() => RP.toast('Copied. In OBS: Sources, +, Browser, tick Local file, and paste it.', null, 8000), () => RP.toast('Couldn\'t copy.')), { enabled: !!obsStatus.file }),
+        sep,
+        sub('Show as', [pick('Fixed spot', ov.mode === 'spot', setOv('mode', 'spot')), pick('Mirror the tray', ov.mode === 'mirror', setOv('mode', 'mirror'))]),
+        sub('Dice stay', [pick('Until the next roll', ov.stay, setOv('stay', true)), pick('Fade as in the app', !ov.stay, setOv('stay', false))]),
+        sub(ov.mode === 'mirror' ? 'Total box sits' : 'Corner', [['bl', 'Bottom left'], ['br', 'Bottom right'], ['tl', 'Top left'], ['tr', 'Top right']].map(([v, t]) => pick(t, ov.corner === v, setOv('corner', v)))),
+        sub('"Rolling to" box sits', [['bc', 'Bottom centre'], ['tc', 'Top centre'], ['bl', 'Bottom left'], ['br', 'Bottom right'], ['tl', 'Top left'], ['tr', 'Top right'], ['off', 'Hidden']].map(([v, t]) => pick(t, (ov.whatAt || 'bc') === v, setOv('whatAt', v)))),
+        sub('Box size', [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3].map(v => pick(Math.round(v * 100) + '%', Math.abs((+ov.size || 1) - v) < 0.01, setOv('size', v)))),
+        check('Hold the tray to the overlay\'s shape', ov.lock, () => { ov.lock = !ov.lock; applyObs(); }, { enabled: ov.mode === 'mirror' }),
+      ]),
+      sub('Window', [check('Keep on top', onTop, async () => { onTop = !!(await nat.setOnTop(!onTop)); refreshMenu(); })]),
+    ];
+  }
+  const PHRASES = [['Rolling to', '"Rolling to hit"'], ['Rolling for', '"Rolling for hit"'], ['Rolling', '"Rolling hit"'], ['', 'Just what you typed: "hit"']];
+  function setPhrase(v) {
+    phrase = String(v || '').trim().slice(0, 40);
+    RP.store.set('rollPhrase', phrase);
+    labelIn.placeholder = labelHint();
+    result.querySelectorAll('.what').forEach(el => { if (el.dataset.what) el.textContent = sayWhat(el.dataset.what); });
+    draw(); applyObs();
+  }
+  /** Your own words: a small box over the window to type them in. */
+  function askPhrase() {
+    const inp = h('input.field', { type: 'text', value: phrase, maxLength: 40, placeholder: 'Rolling to', 'aria-label': 'The words before what a roll is for' });
+    const close = () => box.remove(), ok = () => { setPhrase(inp.value); close(); };
+    const box = h('div.ask', { onpointerdown: e => { if (e.target === box) close(); } }, h('div.ask-card', null,
+      h('b', { text: 'The words before what a roll is for' }),
+      h('p.muted', { text: 'With "Rolling to" and "hit" typed in the roll bar, a roll reads "Rolling to hit". Leave it empty for your words alone.' }),
+      inp,
+      h('div.ask-row', null, h('button.btn', { type: 'button', text: 'Cancel', onclick: close }), h('button.btn.primary', { type: 'button', text: 'Use these words', onclick: ok }))));
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ok(); } else if (e.key === 'Escape') { e.stopPropagation(); close(); } });
+    document.body.append(box); inp.focus(); inp.select();
+  }
+  function refreshMenu() {
+    if (!nat || !nat.setMenu) return;
+    clearTimeout(menuTimer);
+    menuTimer = setTimeout(() => nat.setMenu(menuModel()), 30);
+  }
+  if (nat && nat.setMenu) {
+    [presetSel, themeSel, lookBtn, pinBtn].forEach(el => { el.hidden = true; });
+    nat.onMenu(id => { try { menuRuns.get(id)?.(); } catch (e) { console.error(e); } refreshMenu(); });
+    nat.getOnTop().then(v => { onTop = !!v; refreshMenu(); }).catch(() => {});
+    RP.on('presets:changed', refreshMenu);
+    RP.on('setting:diceTheme', refreshMenu);
+    refreshMenu();
+  }
+  applyObs();
 
   exprIn.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doRoll(); } });
   labelIn.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doRoll(); } });

@@ -5,6 +5,14 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.26.0-alpha (2026-10-13)
+- Banners for every post that had none: One long day, You Can Make Anything You Want, Clack Attack painted trays,
+  PokeDungeon 1.23 and Clack Attack on phones. The casino games post gets its own (it borrowed the keno cover).
+  They are drawn as pages in art/banners/ and rendered to 1600x900 JPGs by tools/build_banners.ps1.
+- Clack Attack browser build updated from v1.3.0 to v1.6.0 (Table/, App.js, Clack.css). Our phone files and the
+  tray fix in Dice_Tray.js laneRect are re-applied. The other game builds were checked against their projects
+  and were already current.
+
 v0.25.0-alpha (2026-10-13)
 - New blog post: "One long day: dice on stream, and an app that opens twice" (blog/one-long-day/), a roundup of one
   day of work with a highlight box for the focus of the day.

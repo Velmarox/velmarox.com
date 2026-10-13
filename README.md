@@ -97,6 +97,12 @@ and hides the home page shop row. The shop as it was (five sample products) is s
 The shop is a storefront only. Each product's `link` points to where it's actually sold
 (itch.io, Ko-fi, Gumroad, a print-on-demand store). No payments happen on this site.
 
+## Post banners
+
+A post's banner is a small page in `art/banners/<slug>.html` (shared look in `banner.css`). Run
+`powershell -File tools/build_banners.ps1` to render them all to 1600x900 JPGs in `art/banners/out/`, copy the one
+you want to the post's folder as `cover.jpg`, and set `cover` in posts.js.
+
 ## Link previews and the sitemap
 
 Pages carry Open Graph tags so a shared link shows a card (title, line, image) on Discord, iMessage and

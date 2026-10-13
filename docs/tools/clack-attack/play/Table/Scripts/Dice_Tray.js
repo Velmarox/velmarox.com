@@ -26,6 +26,8 @@
     /* v6.14.0: clouds hanging in glass (in the second colour), and a cut gemstone */
     smoke: { label: 'Smoke glass (clouds inside)', roughness: 0.06, metalness: 0, env: 1.4, clearcoat: 1, clearcoatRoughness: 0.02, bgAlpha: 0.6, smoke: true },
     gem: { label: 'Gemstone (facets)', roughness: 0.02, metalness: 0, env: 2.2, clearcoat: 1, clearcoatRoughness: 0.01, bgAlpha: 0.72, gem: true, iridescence: 0.25 },
+    /* a drawing of a die: flat colour that no light changes, inked edges, hatching on its shaded side */
+    sketch: { label: 'Sketch (flat ink, hatched)', roughness: 1, metalness: 0, env: 0, flat: true, sketch: true },
   };
   const FINISHES = RP.DICE_FINISHES;
   /* v6.9.0: Glitter is gone; a look that still names it (an old preset, someone else's roll) gets Metal */
@@ -42,10 +44,13 @@
     return '#' + c.getHexString();
   }
   let bounds = { w: 20, d: 12 };
-  // Throws on screen, one per owner ('me' / 'partner'). A new throw only
-  // replaces the same owner's previous one, so both players' dice can be
-  // tumbling at the same time.
+  // Throws on screen, oldest first, each with its owner ('me' / 'partner'), so
+  // both players' dice can be tumbling at the same time. v6.22.0: earlier rolls
+  // can stay out, three at most (makeRoom, below); otherwise a new throw
+  // replaces the same owner's previous one.
   const throws = new Map();
+  let throwSeq = 0;
+  let lastLane = null;               // the lane the latest throw was laid out in (the OBS overlay frames the same floor)
   let raf = 0;
   let lastSim = null;                // what the latest throw settled on (for debug())
   const pending = new Set();         // log keys waiting for dice to land
@@ -125,6 +130,8 @@
      v6.20.0: the whole window, always: the Dice tray window is the place for a lane of their own. In the tray window
      itself the bar along its top stays clear (it's the page's .top). */
   function laneRect() {
+    /* Clack Attack v1.5.0: the OBS overlay shows the app's tray, fitted into its own window (Overlay.js says where) */
+    if (window.CLACK_OVERLAY && RP.overlayLane) return RP.overlayLane();
     /* Clack Attack: the dice land inside the tray area of the window (the roll bar and log sit beside it). */
     const area = window.CLACK_ATTACK ? document.querySelector('.tray-area') : null;
     if (area) {
@@ -145,9 +152,12 @@
     const w = Math.max(1, Math.round(lane.width)), h = Math.max(1, Math.round(lane.height));
     Object.assign(canvas.style, { left: Math.round(lane.left) + 'px', top: Math.round(lane.top) + 'px', width: w + 'px', height: h + 'px' });
     renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    const pxPerUnit = 30 * (s.diceScale || 1) * Math.min(1, Math.max(0.6, Math.min(w, h) / 420));   // a narrow lane: smaller dice, room to tumble
-    const visH = h / pxPerUnit;
+    /* the overlay draws at its own size but frames the floor as the app's tray does (vw, vh: the app's tray in pixels) */
+    const vw = lane.vw || w, vh = lane.vh || h;
+    lastLane = { w: vw, h: vh };
+    camera.aspect = vw / vh;
+    const pxPerUnit = 30 * (s.diceScale || 1) * Math.min(1, Math.max(0.6, Math.min(vw, vh) / 420));   // a narrow lane: smaller dice, room to tumble
+    const visH = vh / pxPerUnit;
     const tilt = 0.32;                                  // radians from straight down
     const dist = (visH / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     camera.position.set(0, dist * Math.cos(tilt), dist * Math.sin(tilt));
@@ -160,7 +170,7 @@
     const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     // Pull the walls in by about a die's width so a die resting against one is
     // still fully in the lane (the lane already sits below the title bar).
-    const topNdc = lane.top > 0 ? 1 : 1 - 2 * ((document.querySelector('.menubar')?.offsetHeight || 0) + (document.querySelector('.top')?.offsetHeight || 0)) / h;
+    const topNdc = lane.top > 0 || lane.vw ? 1 : 1 - 2 * ((document.querySelector('.menubar')?.offsetHeight || 0) + (document.querySelector('.top')?.offsetHeight || 0)) / h;
     const pts = [[-1, -1], [1, -1], [-1, topNdc], [1, topNdc]].map(([x, y]) => {
       ray.setFromCamera(new THREE.Vector2(x, y), camera);
       return ray.ray.intersectPlane(plane, hit) ? hit.clone() : new THREE.Vector3(x * 10, 0, -y * 10);
@@ -235,6 +245,9 @@
     const color = mix && mix.c ? mix.c : style.multi ? shiftHue(style.color, MULTI_HUE[sides] ?? 0) : style.color;
     const topLabel = (die && die.set) || sides === 4 ? '' : String(sides), lowLabel = topLabel ? '1' : '';   // v6.20.0: the 1, for the low face's icon
     const extra = { color2: style.color2 || '', smoke: !!finish.smoke, gem: !!finish.gem, inclusion: style.inclusion || 'none', wear: +style.wear || 0, numStyle: style.numStyle || 'print', top: style.top || 'none', topIcon: style.topIcon || '', topLabel, low: style.low || 'none', lowIcon: style.lowIcon || '', lowLabel, clan: style.clan || '' };
+    /* stripes across the die (two to twelve colours), the Sketch finish, and the number outline */
+    const bands = Array.isArray(style.stripes) ? style.stripes.filter(c => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 12) : [];
+    const drawn = { stripes: bands.length > 1 ? bands : null, sketch: !!finish.sketch, numOutline: ['on', 'off'].includes(style.numOutline) ? style.numOutline : 'auto' };
     // No skin key until the skin image has loaded, so plain stand-in faces
     // aren't cached under the skin's name.
     const skinCanvas = RP.skins?.canvasFor(style);
@@ -242,7 +255,7 @@
       color, number: style.number, font: style.font, bgAlpha: finish.bgAlpha ?? 1,
       skinCanvas, skinKey: skinCanvas ? RP.skins?.keyFor(style) : '', tint: style.tint ?? 0.35,
       speckle: finish.glitter ? (style.glitter ?? 1) : 0,
-      ...extra, sig: [extra.smoke ? extra.color2 : '', extra.gem, extra.inclusion, extra.wear, extra.numStyle, extra.top, extra.top === 'clan' ? extra.clan : '', extra.topLabel, extra.low, extra.low === 'clan' ? extra.clan : '', extra.lowLabel].join('|'),
+      ...extra, ...drawn, sig: [extra.smoke ? extra.color2 : '', extra.gem, extra.inclusion, extra.wear, extra.numStyle, extra.top, extra.top === 'clan' ? extra.clan : '', extra.topLabel, extra.low, extra.low === 'clan' ? extra.clan : '', extra.lowLabel, bands.length > 1 ? bands.join('') : '', drawn.sketch, drawn.numOutline].join('|'),
     };
   }
   /** v6.14.0: a mixed set's own finish for this die type, or the set's. */
@@ -250,6 +263,7 @@
 
   // amount: glitter strength (0.2 = a hint, 1 = normal, 2 = maximum sparkle)
   function makeMaterial(map, finish, base, amount = 1) {
+    if (finish.flat) { const f = new THREE.MeshBasicMaterial({ map, transparent: true, opacity: base }); f.userData.base = base; return f; }   // Sketch: no lighting at all
     const m = new THREE.MeshPhysicalMaterial({
       map, transparent: true, opacity: base,
       roughness: finish.roughness, metalness: finish.metalness, envMapIntensity: (finish.env ?? 1) * (finish.glitter ? 0.55 + 0.45 * amount : 1),
@@ -282,6 +296,16 @@
     }
     m.userData.base = base;
     return m;
+  }
+
+  /** A Sketch die's outline: the same shape a little larger, in ink, seen only where it shows round the die. null for other finishes. */
+  function rimFor(shape, look, finish, base = 1) {
+    if (!finish.sketch || !RP.diceRim) return null;
+    const r = RP.diceRim(shape, look), mat = new THREE.MeshBasicMaterial({ color: r.color, side: THREE.BackSide, transparent: true, opacity: base });
+    mat.userData.base = base;
+    const rim = new THREE.Mesh(RP.dieGeometry(shape), mat);
+    rim.scale.setScalar(r.scale); rim.renderOrder = 1;
+    return rim;
   }
 
   function expandDice(list, style = {}) {
@@ -323,7 +347,7 @@
     return v[0] * n[0] + v[1] * n[1] + v[2] * n[2];
   })));
 
-  function simulate(dice, forceFrom = null) {
+  function simulate(dice, forceFrom = null, still = []) {
     const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -60, 0) });
     world.allowSleep = true;
     world.broadphase = new CANNON.NaiveBroadphase();
@@ -350,6 +374,16 @@
     addPlane(wallMat, [hw, 0, 0], [0, 1, 0], -Math.PI / 2);
     addPlane(wallMat, [0, 0, bounds.zMin], null, 0);
     addPlane(wallMat, [0, 0, bounds.zMax], [0, 1, 0], Math.PI);
+    /* v6.22.0: dice from earlier rolls that are still out lie where they came to rest, and the new ones knock
+       against them (they never move: their numbers stand) */
+    still.forEach(({ sides, at }) => {
+      const shape = RP.dieShape(sides), b = new CANNON.Body({ mass: 0, material: dieMat });
+      const solid = sides === 100 ? new CANNON.Sphere(inRadius(shape)) : RP.dieBodyShape(shape);
+      solid.collisionFilterGroup = G_DIE; solid.collisionFilterMask = G_DIE;
+      b.addShape(solid); b.position.set(at[0], at[1], at[2]); b.quaternion.set(at[3], at[4], at[5], at[6]);
+      b.userData = { kind: 'die', index: Infinity };
+      world.addBody(b);
+    });
 
     // Throw from one edge, fanned out, towards the middle.
     let from = forceFrom || s.diceFrom || 'random';
@@ -469,10 +503,10 @@
 
   // Run the throw again (new random start) until every die lands cleanly
   // flat. Keeps the cleanest attempt if none is perfect.
-  function simulateClean(dice, forceFrom) {
+  function simulateClean(dice, forceFrom, still) {
     let best = null;
     for (let attempt = 0; attempt < 6; attempt++) {
-      const r = simulate(dice, forceFrom);
+      const r = simulate(dice, forceFrom, still);
       r.attempts = attempt + 1;
       if (!best || r.bad < best.bad) best = r;
       if (!r.bad) break;
@@ -632,7 +666,9 @@
 
   // ---------- playback ----------
   function clearThrow(t) {
-    if (!t || !throws.has(t.owner) || throws.get(t.owner) !== t) return;
+    if (!t || throws.get(t.id) !== t) return;
+    /* v6.22.0: bumped off before it landed: whoever waits for the landing hears now, so its line never hangs */
+    if (!t.landed) { t.landed = true; try { t.onLand?.(); } catch (e) { console.error(e); } }
     (t.fx || []).forEach((f) => { scene.remove(f.sp); f.sp.material.dispose(); }); t.fx = [];
     t.meshes.forEach(m => {
       scene.remove(m);
@@ -640,9 +676,20 @@
       m.userData.geos?.forEach(g => g.dispose());
     });
     t.keys.forEach(k => settle(k));
-    throws.delete(t.owner);
+    throws.delete(t.id);
   }
-  const clearAll = () => [...throws.values()].forEach(clearThrow);
+  /* v6.22.0: earlier rolls stay out, three at most (Settings > Dice > Throw, this device's own choice): for my dice
+     only, or for everyone's. Off, a new roll takes its owner's last one away, as before. The oldest roll that
+     hasn't faded yet is the one bumped off. */
+  const KEEP_ROLLS = 3;
+  const keepMode = () => (['off', 'mine', 'all'].includes(s.diceKeep) ? s.diceKeep : 'mine');
+  function makeRoom(owner) {
+    const mode = keepMode(), all = [...throws.values()], own = all.filter(t => t.owner === owner);   // oldest first
+    if (mode === 'off' || (mode === 'mine' && owner !== 'me')) return own.forEach(clearThrow);
+    const pool = mode === 'all' ? all : own;
+    pool.slice(0, Math.max(0, pool.length - (KEEP_ROLLS - 1))).forEach(clearThrow);
+  }
+  const clearAll = () => { [...throws.values()].forEach(clearThrow); RP.emit('dice:cleared'); };
 
   function settle(key) {
     if (key && pending.delete(key)) RP.emit('dice:settled', key);
@@ -699,12 +746,12 @@
     stepFx(a, now);
     a.alpha = Math.min(1, t / (0.25 * a.speed));
     // Linger and fade run in real seconds, whatever the playback speed.
-    const linger = (s.diceLinger ?? 2.5) * a.speed;
+    const linger = RP.overlayStay ? Infinity : (s.diceLinger ?? 2.5) * a.speed;   // the OBS overlay may keep its dice out until the next roll
     const fadeStart = doneAt + linger;
     if (a.rings.length && t <= fadeStart) {
       const appear = a.landed ? Math.min(1, (t - doneAt) / (0.3 * a.speed)) : 0;
       a.rings.forEach(m => { m.opacity = appear * m.userData.base; });
-      a.glows.forEach(m => m.emissive.setScalar(appear * 0.13));
+      a.glows.forEach(m => m.emissive?.setScalar(appear * 0.13));   // a Sketch die's flat face has no glow: its frame alone marks it
     }
     if (t > fadeStart) {
       const o = Math.max(0, 1 - (t - fadeStart) / (0.6 * a.speed));
@@ -718,7 +765,8 @@
    * throw(dice, { style, key, onLand, owner })
    *   dice: [{ sides, value, kept }] from RP.roll (or a log entry)
    *   key: log entry to keep hidden until the dice land
-   *   owner: 'me' (default) or 'partner'; a throw only replaces its own owner's dice
+   *   owner: 'me' (default) or 'partner'; a throw only replaces its own owner's dice, or (v6.22.0, Keep earlier
+   *     rolls out) the oldest of three still on screen
    * Returns false when nothing could be shown (then nothing is pending).
    */
   function throwDice(list, opts = {}) {
@@ -730,13 +778,17 @@
     const dice = expandDice(list, style);
     if (!dice.length || !ensureScene()) return false;
     const owner = opts.owner || 'me';
-    clearThrow(throws.get(owner));
+    makeRoom(owner);
     layout();
 
     // If the other player's dice are already rolling, come in from the other
     // side so the two throws don't pile into each other.
-    const other = throws.get(owner === 'me' ? 'partner' : 'me');
-    const { frames, events, up, bad, attempts } = simulateClean(dice, other && !other.landed ? (other.from === 'left' ? 'right' : 'left') : null);
+    const out = [...throws.values()], other = out.reverse().find(t => t.owner !== owner && !t.landed);
+    const still = out.flatMap(t => t.dice.map((d, i) => ({ sides: d.sides, at: t.frames[t.frames.length - 1][i] })));
+    /* Clack Attack v1.5.0: opts.replay is a throw the app already simulated (the OBS overlay plays it back as it is) */
+    const { frames, events, up, bad, attempts } = opts.replay ? { ...opts.replay, bad: 0, attempts: 0 }
+      : simulateClean(dice, other ? (other.from === 'left' ? 'right' : 'left') : null, still);
+    if (opts.replay) frames.from = opts.replay.from;
     // For debug(): how squarely each result face ended up facing up (1 = exactly).
     const facing = (fi, i) => {
       const p = frames[frames.length - 1][i], sh = RP.dieShape(dice[i].sides);
@@ -785,6 +837,8 @@
         mesh.add(new THREE.LineSegments(shape.edges, edgeMat));
         allMats.push(edgeMat);
       }
+      const rim = rimFor(shape, look, fin, base);
+      if (rim) { mesh.add(rim); allMats.push(rim.material); }
       const geos = [];
       // d100 dice: frame the result face once they land, so there's no doubt which one counts.
       if (s.diceHighlight !== false && !die.dim && (die.sides === 100 || die.set)) {
@@ -802,16 +856,18 @@
 
     const keys = opts.key ? [opts.key] : [];
     keys.forEach(k => { pending.add(k); setTimeout(() => settle(k), 30000); });   // a hidden page never draws: let the line show anyway
-    throws.set(owner, { owner, meshes, frames, events, nextEvent: 0, start: performance.now(), keys, onLand: opts.onLand, landed: false,
+    const id = ++throwSeq;
+    throws.set(id, { id, owner, meshes, frames, events, nextEvent: 0, start: performance.now(), keys, onLand: opts.onLand, landed: false,
       speed: s.diceSpeed || 1, glitter: finish.glitter ? (style.glitter ?? 1) : 0, from: frames.from, rings, glows,
       dice, fx: [], puffed: new Set(), trail: style.trail || 'none', puff: style.puff || 'none', crit: style.crit !== false, critColor: style.critColor || '#ffd27a', surface: surfaceOf(style, finish), alpha: 0 });
     canvas.style.display = 'block';
     if (!raf) raf = requestAnimationFrame(frame);
+    if (!opts.replay) RP.emit('dice:thrown', { list, style, replay: { frames, events, up, from: frames.from }, lane: lastLane, info: opts.overlay || null });
     return true;
   }
 
   // Shared with the d20 portraits (Dice_Portrait.js).
-  RP.diceKit = { makeMaterial, lookFor, finishOf, studioEnvironment, FINISHES };
+  RP.diceKit = { makeMaterial, lookFor, finishOf, studioEnvironment, rimFor, FINISHES };
 
   RP.diceTray = {
     throw: throwDice,
@@ -820,6 +876,7 @@
     hold: key => { if (key && s.dice3d) { pending.add(key); setTimeout(() => settle(key), 30000); } },
     release: key => settle(key),
     clear: clearAll,
+    keepRolls: KEEP_ROLLS,
     snapshot: () => { if (!renderer) return ''; GLITTER_TIME.value = performance.now() / 1000; renderer.render(scene, camera); return renderer.domElement.toDataURL('image/png'); },
     /* v6.14.0: for checks from dev tools: move every throw to ms after it started, and say what's on screen */
     stepTo: (ms) => [...throws.values()].map(a => { advance(a, a.start + ms); return { landed: a.landed, effects: a.fx.length, flares: a.fx.filter(f => f.peak).length, puffed: a.puffed.size, table: surfaceMesh?.visible ? +surfaceMesh.material.opacity.toFixed(2) : 0 }; }),

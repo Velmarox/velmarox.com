@@ -186,6 +186,7 @@
     mono: { label: 'Typewriter (Consolas)', css: "700 {s}px Consolas, monospace" },
     heavy: { label: 'Heavy (Impact)', css: "400 {s}px Impact, 'Arial Black', sans-serif" },
     script: { label: 'Fancy (Gabriola)', css: "700 {s}px Gabriola, 'Segoe Script', cursive" },
+    hand: { label: 'Hand (Segoe Print)', css: "700 {s}px 'Segoe Print', 'Ink Free', 'Comic Sans MS', cursive" },
   };
 
   // outline: colour for a thin edge around the number (for busy skins), or null.
@@ -221,11 +222,74 @@
     return 0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255);
   };
 
+  /* Striped dice and Sketch dice: the face is painted from where each pixel sits on the die, not face by face, so
+     stripes run across the whole die and meet at its edges. Stripes go down the die's own up axis. A Sketch die's
+     shaded side (the faces turned from a light fixed to the die) is hatched in the ink colour, which is the number's. */
+  const SKETCH = { edge: 0.045, rim: 0.05, gap: 0.085, shade: 0.15, light: norm([0.45, 0.7, 0.55]), hatch: norm([1, -1, 0.35]) };
+  const h3 = (i, j, k) => { let h = Math.imul(i, 374761393) ^ Math.imul(j, 668265263) ^ Math.imul(k, 1274126177); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  const sm3 = t => t * t * (3 - 2 * t), mix3 = (a, b, t) => a + (b - a) * t, clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  function noise3(x, y, z) {   // smooth noise, the same everywhere on the die: a wobble carries on across an edge
+    const i = Math.floor(x), j = Math.floor(y), k = Math.floor(z), fx = sm3(x - i), fy = sm3(y - j), fz = sm3(z - k);
+    return mix3(mix3(mix3(h3(i, j, k), h3(i + 1, j, k), fx), mix3(h3(i, j + 1, k), h3(i + 1, j + 1, k), fx), fy),
+      mix3(mix3(h3(i, j, k + 1), h3(i + 1, j, k + 1), fx), mix3(h3(i, j + 1, k + 1), h3(i + 1, j + 1, k + 1), fx), fy), fz);
+  }
+  const rgbOf = hex => { const n = parseInt(String(hex || '#000000').slice(1), 16) || 0; return [n >> 16, (n >> 8) & 255, n & 255]; };
+  const inkOf = look => look.number || readableOn(look.color);
+  function paintAcross(g, shape, fi, look) {
+    const bands = look.stripes && !look.skinCanvas ? look.stripes.map(rgbOf) : null, n = shape.normals[fi];
+    const shaded = !!look.sketch && dot(n, SKETCH.light) < SKETCH.shade;
+    if (!bands && !shaded) return;
+    const L = faceLayout(shape, fi), px = TEX / (2 * L.R), img = g.getImageData(0, 0, TEX, TEX), d = img.data;
+    const nb = bands ? bands.length : 1, ymax = (shape.ymax ||= Math.max(...shape.verts.map(v => v[1]))), bandH = (2 * ymax) / nb;
+    const slope = Math.sqrt(Math.max(0, 1 - n[1] * n[1])) * px;            // pixels per unit down the die, on this face
+    const ink = rgbOf(inkOf(look)), alpha = lumOf(inkOf(look)) > 128 ? 0.42 : bands ? 0.8 : 0.6, gapPx = SKETCH.gap * px;
+    let H = sub(SKETCH.hatch, scale(n, dot(SKETCH.hatch, n))); H = len(H) > 0.05 ? norm(H) : L.right;   // the hatch direction, laid in the face
+    for (let y = 0; y < TEX; y++) for (let x = 0; x < TEX; x++) {
+      const u = (x + 0.5 - TEX / 2) / px, v = (TEX / 2 - y - 0.5) / px, q = (y * TEX + x) * 4;
+      const P = [L.c[0] + L.right[0] * u + L.upv[0] * v, L.c[1] + L.right[1] * u + L.upv[1] * v, L.c[2] + L.right[2] * u + L.upv[2] * v];
+      let r = d[q], gr = d[q + 1], b = d[q + 2];
+      if (bands) {   // which stripe, with a hand's wobble; the line between two stripes is softened
+        const f = clamp((ymax - P[1] - (noise3(P[0] * 1.5, P[1] * 1.5, P[2] * 1.5) - 0.5) * 0.045) / bandH, 0, nb - 1e-6), i = Math.floor(f), fr = f - i;
+        [r, gr, b] = bands[i];
+        const toNext = (1 - fr) * bandH * slope, toPrev = fr * bandH * slope;
+        const o = toNext < 0.5 && i < nb - 1 ? [bands[i + 1], 0.5 - toNext] : toPrev < 0.5 && i > 0 ? [bands[i - 1], 0.5 - toPrev] : null;
+        if (o) { r += (o[0][0] - r) * o[1]; gr += (o[0][1] - gr) * o[1]; b += (o[0][2] - b) * o[1]; }
+      }
+      if (shaded) {   // evenly spaced lines, each a little uneven and broken here and there
+        const k = (dot(P, H) + (noise3(P[0] * 2.2 + 7, P[1] * 2.2, P[2] * 2.2) - 0.5) * 0.03) / SKETCH.gap, li = Math.floor(k);
+        const off = Math.abs(k - li - 0.5) * gapPx, half = gapPx * (0.13 + h3(li, 3, 9) * 0.07);
+        const brk = clamp((noise3(P[0] * 1.1 + li * 13.7, P[1] * 1.1, P[2] * 1.1 - li * 5.1) - 0.2) * 9, 0, 1);
+        const a = clamp(half - off + 0.5, 0, 1) * alpha * (0.7 + h3(li, 1, 4) * 0.3) * brk;
+        r += (ink[0] - r) * a; gr += (ink[1] - gr) * a; b += (ink[2] - b) * a;
+      }
+      d[q] = r; d[q + 1] = gr; d[q + 2] = b; d[q + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+  }
+  /** A Sketch die's edges: each drawn twice a little apart, the way a pen goes over a line. */
+  function inkEdges(ctx, shape, fi, L, px, color) {
+    let seed = shape.sides * 7919 + fi * 104729 + 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) - 0.5;
+    const pts = L.p2.map(p => [TEX / 2 + p[0] * px, TEX / 2 - p[1] * px]), w = SKETCH.edge * px;
+    ctx.save(); ctx.strokeStyle = color; ctx.lineCap = 'round';
+    pts.forEach((a, i) => {
+      const e = pts[(i + 1) % pts.length];
+      for (let pass = 0; pass < 2; pass++) {
+        ctx.lineWidth = w * (0.8 + (rnd() + 0.5) * 0.4);
+        const j = () => rnd() * w * 0.5;
+        ctx.beginPath(); ctx.moveTo(a[0] + j(), a[1] + j());
+        ctx.quadraticCurveTo((a[0] + e[0]) / 2 + j(), (a[1] + e[1]) / 2 + j(), e[0] + j(), e[1] + j()); ctx.stroke();
+      }
+    });
+    ctx.restore();
+  }
+  /** The outline round a whole Sketch die: how far it stands out, and its colour (the ink, or the body under pale ink). */
+  RP.diceRim = (shape, look) => ({ scale: 1 + SKETCH.rim / (shape.rad ||= Math.max(...shape.verts.map(len))), color: lumOf(inkOf(look)) > 128 ? look.color : inkOf(look) });
+
   // Face background: plain colour, or a skin image (a different patch of it
   // per face so faces don't look identical), tinted towards the dice colour,
   // plus glitter specks for the Glitter finish. Returns the canvas and its
   // average brightness (used to pick a readable number colour).
-  function faceBackground(fi, look) {
+  function faceBackground(fi, look, shape) {
     const c = document.createElement('canvas');
     c.width = c.height = TEX;
     const g = c.getContext('2d');
@@ -245,6 +309,7 @@
       g.fillStyle = look.color;
       g.fillRect(0, 0, TEX, TEX);
     }
+    if (shape && (look.stripes || look.sketch)) paintAcross(g, shape, fi, look);   // stripes across the die, a Sketch die's hatching
     /* v6.14.0: smoke hanging in glass, a gemstone's facets, and wear */
     if (look.smoke && RP.skins?.smoke) {
       const S2 = RP.skins.smoke(look.color2 || '#d8d8d8'), part = S2.width / 2, ox = ((fi * 61) % 100) / 100 * part, oy = ((fi * 37) % 100) / 100 * part;
@@ -301,6 +366,24 @@
 
   /* v6.14.0: small painted things for the dice update. color null: an inclusion's own natural colours (leaf, feather,
      moss, bone, paw); a colour: the top face's symbol, in the number's colour (paw, claw, moon, star, clan). */
+  /* How far a custom picture reaches from its middle (in its own pixels): the farthest pixel that isn't see-through.
+     A round picture reaches half its width, a square one its corner. Worked out once per picture. */
+  const reaches = new WeakMap();
+  function iconReach(im) {
+    let r = reaches.get(im);
+    if (r) return r;
+    const w = im.width, h = im.height;
+    r = Math.hypot(w, h) / 2;
+    try {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, w, h);
+      const px = g.getImageData(0, 0, w, h).data; let far = 0;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (px[(y * w + x) * 4 + 3] > 12) far = Math.max(far, (x + 0.5 - w / 2) ** 2 + (y + 0.5 - h / 2) ** 2);
+      if (far) r = Math.sqrt(far);
+    } catch { /* a picture that can't be read: sized by its corners */ }
+    reaches.set(im, r);
+    return r;
+  }
   function drawSymbol(ctx, kind, x, y, size, rot, color, look, iconSrc) {
     ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(size / 100, size / 100);
     const fill = (c) => { ctx.fillStyle = color || c; ctx.fill(); }, stroke = (c, w) => { ctx.strokeStyle = color || c; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.stroke(); };
@@ -335,7 +418,7 @@
       SHAPES[kind](ctx, color || SHAPE_COLOR[kind] || '#f2ead2');
     } else if (kind === 'custom') {   // v6.20.0: your own picture, in its own colours, fitted to the face
       const im = RP.diceIcon?.(iconSrc || (look && look.topIcon));
-      if (im) { const k = Math.min(128 / im.width, 128 / im.height), w = im.width * k, h = im.height * k; ctx.drawImage(im, -w / 2, -h / 2, w, h); }   // 128: a square picture stays inside a triangle face
+      if (im) { const k = 64 / iconReach(im), w = im.width * k, h = im.height * k; ctx.drawImage(im, -w / 2, -h / 2, w, h); }   // 64: its farthest corner stays just inside the face's inner circle, whichever way the face is turned
     } else if (kind === 'clan') {
       const em = RP.diceEmblem?.(look && look.clan);
       if (em) {   // the emblem as a silhouette in the number's colour
@@ -396,7 +479,7 @@
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = TEX;
     const ctx = canvas.getContext('2d');
-    const bg = faceBackground(fi, look);
+    const bg = faceBackground(fi, look, shape);
     ctx.globalAlpha = bgAlpha;             // glass dice: see-through body, solid numbers
     ctx.drawImage(bg.canvas, 0, 0);
     ctx.globalAlpha = 1;
@@ -407,10 +490,13 @@
     }
     const numberColor = look.number || (bg.lum > 150 ? '#1a1620' : '#ffffff');
     // Busy backgrounds get an outline round the numbers so they stay readable.
-    const outline = (look.skinCanvas || look.speckle) ? (lumOf(numberColor) > 128 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)') : null;
+    /* Number outline (Settings > Dice > Numbers): always, never, or automatic (on skins and stripes); stronger when asked for and on stripes */
+    const busy = !!(look.skinCanvas || look.speckle || look.stripes), strong = look.numOutline === 'on' || !!look.stripes;
+    const outline = (look.numOutline === 'on' || (look.numOutline !== 'off' && busy)) ? (lumOf(numberColor) > 128 ? `rgba(0,0,0,${strong ? 0.75 : 0.6})` : `rgba(255,255,255,${strong ? 0.9 : 0.7})`) : null;
     ctx.fillStyle = numberColor;
     const px = TEX / (2 * L.R);                       // face units -> pixels
     const toCanvas = p => [TEX / 2 + p[0] * px, TEX / 2 - p[1] * px];
+    if (look.sketch) inkEdges(ctx, shape, fi, L, px, numberColor);   // a Sketch die's edges, in the ink (the number's colour)
 
     if (isD4) {
       // d4: each corner carries the number that reads as the result
@@ -432,7 +518,8 @@
       const pick = look.top && look.top !== 'none' && text === look.topLabel ? [look.top, look.topIcon] : look.low && look.low !== 'none' && text === look.lowLabel ? [look.low, look.lowIcon] : null;
       const sym = !!pick, kind = pick ? (String(pick[0]).startsWith('custom') ? 'custom' : pick[0]) : '', icon = pick ? pick[1] : '';   // custom:<id>
       if (sym && ((kind === 'clan' && !RP.diceEmblem?.(look.clan)) || (kind === 'custom' && !RP.diceIcon?.(icon)))) { oneOff = true; drawLabel(ctx, text, TEX / 2, TEX / 2, size, rot, font, outline, look.numStyle === 'engraved'); }   // the emblem is still loading
-      else if (sym) drawSymbol(ctx, kind, TEX / 2, TEX / 2, room * 0.72, rot, NATURAL_TOP.has(kind) ? null : numberColor, look, icon);   // v6.20.0: a leaf or a feather in its own colours
+      /* sized to leave a margin between the icon and the face's edges; the d100's faces are small and its result frame covers their rim, so its icons are smaller still, inside the frame */
+      else if (sym) drawSymbol(ctx, kind, TEX / 2, TEX / 2, room * (kind === 'custom' ? 0.62 : 0.56) * (shape.sides === 100 ? 0.9 : 1), rot, NATURAL_TOP.has(kind) ? null : numberColor, look, icon);   // v6.20.0: a leaf or a feather in its own colours
       else drawLabel(ctx, text, TEX / 2, TEX / 2, size, rot, font, outline, look.numStyle === 'engraved');
     }
     if (look.wear > 0) {   // worn paint on the numbers: flecks of the body colour over them

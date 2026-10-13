@@ -48,7 +48,14 @@ input.sw:checked::after { left: 18px; background: var(--accent); }
 .side { flex: none; width: 380px; display: flex; flex-direction: column; border-left: 1px solid var(--line); background: rgba(14,20,40,0.55); min-height: 0; }
 .roller { flex: none; display: flex; flex-direction: column; gap: 8px; padding: 10px; border-bottom: 1px solid var(--line); }
 .roller .quick-dice { display: flex; flex-wrap: wrap; gap: 4px; }
-.roller .result { min-height: 46px; }
+/* v1.6.0: the result box can be dragged taller (its bottom right corner); what the roll is for sits over its detail */
+.roller .result { min-height: 46px; resize: vertical; overflow: auto; }
+.roller .result .what { display: block; color: var(--text); }
+/* a small box to type into, over the window (Roll menu > your own words) */
+.ask { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; background: rgba(4,6,14,0.6); }
+.ask-card { width: min(420px, calc(100vw - 32px)); display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line2); box-shadow: var(--shadow); }
+.ask-card p { margin: 0; font-size: var(--fs-sm); }
+.ask-row { display: flex; justify-content: flex-end; gap: 8px; }
 .logbox { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .loghead { flex: none; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
 .loghead b { flex: 1; font: 400 var(--fs-xs) var(--f-sc); letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent2); }

@@ -7,10 +7,11 @@
   // Everything that makes up a dice "look".
   const KEYS = ['diceColorMode', 'diceColor', 'diceNumberMode', 'diceNumberColor', 'diceFinish', 'diceFont',
     'diceMulticolor', 'diceOutline', 'diceSkin', 'diceSkinTint', 'd100Style',
+    'diceStripes', 'diceNumberOutline',
     'diceColor2', 'diceInclusion', 'diceWear', 'diceNumberStyle', 'diceTopSymbol', 'diceLowSymbol', 'diceFaceIcons', 'diceCrit', 'diceCritColor', 'diceTrail', 'dicePuff', 'diceSurface', 'diceMixedOn', 'diceMixed'];   // v6.14.0
   RP.DICE_LOOK_KEYS = KEYS;
 
-  const base = { diceColorMode: 'custom', diceNumberMode: 'auto', diceNumberColor: '#ffffff', diceFont: 'sans', diceMulticolor: false, diceOutline: true, diceSkin: 'none', diceSkinTint: 0.35,
+  const base = { diceColorMode: 'custom', diceNumberMode: 'auto', diceNumberColor: '#ffffff', diceFont: 'sans', diceMulticolor: false, diceOutline: true, diceSkin: 'none', diceSkinTint: 0.35, diceStripes: [], diceNumberOutline: 'auto',
     diceColor2: '#e8d9b0', diceInclusion: 'none', diceWear: 0, diceNumberStyle: 'print', diceTopSymbol: 'none', diceLowSymbol: 'skull', diceFaceIcons: 'none', diceCrit: true, diceCritColor: '#ffd27a', diceTrail: 'none', dicePuff: 'none', diceSurface: 'auto', diceMixedOn: false, diceMixed: {} };
   const T = (id, name, v) => ({ id: 't-' + id, name, template: true, values: { ...base, ...(v.diceTopSymbol && v.diceTopSymbol !== 'none' ? { diceFaceIcons: 'high' } : {}), ...v } });   // v6.20.0
   const TEMPLATES = [
@@ -34,6 +35,25 @@
     T('leafglass', 'Leaf in Glass', { diceColor: '#cfe3c4', diceFinish: 'glass', diceTopSymbol: 'leaf', diceNumberMode: 'custom', diceNumberColor: '#2f4a22', diceFont: 'serif', dicePuff: 'leaves' }),
     T('smokemoon', 'Smoke and Moon', { diceColor: '#2b2f3a', diceColor2: '#c8d2e6', diceFinish: 'smoke', diceNumberMode: 'custom', diceNumberColor: '#eef2ff', diceFont: 'serif', diceTopSymbol: 'moon', diceTrail: 'moonlight', diceCritColor: '#cfe0ff' }),
   ];
+
+  // Stripe sets: bands of colour across the whole die, top to bottom (Settings > Dice > Look > Stripes).
+  RP.DICE_STRIPES = {
+    pride: ['Pride', ['#f23d2e', '#e0935a', '#e8cf45', '#5db27a', '#4ab5d4', '#5b7fe8', '#c0228f']],
+    transgender: ['Transgender', ['#5bcefa', '#f5a9b8', '#ffffff', '#f5a9b8', '#5bcefa']],
+    nonbinary: ['Nonbinary', ['#5bcefa', '#ffffff', '#9a5ad3', '#2b2b2b']],
+    agender: ['Agender', ['#2b2b2b', '#bac2c2', '#eaefef', '#b5f57d', '#eaefef', '#bac2c2', '#2b2b2b']],
+    genderfluid: ['Genderfluid', ['#ff76a3', '#ffffff', '#bf17d5', '#2c1a2e', '#323ebc']],
+    genderqueer: ['Genderqueer', ['#b497dd', '#ffffff', '#6a8f3a']],
+  };
+  /* Sketch dice: a drawing of a die (flat ink, inked edges, hatching), plain and in striped sets. The ink is the number colour. */
+  const SK = { diceFinish: 'sketch', diceFont: 'hand', diceOutline: false, diceNumberMode: 'custom', diceNumberColor: '#141414' };
+  const striped = (id, color) => T(id, RP.DICE_STRIPES[id][0], { ...SK, diceColor: color, diceStripes: [...RP.DICE_STRIPES[id][1]] });
+  TEMPLATES.push(
+    T('sketch', 'Sketch', { ...SK, diceColor: '#ffffff' }),
+    T('sketchinked', 'Sketch, Inked', { ...SK, diceColor: '#050505', diceNumberColor: '#f4f4f4' }),
+    T('sketchrose', 'Sketch, Rose', { ...SK, diceColor: '#dfe3fb', diceNumberColor: '#c0228f' }),
+    striped('agender', '#b5f57d'), striped('genderfluid', '#bf17d5'), striped('genderqueer', '#b497dd'),
+    striped('nonbinary', '#9a5ad3'), striped('pride', '#e8cf45'), striped('transgender', '#5bcefa'));
 
   /* v6.12.0: the Spillmoor group dice, one look per group. v6.12.2: they're templates now (they used to be copied
      into the GM's own presets). A group with no look picked in NPC dice throws its own template, matched by the
@@ -75,6 +95,7 @@
       skinUrl: v.diceSkin === 'custom' ? (p.skinImage || RP.skins.myCustomUrl()) : undefined,
       /* v6.14.0 */
       color2: v.diceColor2 || '', inclusion: v.diceInclusion || 'none', wear: +v.diceWear || 0, numStyle: v.diceNumberStyle || 'print',
+      stripes: Array.isArray(v.diceStripes) && v.diceStripes.length > 1 ? v.diceStripes : undefined, numOutline: v.diceNumberOutline || 'auto',
       ...(() => { const m = RP.faceMode(v), pic = (x) => (String(x).startsWith('custom:') ? (RP.diceIcons?.get(x.slice(7))?.src || '') : ''), t = /high|both/.test(m) && v.diceTopSymbol !== 'clan' ? (v.diceTopSymbol || 'none') : 'none', l = /low|both/.test(m) && v.diceLowSymbol !== 'clan' ? (v.diceLowSymbol || 'none') : 'none';
         return { top: t, low: l, topIcon: pic(t), lowIcon: pic(l) }; })(),   // v6.20.0: high, low or both
       crit: v.diceCrit !== false, critColor: v.diceCritColor || '', trail: v.diceTrail || 'none', puff: v.dicePuff || 'none', surface: v.diceSurface || 'auto',
@@ -115,7 +136,8 @@
       applying = true;
       try {
         if (p.values.diceSkin === 'custom' && p.skinImage) await RP.skins.setCustomUrl(p.skinImage);
-        for (const k of KEYS) if (p.values[k] !== undefined) RP.set(k, k === 'diceFinish' && p.values[k] === 'glitter' ? 'metal' : p.values[k]);   // v6.9.0: no glitter
+        const v = { diceStripes: [], diceNumberOutline: 'auto', ...p.values };   // a preset saved before stripes existed has none
+        for (const k of KEYS) if (v[k] !== undefined) RP.set(k, k === 'diceFinish' && v[k] === 'glitter' ? 'metal' : v[k]);   // v6.9.0: no glitter
         s.activeDicePreset = p.id;
         RP.save();
       } finally { applying = false; }
