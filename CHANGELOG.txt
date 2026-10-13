@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.29.0-alpha (2026-10-13)
+- New blog post: "Your passion is not a waste of time" (blog/your-passion-is-not-a-waste-of-time/). Its banner is
+  art/banners/your-passion-is-not-a-waste-of-time.html.
+
 v0.28.0-alpha (2026-10-13)
 - VRX Casino v0.2.0: one balance. Safari Time (v1.9.0), Wyrmhoard Keno (v1.31.0) and Elo's Hoard (v1.14.0) keep their
   credits in the browser under one key, vrx.casino.credits, so credits follow the player between games. The
