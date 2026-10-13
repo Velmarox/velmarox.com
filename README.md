@@ -139,6 +139,10 @@ The four games came from the `pixel-den` repo (velmaroxie.web.app) and live here
 
 When a game is rebuilt, copy its build into `play/` again and re-apply those two edits.
 
+VRX Casino (`docs/games/casino/play/index.html`) is written here, not ported: one page holding a game menu and a
+frame. It loads each casino game from that game's own `play/` folder, so updating a game updates the cabinet too.
+To add a game, add it to the `GAMES` list at the top of its script (`soon: true` shows a tile that opens nothing).
+
 Clack Attack (from the `clack-attack` repo) is the web half of an Electron app: copy `Current Version/Table`,
 `App.js`, `Clack.css` and `Clack_Attack.html` (renamed `index.html`) into `games/clack-attack/play/`, then
 re-add the VRX badge block at the bottom of that `index.html`. Also re-apply the phone support:

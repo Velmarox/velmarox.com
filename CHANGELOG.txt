@@ -5,6 +5,12 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.27.0-alpha (2026-10-13)
+- New game: VRX Casino v0.1.0 (games/casino/), a multi-game cabinet. Its play page is a game menu and a frame that
+  runs Safari Time, Wyrmhoard Keno and Elo's Hoard unchanged from their own play folders; Poker shows as coming
+  soon. The address carries the open game (#keno). The three games keep their own pages and their own credits.
+- Its banner is art/banners/casino.html.
+
 v0.26.0-alpha (2026-10-13)
 - Banners for every post that had none: One long day, You Can Make Anything You Want, Clack Attack painted trays,
   PokeDungeon 1.23 and Clack Attack on phones. The casino games post gets its own (it borrowed the keno cover).

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="version" content="v0.1.0">
+<meta name="theme-color" content="#0b0b0d">
+<title>VRX Casino</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Saira:wght@400;600&display=swap" rel="stylesheet">
+<!-- VRX Casino: one cabinet, every casino game. This page is only the cabinet: a game menu and a frame.
+     Each game is its own build in /games/<slug>/play/ and runs unchanged inside the frame.
+     To add a game, add it to GAMES below. `soon: true` shows the tile but doesn't open anything. -->
+<style>
+:root { --bg: #0b0b0d; --panel: #141418; --panel-2: #1b1b21; --line: #2a2a31; --text: #f2f2f4; --muted: #9a9aa6; --red: #e3122d; --yellow: #f5e400; --bar: 46px;
+  --display: "Saira", "Arial Narrow", system-ui, sans-serif; --cond: "Saira Condensed", "Arial Narrow", system-ui, sans-serif; }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; background: var(--bg); color: var(--text); font-family: var(--display); overflow: hidden; }
+button { font: inherit; color: inherit; cursor: pointer; border-radius: 0; }
+
+/* the cabinet's bar: always on screen, in the menu and in a game */
+.bar { flex: none; height: var(--bar); display: flex; align-items: center; gap: 12px; padding: 0 12px; background: var(--panel-2); border-bottom: 2px solid var(--red); }
+.bar .logo { display: block; height: 30px; }
+.bar .logo img { display: block; height: 100%; width: auto; }
+.bar .name { font: 800 1.35rem var(--cond); letter-spacing: .06em; text-transform: uppercase; }
+.bar .name em { font-style: normal; color: var(--yellow); }
+.bar .now { margin-left: 6px; padding-left: 14px; border-left: 2px solid var(--line); font: 700 1.05rem var(--cond); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar .grow { flex: 1; }
+.bar button { height: 32px; padding: 0 16px; background: var(--panel); border: 2px solid var(--line); font: 700 1rem var(--cond); letter-spacing: .08em; text-transform: uppercase; }
+.bar button:hover, .bar button:focus-visible { border-color: var(--yellow); color: var(--yellow); outline: none; }
+.bar button.primary { background: var(--yellow); border-color: var(--yellow); color: #0b0b0d; }
+.bar button.primary:hover, .bar button.primary:focus-visible { background: #fff; border-color: #fff; color: #0b0b0d; }
+body:not(.playing) .only-play { display: none; }
+
+/* the menu */
+.menu { flex: 1; overflow: auto; padding: clamp(16px, 3vw, 40px);
+  background:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px) 0 0 / 50px 50px,
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px) 0 0 / 50px 50px,
+    radial-gradient(ellipse at 50% 40%, #3a0a12 0%, #17090c 45%, #0b0b0d 80%); }
+.menu-in { max-width: 1500px; margin: 0 auto; }
+.menu h1 { margin: 0 0 4px; font: 800 clamp(1.8rem, 4vw, 3rem)/1 var(--cond); text-transform: uppercase; letter-spacing: .02em; }
+.menu h1 em { font-style: normal; color: var(--yellow); }
+.menu .sub { margin: 0 0 clamp(14px, 2vw, 26px); color: var(--muted); }
+.tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(12px, 1.6vw, 22px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.tile { position: relative; display: flex; flex-direction: column; width: 100%; padding: 0; text-align: left; background: var(--panel); border: 2px solid var(--line); }
+.tile .pic { position: relative; aspect-ratio: 16 / 9; background: #000; overflow: hidden; }
+.tile .pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tile .body { padding: 12px 14px 14px; border-top: 2px solid var(--line); }
+.tile .kind { font: 700 .82rem var(--cond); letter-spacing: .14em; text-transform: uppercase; color: var(--red); }
+.tile h2 { margin: 2px 0 4px; font: 800 1.6rem/1.05 var(--cond); text-transform: uppercase; }
+.tile p { margin: 0; color: var(--muted); font-size: .92rem; line-height: 1.35; }
+.tile .go { position: absolute; right: 0; top: 0; padding: 6px 14px; background: var(--yellow); color: #0b0b0d; font: 800 .95rem var(--cond); letter-spacing: .1em; text-transform: uppercase; }
+button.tile:hover, button.tile:focus-visible { border-color: var(--yellow); outline: none; }
+button.tile:hover .body, button.tile:focus-visible .body { border-top-color: var(--yellow); }
+.tile.soon { cursor: default; }
+.tile.soon .pic { display: grid; place-items: center; background: repeating-linear-gradient(-45deg, #17171c 0 22px, #101014 22px 44px); }
+.tile.soon .go { background: var(--line); color: var(--text); }
+.tile.soon h2, .tile.soon p { color: var(--muted); }
+.cards { display: flex; gap: 8px; }
+.cards span { width: clamp(34px, 5vw, 52px); aspect-ratio: 5 / 7; display: grid; place-items: center; background: #f2f2f4; color: #0b0b0d; font: 800 clamp(1rem, 2vw, 1.5rem) var(--cond); opacity: .5; }
+.cards span.rd { color: var(--red); }
+.note { margin: clamp(16px, 2.4vw, 30px) 0 0; padding: 10px 14px; border-left: 4px solid var(--yellow); background: rgba(245, 228, 0, .05); color: var(--muted); font-size: .9rem; }
+
+/* the frame a game runs in */
+.stage { flex: 1; display: none; background: #000; }
+.stage iframe { display: block; width: 100%; height: 100%; border: 0; }
+body.playing .menu { display: none; }
+body.playing .stage { display: block; }
+
+@media (max-width: 560px) { .bar .name { display: none; } .bar .now { border-left: 0; padding-left: 0; margin-left: 0; } .bar button { padding: 0 10px; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="logo" href="../" aria-label="VRX Casino on VRX Games"><picture><source srcset="/assets/brand/vrx-badge.webp" type="image/webp"><img src="/assets/brand/vrx-badge.png" width="180" height="85" alt="VRX Games"></picture></a>
+  <span class="name">VRX <em>Casino</em></span>
+  <span class="now only-play" id="now"></span>
+  <span class="grow"></span>
+  <button type="button" class="only-play" id="full">Full screen</button>
+  <button type="button" class="only-play primary" id="back">Games</button>
+</header>
+
+<main class="menu" id="menu">
+  <div class="menu-in">
+    <h1>Pick a <em>game</em></h1>
+    <p class="sub">One cabinet, every casino game. Play money only.</p>
+    <ul class="tiles" id="tiles"></ul>
+    <p class="note">Each game keeps its own credits for now. One shared balance across the cabinet is next.</p>
+  </div>
+</main>
+
+<div class="stage" id="stage"></div>
+
+<script>
+(function () {
+  var GAMES = [
+    { slug: 'safari-time', title: 'Safari Time', kind: 'Slot', line: 'Five reels, ten lines, wilds that stick through the feature.' },
+    { slug: 'keno', title: 'Wyrmhoard Keno', kind: 'Keno', line: 'Eighty squares. Twenty drawn. Four eggs open the hoard.' },
+    { slug: 'elos-hoard', title: "Elo's Hoard", kind: 'Keno', line: 'Coin multipliers. Catch all three and the Hoard opens.' },
+    { slug: 'poker', title: 'Poker', kind: 'Video poker', line: 'Being built.', soon: true }
+  ];
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function find(slug) { return GAMES.filter(function (g) { return g.slug === slug && !g.soon; })[0]; }
+
+  GAMES.forEach(function (g) {
+    var li = el('li'), t = el(g.soon ? 'div' : 'button', 'tile' + (g.soon ? ' soon' : ''));
+    var pic = el('div', 'pic');
+    if (g.soon) {
+      var cards = el('div', 'cards');
+      [['A', ''], ['K', 'rd'], ['Q', ''], ['J', 'rd'], ['10', '']].forEach(function (c) { cards.appendChild(el('span', c[1], c[0])); });
+      pic.appendChild(cards);
+    } else {
+      var img = el('img'); img.src = '/games/' + g.slug + '/thumb.jpg'; img.alt = ''; img.loading = 'lazy';
+      pic.appendChild(img); t.type = 'button';
+      t.addEventListener('click', function () { location.hash = g.slug; });
+    }
+    pic.appendChild(el('span', 'go', g.soon ? 'Coming soon' : 'Play'));
+    var body = el('div', 'body');
+    body.appendChild(el('div', 'kind', g.kind)); body.appendChild(el('h2', null, g.title)); body.appendChild(el('p', null, g.line));
+    t.appendChild(pic); t.appendChild(body); li.appendChild(t); $('tiles').appendChild(li);
+  });
+
+  // The address says which game is open (#keno), so Back returns to the menu and a link can open a game directly.
+  function show() {
+    var g = find(location.hash.slice(1)), stage = $('stage');
+    stage.textContent = '';
+    document.body.classList.toggle('playing', !!g);
+    document.title = g ? g.title + ' | VRX Casino' : 'VRX Casino';
+    $('now').textContent = g ? g.title : '';
+    if (!g) return;
+    var f = el('iframe'); f.title = g.title; f.allow = 'autoplay; fullscreen';
+    f.addEventListener('load', function () {
+      // Inside the cabinet the game's own VRX badge would open a site page in the frame, and the bar has that link already.
+      try { var s = f.contentDocument.createElement('style'); s.textContent = '.vrx-badge{display:none!important}'; f.contentDocument.head.appendChild(s); } catch (e) {}
+      try { f.contentWindow.focus(); } catch (e) {}
+    });
+    f.src = '/games/' + g.slug + '/play/';
+    stage.appendChild(f);
+  }
+  window.addEventListener('hashchange', show);
+  $('back').addEventListener('click', function () { location.hash = ''; });
+  $('full').addEventListener('click', function () {
+    if (document.fullscreenElement) document.exitFullscreen(); else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  });
+  document.addEventListener('fullscreenchange', function () { $('full').textContent = document.fullscreenElement ? 'Exit full screen' : 'Full screen'; });
+  if (!document.documentElement.requestFullscreen) $('full').style.display = 'none';
+  show();
+})();
+</script>
+</body>
+</html>

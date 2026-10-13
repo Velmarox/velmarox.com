@@ -77,6 +77,19 @@ window.GAMES = [
     ]
   },
   {
+    slug: 'casino',
+    title: 'VRX Casino', tagline: 'One cabinet, every casino game. Pick a game, play, go back for another.',
+    genres: ['casino'], status: 'live', featured: true, trending: true, flag: 'Early build',
+    released: '2026-10-13', updated: '2026-10-13', version: '0.1.0',
+    controls: 'Mouse or touch', platforms: 'Desktop, mobile',
+    play: '/games/casino/play/',
+    thumb: '/games/casino/thumb.jpg', banner: '/games/casino/cover.jpg',
+    shots: ['/games/casino/cover.jpg', '/games/safari-time/shot-1.jpg', '/games/keno/shot-1.jpg', '/games/elos-hoard/shot-1.jpg'],
+    about: "A multi-game cabinet, like the ones on a Montana casino floor: one machine, a menu of games, and a button that takes you back to the menu.\n\nIt holds Safari Time, Wyrmhoard Keno and Elo's Hoard. Poker is on the menu as coming soon.\n\nThis is an early build. Each game still keeps its own credits; one shared balance across the cabinet is next.\n\nPlay money only. Nothing here takes or pays real money.",
+    howto: ['Pick a game from the menu.', 'Press Games in the top bar to go back and pick another.', 'Full screen fills your monitor like a cabinet.', 'Each game also still has its own page if you want to open it directly.'],
+    log: [{ date: '2026-10-13', text: 'v0.1.0: first build. A game menu and a frame: Safari Time, Wyrmhoard Keno and Elo\'s Hoard in one cabinet, with Poker marked coming soon.' }]
+  },
+  {
     slug: 'keno',
     title: 'Wyrmhoard Keno', tagline: 'Eighty squares. Twenty drawn. Four eggs open the hoard.',
     genres: ['casino'], status: 'live', featured: true, trending: true,
