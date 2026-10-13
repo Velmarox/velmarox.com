@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.30.1-alpha (2026-10-13)
+- "Your passion is not a waste of time": names the ex-husband and husband, adds the four years with my husband, and
+  the ending now says it took my entire twenties.
+
 v0.30.0-alpha (2026-10-13)
 - New game: Contract Zero v0.1.0 (games/contract-zero/). A physics game about one guy taking creature bounties by
   throwing things: 2D physics drawn in low-poly 3D, with 16-bit style menus. Plays with keyboard and mouse or a
