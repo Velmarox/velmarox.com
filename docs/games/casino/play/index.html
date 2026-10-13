@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="version" content="v0.1.0">
+<meta name="version" content="v0.2.0">
 <meta name="theme-color" content="#0b0b0d">
 <title>VRX Casino</title>
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
@@ -12,6 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Saira:wght@400;600&display=swap" rel="stylesheet">
 <!-- VRX Casino: one cabinet, every casino game. This page is only the cabinet: a game menu and a frame.
      Each game is its own build in /games/<slug>/play/ and runs unchanged inside the frame.
+     One balance: every game keeps its credits in this browser under vrx.casino.credits (cents), and so does the bar.
+     Insert adds to it: straight into the store from the menu, by a message to the game while one is open
+     (the open game owns the number while it runs).
      To add a game, add it to GAMES below. `soon: true` shows the tile but doesn't open anything. -->
 <style>
 :root { --bg: #0b0b0d; --panel: #141418; --panel-2: #1b1b21; --line: #2a2a31; --text: #f2f2f4; --muted: #9a9aa6; --red: #e3122d; --yellow: #f5e400; --bar: 46px;
@@ -34,6 +37,9 @@ button { font: inherit; color: inherit; cursor: pointer; border-radius: 0; }
 .bar button.primary { background: var(--yellow); border-color: var(--yellow); color: #0b0b0d; }
 .bar button.primary:hover, .bar button.primary:focus-visible { background: #fff; border-color: #fff; color: #0b0b0d; }
 body:not(.playing) .only-play { display: none; }
+.bar .meter { display: flex; align-items: baseline; gap: 8px; height: 32px; padding: 0 12px; background: #000; border: 2px solid var(--line); white-space: nowrap; }
+.bar .meter small { font: 700 .78rem var(--cond); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.bar .meter b { font: 800 1.25rem/28px var(--cond); color: var(--yellow); letter-spacing: .03em; }
 
 /* the menu */
 .menu { flex: 1; overflow: auto; padding: clamp(16px, 3vw, 40px);
@@ -71,7 +77,8 @@ button.tile:hover .body, button.tile:focus-visible .body { border-top-color: var
 body.playing .menu { display: none; }
 body.playing .stage { display: block; }
 
-@media (max-width: 560px) { .bar .name { display: none; } .bar .now { border-left: 0; padding-left: 0; margin-left: 0; } .bar button { padding: 0 10px; } }
+@media (max-width: 760px) { #full { display: none; } .bar .now { display: none; } }
+@media (max-width: 560px) { .bar .name { display: none; } .bar .meter small { display: none; } .bar .now { border-left: 0; padding-left: 0; margin-left: 0; } .bar button { padding: 0 10px; } }
 </style>
 </head>
 <body>
@@ -80,6 +87,8 @@ body.playing .stage { display: block; }
   <span class="name">VRX <em>Casino</em></span>
   <span class="now only-play" id="now"></span>
   <span class="grow"></span>
+  <span class="meter" title="One balance for every game in the cabinet"><small>Credits</small><b id="credits">$0.00</b></span>
+  <button type="button" id="insert" title="Play money">Insert $20</button>
   <button type="button" class="only-play" id="full">Full screen</button>
   <button type="button" class="only-play primary" id="back">Games</button>
 </header>
@@ -87,9 +96,9 @@ body.playing .stage { display: block; }
 <main class="menu" id="menu">
   <div class="menu-in">
     <h1>Pick a <em>game</em></h1>
-    <p class="sub">One cabinet, every casino game. Play money only.</p>
+    <p class="sub">One cabinet, every casino game, one balance. Play money only.</p>
     <ul class="tiles" id="tiles"></ul>
-    <p class="note">Each game keeps its own credits for now. One shared balance across the cabinet is next.</p>
+    <p class="note">Your credits follow you from game to game and stay in this browser. Insert $20 adds play money any time.</p>
   </div>
 </main>
 
@@ -142,6 +151,20 @@ body.playing .stage { display: block; }
     f.src = '/games/' + g.slug + '/play/';
     stage.appendChild(f);
   }
+  // One balance, in cents. A game that is open writes it as it plays; the bar hears that and shows it.
+  var KEY = 'vrx.casino.credits';
+  function wallet() { try { var c = parseInt(localStorage.getItem(KEY), 10); return isFinite(c) && c > 0 ? c : null; } catch (e) { return null; } }
+  function meter() { var c = wallet(); $('credits').textContent = '$' + ((c || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  if (wallet() == null) { try { localStorage.setItem(KEY, '10000'); } catch (e) {} }   // a new or empty cabinet starts at $100
+  window.addEventListener('storage', function (e) { if (!e.key || e.key === KEY) meter(); });
+  setInterval(meter, 1000);
+  $('insert').addEventListener('click', function () {
+    var f = $('stage').querySelector('iframe');
+    if (f && f.contentWindow) f.contentWindow.postMessage({ vrx: 'add', cents: 2000 }, location.origin);
+    else { try { localStorage.setItem(KEY, String((wallet() || 0) + 2000)); } catch (e) {} }
+    setTimeout(meter, 60);
+  });
+  meter();
   window.addEventListener('hashchange', show);
   $('back').addEventListener('click', function () { location.hash = ''; });
   $('full').addEventListener('click', function () {

@@ -5,6 +5,16 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.28.0-alpha (2026-10-13)
+- VRX Casino v0.2.0: one balance. Safari Time (v1.9.0), Wyrmhoard Keno (v1.31.0) and Elo's Hoard (v1.14.0) keep their
+  credits in the browser under one key, vrx.casino.credits, so credits follow the player between games. The
+  cabinet's bar shows the balance and has Insert $20 (play money). A new or empty balance starts at $100.
+- The three casino games are merged into VRX Casino on the site: each is `unlisted`, so its page and play folder
+  still work by direct link (posts link to them, and the cabinet loads them), but the home page, the games list
+  and the Games menu show VRX Casino only.
+- Rebuilding a casino game: copy its build into play/ and re-add the VRX badge block, as before. The shared
+  balance is in each game's own source now, so nothing else needs re-applying.
+
 v0.27.0-alpha (2026-10-13)
 - New game: VRX Casino v0.1.0 (games/casino/), a multi-game cabinet. Its play page is a game menu and a frame that
   runs Safari Time, Wyrmhoard Keno and Elo's Hoard unchanged from their own play folders; Poker shows as coming

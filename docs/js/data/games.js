@@ -80,20 +80,20 @@ window.GAMES = [
     slug: 'casino',
     title: 'VRX Casino', tagline: 'One cabinet, every casino game. Pick a game, play, go back for another.',
     genres: ['casino'], status: 'live', featured: true, trending: true, flag: 'Early build',
-    released: '2026-10-13', updated: '2026-10-13', version: '0.1.0',
+    released: '2026-10-13', updated: '2026-10-13', version: '0.2.0',
     controls: 'Mouse or touch', platforms: 'Desktop, mobile',
     play: '/games/casino/play/',
     thumb: '/games/casino/thumb.jpg', banner: '/games/casino/cover.jpg',
     shots: ['/games/casino/cover.jpg', '/games/safari-time/shot-1.jpg', '/games/keno/shot-1.jpg', '/games/elos-hoard/shot-1.jpg'],
-    about: "A multi-game cabinet, like the ones on a Montana casino floor: one machine, a menu of games, and a button that takes you back to the menu.\n\nIt holds Safari Time, Wyrmhoard Keno and Elo's Hoard. Poker is on the menu as coming soon.\n\nThis is an early build. Each game still keeps its own credits; one shared balance across the cabinet is next.\n\nPlay money only. Nothing here takes or pays real money.",
-    howto: ['Pick a game from the menu.', 'Press Games in the top bar to go back and pick another.', 'Full screen fills your monitor like a cabinet.', 'Each game also still has its own page if you want to open it directly.'],
-    log: [{ date: '2026-10-13', text: 'v0.1.0: first build. A game menu and a frame: Safari Time, Wyrmhoard Keno and Elo\'s Hoard in one cabinet, with Poker marked coming soon.' }]
+    about: "A multi-game cabinet, like the ones on a Montana casino floor: one machine, a menu of games, and a button that takes you back to the menu.\n\nIt holds Safari Time, Wyrmhoard Keno and Elo's Hoard. Poker is on the menu as coming soon.\n\nOne balance for all of it. Your credits follow you from game to game and stay in your browser, and Insert $20 adds play money whenever you run dry.\n\nThis is an early build.\n\nPlay money only. Nothing here takes or pays real money.",
+    howto: ['Pick a game from the menu.', 'Press Games in the top bar to go back and pick another.', 'Full screen fills your monitor like a cabinet.', 'Your credits show in the top bar. Insert $20 adds play money.'],
+    log: [{ date: '2026-10-13', text: 'v0.2.0: one balance. Credits follow you between Safari Time, Wyrmhoard Keno and Elo\'s Hoard, show in the cabinet\'s bar, and stay in your browser. Insert $20 adds play money. The three games now live inside the cabinet and no longer have their own listings.' }, { date: '2026-10-13', text: 'v0.1.0: first build. A game menu and a frame: Safari Time, Wyrmhoard Keno and Elo\'s Hoard in one cabinet, with Poker marked coming soon.' }]
   },
   {
     slug: 'keno',
     title: 'Wyrmhoard Keno', tagline: 'Eighty squares. Twenty drawn. Four eggs open the hoard.',
-    genres: ['casino'], status: 'live', featured: true, trending: true,
-    released: '2026-09-10',
+    genres: ['casino'], status: 'live', unlisted: true,
+    released: '2026-09-10', updated: '2026-10-13', version: '1.31.0',
     controls: 'Mouse or touch', platforms: 'Desktop, mobile',
     play: '/games/keno/play/',
     links: [{ label: 'Verify the maths', url: '/games/keno/play/verify.html' }],
@@ -101,33 +101,33 @@ window.GAMES = [
     shots: ['/games/keno/cover.jpg', '/games/keno/shot-1.jpg'],
     about: 'Eighty squares, pick your spots, twenty drawn. Four dragon eggs open a run of free games, and more eggs inside the run add games to the counter.\n\nEvery pay value comes from the maths, not the page. The maths verifier runs the outcome logic in your browser for as many rounds as you like and puts the return it produces next to the return the pay table claims.\n\nPlay money only. Nothing here takes or pays real money.',
     howto: ['Pick your spots on the 80-number board.', 'Set your bet and press start. Twenty numbers are drawn.', 'Catch four dragon eggs to open a run of free games.', 'Eggs inside the run add more games to the counter.'],
-    log: [{ date: '2026-10-11', text: 'A new look: square corners and a wide-screen layout.' }, { date: '2026-10-11', text: 'Moved to velmarox.com.' }]
+    log: [{ date: '2026-10-13', text: 'Now part of VRX Casino, on one balance with the other casino games.' }, { date: '2026-10-11', text: 'A new look: square corners and a wide-screen layout.' }, { date: '2026-10-11', text: 'Moved to velmarox.com.' }]
   },
   {
     slug: 'elos-hoard',
     title: "Elo's Hoard", tagline: 'Video keno with coin multipliers. Catch all three and the Hoard opens.',
-    genres: ['casino'], status: 'live', featured: true, trending: true,
-    released: '2026-09-10',
+    genres: ['casino'], status: 'live', unlisted: true,
+    released: '2026-09-10', updated: '2026-10-13', version: '1.14.0',
     controls: 'Mouse or touch', platforms: 'Desktop, mobile',
     play: '/games/elos-hoard/play/',
     thumb: '/games/elos-hoard/thumb.jpg', banner: '/games/elos-hoard/cover.jpg',
     shots: ['/games/elos-hoard/cover.jpg', '/games/elos-hoard/shot-1.jpg'],
     about: "Montana-style video keno on an engraved stone slab. Mark four to ten, twenty drawn, and three coins land on numbers you didn't pick. Catch the second one and it multiplies your win. Catch all three and the Hoard opens.\n\nMake a free name-and-passcode account inside the game and your keno and slot plays land on the shared leaderboard. Guest play works without one.\n\nPlay money only. Nothing here takes or pays real money.",
     howto: ['Mark four to ten numbers.', 'Twenty are drawn, then three coins land on numbers you did not pick.', 'Catch a coin to multiply your win.', 'Catch all three coins and the Hoard opens.'],
-    log: [{ date: '2026-10-11', text: 'A new look: square corners and a wide-screen layout.' }, { date: '2026-10-11', text: 'Moved to velmarox.com.' }]
+    log: [{ date: '2026-10-13', text: 'Now part of VRX Casino, on one balance with the other casino games.' }, { date: '2026-10-11', text: 'A new look: square corners and a wide-screen layout.' }, { date: '2026-10-11', text: 'Moved to velmarox.com.' }]
   },
   {
     slug: 'safari-time',
     title: 'Safari Time', tagline: 'Five reels, ten lines, wilds that stick through the feature.',
-    genres: ['casino', 'slots'], status: 'live', featured: true, trending: true,
-    released: '2026-09-10',
+    genres: ['casino', 'slots'], status: 'live', unlisted: true,
+    released: '2026-09-10', updated: '2026-10-13', version: '1.9.0',
     controls: 'Mouse or touch', platforms: 'Desktop, mobile',
     play: '/games/safari-time/play/',
     thumb: '/games/safari-time/thumb.jpg', banner: '/games/safari-time/cover.jpg',
     shots: ['/games/safari-time/cover.jpg', '/games/safari-time/shot-1.jpg'],
     about: 'A five-reel, ten-line video slot. Wilds expand to fill the reel, scatters award up to twenty free games, and in the feature the wilds stick around for the whole run. Built to real machine limits.\n\nPlays count toward the shared leaderboard if you are signed in through Elo\'s Hoard.\n\nPlay money only. Nothing here takes or pays real money.',
     howto: ['Set your lines and bet.', 'Spin. Wilds expand to fill their reel.', 'Land scatters for up to twenty free games.', 'In the feature, wilds stay put for the whole run.'],
-    log: [{ date: '2026-10-11', text: 'A new look: square corners and a wide-screen layout.' }, { date: '2026-10-11', text: 'Moved to velmarox.com.' }]
+    log: [{ date: '2026-10-13', text: 'Now part of VRX Casino, on one balance with the other casino games.' }, { date: '2026-10-11', text: 'A new look: square corners and a wide-screen layout.' }, { date: '2026-10-11', text: 'Moved to velmarox.com.' }]
   },
   {
     slug: 'animalism',
