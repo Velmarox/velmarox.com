@@ -5,6 +5,16 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.31.0-alpha (2026-10-13)
+- The Community tab is gone: the thread list, the three threads (Say hi, What should I make next?, Bug reports),
+  the nav and footer links, the home page Community box, their sitemap entries and docs/js/data/threads.js.
+  /community/ addresses now show the 404 page.
+- Comments moved under the posts: every blog and devlog post has a Comments box below it (news posts do not).
+  Same giscus setup and the same Discussions category; each post is the discussion titled post:<slug>.
+- Discord: the footer link stays, and the home page has a Join the Discord box in the side column.
+- The giscus settings and the Discord invite live in docs/js/data/posts.js now.
+- "VRX Games is live" no longer says community threads are coming.
+
 v0.30.1-alpha (2026-10-13)
 - "Your passion is not a waste of time": names the ex-husband and husband, adds the four years with my husband, and
   the ending now says it took my entire twenties.

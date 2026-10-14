@@ -1,5 +1,5 @@
 // Writes link-preview tags (Open Graph / Twitter) into every page's <head>, plus docs/sitemap.xml and
-// docs/robots.txt, from the same data files the site uses. Run after adding a game, post or thread:
+// docs/robots.txt, from the same data files the site uses. Run after adding a game or post:
 //   node tools/build_meta.mjs
 // Each page gets a block between <!-- meta --> and <!-- /meta -->; the script replaces only that block.
 import fs from 'node:fs';
@@ -11,8 +11,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'd
 const SITE = 'https://velmarox.com';
 const ctx = { window: {} };
 vm.createContext(ctx);
-for (const f of ['games', 'posts', 'threads']) vm.runInContext(fs.readFileSync(path.join(ROOT, 'js/data', f + '.js'), 'utf8'), ctx);
-const { GAMES = [], POSTS = [], THREADS = [] } = ctx.window;
+for (const f of ['games', 'posts']) vm.runInContext(fs.readFileSync(path.join(ROOT, 'js/data', f + '.js'), 'utf8'), ctx);
+const { GAMES = [], POSTS = [] } = ctx.window;
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const abs = u => (u ? (u.startsWith('http') ? u : SITE + u) : SITE + '/assets/brand/og-default.jpg');
@@ -25,7 +25,6 @@ add('/tools/', 'Tools | VRX Games', 'Small apps I made because I wanted them. Fr
 add('/blog/', 'Blog | VRX Games', 'Devlogs, thoughts and whatever else is on my mind.');
 add('/devlog/', 'Devlog | VRX Games', 'Build notes, and every update to every game and tool.');
 add('/news/', 'News | VRX Games', 'Releases, updates and announcements.');
-add('/community/', 'Community | VRX Games', 'Talk about the games, report bugs, pitch ideas.');
 add('/shop/', 'Shop | VRX Games', 'Soundtracks, extras and merch. Coming soon.');
 const isTool = g => (g.genres || []).includes('tools');
 for (const g of GAMES) add(`/${isTool(g) ? 'tools' : 'games'}/${g.slug}/`, `${g.title} | VRX Games`, g.tagline || '', g.banner || g.thumb, 'website', !!g.unlisted);
@@ -33,7 +32,6 @@ for (const p of POSTS) {
   const g = GAMES.find(x => x.slug === p.game);
   add(`/${p.type === 'news' ? 'news' : 'blog'}/${p.slug}/`, `${p.title} | VRX Games`, p.excerpt || '', p.cover || (g && (g.banner || g.thumb)), 'article');
 }
-for (const t of THREADS) add(`/community/${t.slug}/`, `${t.title} | Community | VRX Games`, t.excerpt || '', null, 'article');
 
 let n = 0;
 for (const p of pages) {
@@ -67,5 +65,5 @@ fs.writeFileSync(path.join(ROOT, 'sitemap.xml'),
   '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
   pages.filter(p => !p.unlisted).map(p => `  <url><loc>${SITE}${p.url}</loc></url>`).join('\n') + '\n</urlset>\n');
 fs.writeFileSync(path.join(ROOT, 'robots.txt'),
-  `User-agent: *\nDisallow: /games/_template/\nDisallow: /blog/_template/\nDisallow: /news/_template/\nDisallow: /community/_template/\n\nSitemap: ${SITE}/sitemap.xml\n`);
+  `User-agent: *\nDisallow: /games/_template/\nDisallow: /blog/_template/\nDisallow: /news/_template/\n\nSitemap: ${SITE}/sitemap.xml\n`);
 console.log(`meta written to ${n} pages; sitemap has ${pages.filter(p => !p.unlisted).length} urls`);

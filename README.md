@@ -39,15 +39,12 @@ docs/
   blog/_template/         copy this to start a new post
   devlog/index.html       devlog page: blog posts tagged "Devlog" + every game's `log` entries; linked from the blog
   news/                   same as blog, for short announcements (news/_template/ to start one)
-  community/index.html    thread list with board filters
-  community/<slug>/       one folder per thread: opening post in index.html, replies via giscus
-  community/_template/
   shop/index.html         product grid with type filters; images go in shop/img/
   404.html
   css/site.css            the look: black, crimson, electric yellow, cut corners, hazard stripes
   js/data/games.js        THE GAME LIST: every card, category and game page is built from it
-  js/data/posts.js        BLOG + NEWS LIST: titles, dates, tags, excerpts (type: 'news' = News tab)
-  js/data/threads.js      COMMUNITY: thread list, boards, giscus settings
+  js/data/posts.js        BLOG + NEWS LIST: titles, dates, tags, excerpts (type: 'news' = News tab);
+                          also the giscus (comments) settings and the Discord invite
   js/data/products.js     SHOP: products, prices, store links
   js/site.js              builds the header, dropdown, footer and every page from the two lists
   assets/favicon.svg
@@ -80,12 +77,14 @@ add new category names to `CATEGORIES` at the top of games.js.
 1. Add an entry at the top of `docs/js/data/posts.js` (title, date, tag, excerpt; `game` to link it to a game).
 2. Copy `docs/blog/_template/` to `docs/blog/<slug>/`, set `data-slug`, write the post inside `<article>`.
 
-## Community replies (one-time setup)
+## Comments
 
-Threads are pages you start; replies are stored in GitHub Discussions on this repo (category
-**Community**) through [giscus](https://giscus.app). Visitors need a GitHub account to reply. Each thread
-is the discussion titled `thread:<slug>`, created by giscus on the first reply; moderate replies from the
-repo's Discussions tab. Set up and live since v0.8.1-alpha.
+Blog and devlog posts have a comment box under the post (news posts don't). Comments are stored in GitHub
+Discussions on this repo (category **Community**) through [giscus](https://giscus.app). Visitors need a GitHub
+account to comment. Each post is the discussion titled `post:<slug>`, created by giscus on the first comment;
+moderate comments from the repo's Discussions tab. The settings are `window.GISCUS` in `docs/js/data/posts.js`.
+
+The Discord invite is `window.DISCORD` in the same file: it shows in the footer and in a box on the home page.
 
 ## Shop
 
@@ -107,7 +106,7 @@ you want to the post's folder as `cover.jpg`, and set `cover` in posts.js.
 
 Pages carry Open Graph tags so a shared link shows a card (title, line, image) on Discord, iMessage and
 the rest. Chat apps don't run the page's script, so the tags are written into the HTML by a script.
-**After adding or changing a game, post or thread, run:**
+**After adding or changing a game or post, run:**
 
 ```
 node tools/build_meta.mjs
