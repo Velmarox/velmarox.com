@@ -5,6 +5,13 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.32.0-alpha (2026-10-14)
+- New devlog post: "Tempers, patch notes and a Discord backup" (blog/tempers-and-a-discord-backup/). The day's work:
+  Datcord 0.7 to 0.11, Warrior Codex 6.34 NPC tempers, player patch notes, and regency campaign ideas.
+- New blog post: "If at First You Don't Succeed: Scream at Your Computer And Try Again"
+  (blog/scream-at-your-computer-and-try-again/).
+- Their banners are art/banners/tempers-and-a-discord-backup.html and art/banners/scream-at-your-computer-and-try-again.html.
+
 v0.31.1-alpha (2026-10-14)
 - Clack Attack's cover and thumbnail get a sticker: "Now with OBS overlay plugin!" with the OBS mark, on the left of the tray so the
   tools page banner shows it too. Its summary says so as well. The sticker

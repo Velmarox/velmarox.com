@@ -34,6 +34,18 @@ window.DISCORD = 'https://discord.gg/dcsAHeymNd';
 
 window.POSTS = [
   {
+    slug: 'scream-at-your-computer-and-try-again',
+    title: 'If at First You Don\'t Succeed: Scream at Your Computer And Try Again', date: '2026-10-14', tag: 'Thoughts',
+    cover: '/blog/scream-at-your-computer-and-try-again/cover.jpg',
+    excerpt: 'Last night I yelled at my app in all caps, then apologized to it. The yelling turned out to be the best bug report I wrote all week.'
+  },
+  {
+    slug: 'tempers-and-a-discord-backup',
+    title: 'Tempers, patch notes and a Discord backup', date: '2026-10-14', tag: 'Devlog',
+    cover: '/blog/tempers-and-a-discord-backup/cover.jpg',
+    excerpt: 'Warrior Codex NPCs get tempers, the players get patch notes, Datcord gets an installer, and a regency campaign exists on paper.'
+  },
+  {
     slug: 'your-passion-is-not-a-waste-of-time',
     title: 'Your passion is not a waste of time', date: '2026-10-13', tag: 'Thoughts',
     cover: '/blog/your-passion-is-not-a-waste-of-time/cover.jpg',

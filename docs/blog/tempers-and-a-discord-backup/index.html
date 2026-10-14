@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="version" content="v0.32.0-alpha">
+  <meta name="theme-color" content="#0b0b0d">
+  <title>Tempers, patch notes and a Discord backup | VRX Games</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Saira:ital,wght@0,400;0,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css">
+  <!-- meta -->
+  <link rel="canonical" href="https://velmarox.com/blog/tempers-and-a-discord-backup/">
+  <meta name="description" content="Warrior Codex NPCs get tempers, the players get patch notes, Datcord gets an installer, and a regency campaign exists on paper.">
+  <meta property="og:site_name" content="VRX Games">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://velmarox.com/blog/tempers-and-a-discord-backup/">
+  <meta property="og:title" content="Tempers, patch notes and a Discord backup | VRX Games">
+  <meta property="og:description" content="Warrior Codex NPCs get tempers, the players get patch notes, Datcord gets an installer, and a regency campaign exists on paper.">
+  <meta property="og:image" content="https://velmarox.com/blog/tempers-and-a-discord-backup/cover.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- /meta -->
+</head>
+<body data-page="post" data-slug="tempers-and-a-discord-backup">
+  <main>
+    <article id="post-content">
+      <p>Another day of work, written down. This one started the night before and ran into the morning, so "day" is doing some heavy lifting.</p>
+
+      <aside class="highlight">
+        <b>The focus</b>
+        <p>The Warrior Codex NPCs got tempers. Every cat now has three dials (loyal, kind, bold) that decide what they do when nobody's steering them, and the players got patch notes about it.</p>
+      </aside>
+
+      <h2>Last night: Datcord</h2>
+      <p>Datcord is a little Windows app I'm making that backs up a Discord server: the channels, the roles, and now the chat. It went from 0.7 to 0.11 in about two hours.</p>
+      <ul>
+        <li><strong>0.7:</strong> it saves chat logs now. I first asked for it to repost old messages into a new server, then changed my mind two minutes later. Nobody needs that. The admin just needs the logs, so they come out as a zip that opens like Discord in a browser.</li>
+        <li><strong>0.7.1:</strong> updating no longer loses your saved copies.</li>
+        <li><strong>0.8:</strong> a menu bar, and you can change the bot token. Before this, once a token was saved you were stuck with it. I found that out the loud way. There's <a href="/blog/scream-at-your-computer-and-try-again/">a whole post about that</a>.</li>
+        <li><strong>0.9:</strong> pick which channels get their chat saved. Chat logs and server copies get their own folders.</li>
+        <li><strong>0.10:</strong> automatic backups (it keeps the last three), a size cap on chat logs, a chat-only mode, a progress bar, and a welcome guide.</li>
+        <li><strong>0.11:</strong> a real installer. Setup wizard, uninstaller, an entry in the Windows apps list. It got built and tested on Linux pretending to be Windows, which is a sentence I didn't expect to write.</li>
+      </ul>
+      <p>113 tests pass. None of it has touched a real Discord server yet, so that's next.</p>
+
+      <h2>After midnight: NPCs act like who they are</h2>
+      <p>The Warrior Codex hit 6.34. Until now an NPC cat did whatever the dice said, which made a loyal deputy and a cat about to bolt behave about the same. Now:</p>
+      <ul>
+        <li>Every NPC has three dials, loyal, kind and bold, each from -2 to +2.</li>
+        <li>Nine role tables, so a warrior and an elder want different things.</li>
+        <li>An NPC's agenda rolls two dice and keeps the one that fits them better.</li>
+        <li>Strain, from 0 to 3, with warning signs as it climbs. A cat only does something drastic at strain 3 or loyalty -2, and only one per group per week. It eases off after a quiet week.</li>
+        <li>Leaders and medicine cats stay at least loyal +1, except in BriarClan, because BriarClan is falling apart.</li>
+      </ul>
+      <p>At 6:50 in the morning came 6.34.1, the speed pass. Looking up a cat went from 88 ms to 15. A release build now runs all 321 tests before it'll ship. Then I went through every NPC's written personality and set their dials to match: 97 in Spillmoor, and 22 in Lantern Hill that had never had them.</p>
+
+      <h2>Morning: patch notes for the players</h2>
+      <p>Players should know when the game changes under them. So the morning was writing it up like a real game's patch notes, 6.33 through 6.34.1, for everyone at the table. The GM counts as a player. The GM is also technically playing.</p>
+      <p>One of my players got a guide to the dials. How they change a roll when you ask a cat for something, who steps in to help, how cats vote on newcomers, who's most likely to leave. And then a page in character: <em>Honeypaw's Vault of Rumors</em>, written as Honeypaw's own notes. No real numbers in it. Honeypaw doesn't know the numbers. Honeypaw just knows things.</p>
+
+      <h2>Late morning: a regency campaign, on paper</h2>
+      <p>A friend said the Codex would work for a political fae campaign, all courts and balls and gossip. So I sat down and asked what that would look like. No code, just ideas.</p>
+      <p>First pass kept the cats: Moonmeet as the ballroom, challenges as duels, the gossip feed as the scandal sheet. Second pass took the cats out completely: four seasonal fae courts, a queen who walked into a lake and didn't come back, and the codex's nine lives becoming a sovereign's nine winters. Third pass was just pitches. Regency ghost comedy. Houses on sky-whales. A reality show where the prize is marrying a god.</p>
+      <p>Nothing's picked yet. "Dead Men Hold Title" is winning.</p>
+
+      <h2>Also</h2>
+      <ul>
+        <li><a href="/tools/clack-attack/">Clack Attack</a>'s cover got a sticker: "Now with OBS overlay plugin!"</li>
+      </ul>
+
+      <h2>What I take from it</h2>
+      <p>Two of these things shipped, one got written up for the people who use it, and one is just ideas. That's a fine mix for a day.</p>
+    </article>
+  </main>
+  <script src="/js/data/games.js"></script>
+  <script src="/js/data/posts.js"></script>
+  <script src="/js/data/products.js"></script>
+  <script src="/js/site.js"></script>
+</body>
+</html>
