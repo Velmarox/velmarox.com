@@ -14,9 +14,6 @@
   var BLOG = WRITING.filter(function (p) { return !isDevlog(p); });
   var DEVLOG = WRITING.filter(isDevlog);
   var NEWS = POSTS.filter(function (p) { return p.type === 'news'; });
-  var THREADS = (window.THREADS || []).slice().sort(function (a, b) {
-    return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (a.date < b.date ? 1 : -1);
-  });
   var PRODUCTS = window.PRODUCTS || [];
   var SHOP_OPEN = window.SHOP_OPEN !== false;
   var GISCUS = window.GISCUS || {};
@@ -43,7 +40,6 @@
   function recent(d) { return d && (Date.now() - new Date(d + 'T12:00:00')) < 30 * DAY; }
   function gameUrl(g) { return (isTool(g) ? '/tools/' : '/games/') + g.slug + '/'; }
   function postUrl(p) { return (p.type === 'news' ? '/news/' : '/blog/') + p.slug + '/'; }
-  function threadUrl(t) { return '/community/' + t.slug + '/'; }
   function findGame(s) { return ALL.filter(function (g) { return g.slug === s; })[0]; }
   function playable(g) { return g.status === 'live' && g.play && g.play !== '#'; }
   // Nothing to play in the browser and no download link yet: its pictures get a grey veil.
@@ -114,11 +110,6 @@
       '</span><span class="live' + (i % 2 ? ' y' : '') + '">' + (g.progress != null ? g.progress + '%' : 'WIP') + '</span></a>';
   }
 
-  function threadRow(t, i) {
-    return '<a class="row" href="' + threadUrl(t) + '"><span class="row-ico">' + (t.pinned ? '&#9650;' : String(i + 1).padStart(2, '0')) + '</span>' +
-      '<span><b>' + esc(t.title) + '</b><small>' + esc(t.board || 'General') + ' · ' + date(t.date) + '</small></span>' +
-      (t.pinned ? '<span class="live y">Pinned</span>' : recent(t.date) ? '<span class="live">New</span>' : '<span></span>') + '</a>';
-  }
   function productCard(p) {
     var g = p.game && findGame(p.game);
     var st = p.status || 'available';
@@ -150,7 +141,7 @@
     return f ? gameUrl(f) : '/games/';
   }
   function chrome() {
-    var cur = { game: 'games', thread: 'community', devlog: 'blog' }[page] || page;
+    var cur = { game: 'games', devlog: 'blog' }[page] || page;
     if (page === 'game' && findGame(slug) && isTool(findGame(slug))) cur = 'tools';
     if (page === 'post') {
       var me = POSTS.filter(function (p) { return p.slug === slug; })[0];
@@ -173,7 +164,6 @@
           (TOOLS.length ? a('tools', '/tools/', 'Tools') : '') +
           a('blog', '/blog/', 'Blog') +
           a('news', '/news/', 'News') +
-          a('community', '/community/', 'Community') +
           a('shop', '/shop/', 'Shop') +
           '<a class="btn yellow mobile-cta" href="' + playNowTarget() + '">Play now</a>' +
         '</nav>' +
@@ -181,7 +171,7 @@
       '</div>';
     body.insertBefore(head, body.firstChild);
 
-    if ([GAMES, POSTS, THREADS, PRODUCTS].some(function (l) { return l.some(function (x) { return x.sample; }); })) {
+    if ([GAMES, POSTS, PRODUCTS].some(function (l) { return l.some(function (x) { return x.sample; }); })) {
       var bar = document.createElement('div');
       bar.className = 'sample-bar';
       bar.textContent = 'Preview: everything marked sample is a placeholder';
@@ -218,7 +208,7 @@
           categoryCounts().slice(0, 5).map(function (c) { return '<li><a href="/games/?cat=' + c[0] + '">' + esc(catName(c[0])) + '</a></li>'; }).join('') +
         '</ul></div>' +
         '<div><h4>Site</h4><ul><li><a href="/">Home</a></li>' + (TOOLS.length ? '<li><a href="/tools/">Tools</a></li>' : '') + '<li><a href="/blog/">Blog</a></li><li><a href="/news/">News</a></li>' +
-          '<li><a href="/community/">Community</a></li><li><a href="/shop/">Shop</a></li>' +
+          '<li><a href="/shop/">Shop</a></li>' +
           (window.DISCORD ? '<li><a class="foot-discord" href="' + esc(window.DISCORD) + '" target="_blank" rel="noopener">' + DISCORD_ICON + 'Discord</a></li>' : '') + '</ul></div>' +
       '</div>' +
       '<div class="wrap foot-base"><span>&copy; ' + new Date().getFullYear() + ' Velmarox</span><span>velmarox.com</span></div>';
@@ -255,7 +245,9 @@
     html += '</div><aside class="sec">' +
       secHead('Latest news', ['News', '/news/']) +
       '<div class="panel"><div class="panel-in">' + (NEWS.length ? NEWS.slice(0, 4).map(postRow).join('') : '<p class="empty-note">No news yet.</p>') + '</div></div>' +
-      (THREADS.length ? secHead('Community', ['Threads', '/community/'], true) + '<div class="panel"><div class="panel-in">' + THREADS.slice(0, 4).map(threadRow).join('') + '</div></div>' : '') +
+      (window.DISCORD ? secHead('Discord', null, true) + '<div class="panel"><div class="panel-in">' +
+        '<a class="row" href="' + esc(window.DISCORD) + '" target="_blank" rel="noopener"><span class="row-ico">' + DISCORD_ICON + '</span>' +
+        '<span><b>Join the Discord</b><small>Chat, bug reports, ideas</small></span><span class="live y">Join</span></a></div></div>' : '') +
       (wip.length ? secHead('In the workshop', null, true) + '<div class="panel"><div class="panel-in">' + wip.map(workshopRow).join('') + '</div></div>' : '') +
       '</aside></div>';
     if (WRITING.length) {
@@ -467,60 +459,11 @@
   }
   function news() { postList(NEWS, 'News', 'Latest <em>news</em>', 'Releases, updates and announcements.'); }
 
-  // ---------- community ----------
-  function community() {
-    var board = new URLSearchParams(location.search).get('board');
-    var boards = (window.BOARDS || []).slice();
-    THREADS.forEach(function (t) { if (t.board && boards.indexOf(t.board) < 0) boards.push(t.board); });
-    var list = THREADS.filter(function (t) { return !board || t.board === board; });
-    $('main').innerHTML =
-      '<div class="wrap"><div class="page-head"><div class="crumbs"><a href="/">Home</a><span>/</span>Community</div>' +
-      '<h1>Community <em>threads</em></h1><p>Talk about the games, report bugs, pitch ideas.</p>' +
-      (window.DISCORD ? '<p style="margin-top:14px"><a class="btn yellow" href="' + esc(window.DISCORD) + '" target="_blank" rel="noopener">' + DISCORD_ICON + 'Join the Discord</a></p>' : '') + '</div>' +
-      '<nav class="chips" aria-label="Boards"><a class="chip" href="/community/"' + (!board ? ' aria-current="true"' : '') + '>All <small>' + THREADS.length + '</small></a>' +
-        boards.map(function (b) {
-          var n = THREADS.filter(function (t) { return t.board === b; }).length;
-          return '<a class="chip" href="/community/?board=' + encodeURIComponent(b) + '"' + (board === b ? ' aria-current="true"' : '') + '>' + esc(b) + ' <small>' + n + '</small></a>';
-        }).join('') + '</nav>' +
-      '<section class="sec">' + (list.length ? '<div class="panel"><div class="panel-in threads">' +
-        '<div class="thread-head"><span>Thread</span><span>Board</span><span>Started</span></div>' +
-        list.map(function (t) {
-          var g = t.game && findGame(t.game);
-          return '<a class="thread" href="' + threadUrl(t) + '"><span class="t-main">' +
-            (t.pinned ? '<span class="tag y">Pinned</span> ' : '') + '<b>' + esc(t.title) + '</b>' +
-            (t.excerpt ? '<small>' + esc(t.excerpt) + '</small>' : '') + '</span>' +
-            '<span class="t-board"><span class="tag dim">' + esc(t.board || 'General') + '</span>' + (g ? ' <span class="tag">' + esc(g.title) + '</span>' : '') + '</span>' +
-            '<span class="t-date">' + date(t.date) + '</span></a>';
-        }).join('') + '</div></div>' : '<p class="empty-note">No threads here yet.</p>') + '</section></div>';
-  }
-
+  // ---------- comments (giscus: one GitHub Discussion per post, titled post:<slug>) ----------
   function giscusReady() { return GISCUS.repo && GISCUS.repoId && GISCUS.categoryId; }
-
-  function thread() {
-    var main = $('main');
-    var article = $('#post-content');
-    var t = THREADS.filter(function (x) { return x.slug === slug; })[0] || {};
-    var g = t.game && findGame(t.game);
-    if (t.title) document.title = t.title + ' | Community | VRX Games';
-    var wrap = document.createElement('div');
-    wrap.className = 'wrap';
-    wrap.innerHTML =
-      '<header class="post-head"><div class="crumbs"><a href="/">Home</a><span>/</span><a href="/community/">Community</a>' +
-        (t.board ? '<span>/</span><a href="/community/?board=' + encodeURIComponent(t.board) + '">' + esc(t.board) + '</a>' : '') + '</div>' +
-        '<div class="tags">' + (t.pinned ? '<span class="tag y">Pinned</span>' : '') + '<span class="tag dim">' + esc(t.board || 'General') + '</span>' +
-        (g ? '<a class="tag" href="' + gameUrl(g) + '">' + esc(g.title) + '</a>' : '') + '</div>' +
-        '<h1>' + esc(t.title || 'Thread') + '</h1></header>' +
-      '<div class="op panel"><div class="panel-in"><div class="op-by"><span class="row-ico">V</span>' +
-        '<span><b>Velmarox</b> <span class="tag solid">Dev</span><small>' + date(t.date) + '</small></span></div>' +
-        '<div class="op-body"></div></div></div>' +
-      '<section class="sec replies">' + secHead('Replies') + '<div id="replies"></div></section>';
-    article.classList.add('prose');
-    $('.op-body', wrap).appendChild(article);
-    main.appendChild(wrap);
-
-    var box = $('#replies');
+  function comments(box, term) {
     if (!giscusReady()) {
-      box.innerHTML = '<div class="panel"><div class="panel-in"><p class="empty-note">Replies open soon.</p></div></div>';
+      box.innerHTML = '<div class="panel"><div class="panel-in"><p class="empty-note">Comments open soon.</p></div></div>';
       return;
     }
     var sc = document.createElement('script');
@@ -530,7 +473,7 @@
     var attrs = {
       'data-repo': GISCUS.repo, 'data-repo-id': GISCUS.repoId,
       'data-category': GISCUS.category, 'data-category-id': GISCUS.categoryId,
-      'data-mapping': 'specific', 'data-term': 'thread:' + slug, 'data-strict': '1',
+      'data-mapping': 'specific', 'data-term': term, 'data-strict': '1',
       'data-reactions-enabled': '1', 'data-emit-metadata': '0', 'data-input-position': 'top',
       'data-theme': 'transparent_dark', 'data-lang': 'en', 'data-loading': 'lazy'
     };
@@ -593,10 +536,12 @@
         '<div class="post-meta"><span>' + date(p.date) + '</span></div></header>' +
       (p.cover ? '<div class="post-cover screen"><div class="screen-in">' + img(p.cover, '') + '</div></div>' : '') +
       '<div class="post-body"></div>' +
+      '<section class="sec comments">' + secHead('Comments') + '<div id="comments"></div></section>' +
       (others.length ? '<section class="sec">' + secHead(isNews ? 'More news' : isDev ? 'More devlog' : 'More posts', isNews ? ['All news', '/news/'] : isDev ? ['Devlog', '/devlog/'] : ['All posts', '/blog/']) + '<ul class="posts">' + others.map(postCard).join('') + '</ul></section>' : '');
     article.classList.add('prose');
     $('.post-body', wrap).appendChild(article);
     main.appendChild(wrap);
+    comments($('#comments'), 'post:' + slug);
     void idx;
   }
 
@@ -607,5 +552,5 @@
 
   chrome();
   ({ home: home, games: games, tools: tools, game: game, blog: blog, devlog: devlog, news: news, post: post,
-     community: community, thread: thread, shop: shop, '404': notFound }[page] || function () {})();
+     shop: shop, '404': notFound }[page] || function () {})();
 })();

@@ -19,6 +19,19 @@
 //   cover    optional image, 16:9
 //   sample   true = placeholder; delete once real posts are in
 
+// COMMENTS. Every post (blog, devlog and news) gets a comment box under the post. Comments are stored in
+// GitHub Discussions on this repo (through giscus.app), in the category named below; each post is the
+// discussion titled post:<slug>, made on its first comment. Visitors sign in with GitHub to comment.
+window.GISCUS = {
+  repo: 'Velmarox/velmarox.com',
+  repoId: 'R_kgDOVFGvcA',
+  category: 'Community',
+  categoryId: 'DIC_kwDOVFGvcM4DHmjD'
+};
+
+// The Discord invite: the footer link and the Discord box on the home page. Leave it '' to hide both.
+window.DISCORD = 'https://discord.gg/dcsAHeymNd';
+
 window.POSTS = [
   {
     slug: 'your-passion-is-not-a-waste-of-time',
