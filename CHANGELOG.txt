@@ -9,7 +9,7 @@ v0.31.0-alpha (2026-10-13)
 - The Community tab is gone: the thread list, the three threads (Say hi, What should I make next?, Bug reports),
   the nav and footer links, the home page Community box, their sitemap entries and docs/js/data/threads.js.
   /community/ addresses now show the 404 page.
-- Comments moved under the posts: every blog and devlog post has a Comments box below it (news posts do not).
+- Comments moved under the posts: every blog, devlog and news post has a Comments box below it.
   Same giscus setup and the same Discussions category; each post is the discussion titled post:<slug>.
 - Discord: the footer link stays, and the home page has a Join the Discord box in the side column.
 - The giscus settings and the Discord invite live in docs/js/data/posts.js now.

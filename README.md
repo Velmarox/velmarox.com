@@ -79,7 +79,7 @@ add new category names to `CATEGORIES` at the top of games.js.
 
 ## Comments
 
-Blog and devlog posts have a comment box under the post (news posts don't). Comments are stored in GitHub
+Every post (blog, devlog and news) has a comment box under it. Comments are stored in GitHub
 Discussions on this repo (category **Community**) through [giscus](https://giscus.app). Visitors need a GitHub
 account to comment. Each post is the discussion titled `post:<slug>`, created by giscus on the first comment;
 moderate comments from the repo's Discussions tab. The settings are `window.GISCUS` in `docs/js/data/posts.js`.

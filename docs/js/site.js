@@ -536,12 +536,12 @@
         '<div class="post-meta"><span>' + date(p.date) + '</span></div></header>' +
       (p.cover ? '<div class="post-cover screen"><div class="screen-in">' + img(p.cover, '') + '</div></div>' : '') +
       '<div class="post-body"></div>' +
-      (isNews ? '' : '<section class="sec comments">' + secHead('Comments') + '<div id="comments"></div></section>') +
+      '<section class="sec comments">' + secHead('Comments') + '<div id="comments"></div></section>' +
       (others.length ? '<section class="sec">' + secHead(isNews ? 'More news' : isDev ? 'More devlog' : 'More posts', isNews ? ['All news', '/news/'] : isDev ? ['Devlog', '/devlog/'] : ['All posts', '/blog/']) + '<ul class="posts">' + others.map(postCard).join('') + '</ul></section>' : '');
     article.classList.add('prose');
     $('.post-body', wrap).appendChild(article);
     main.appendChild(wrap);
-    if (!isNews) comments($('#comments'), 'post:' + slug);
+    comments($('#comments'), 'post:' + slug);
     void idx;
   }
 

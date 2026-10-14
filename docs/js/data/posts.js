@@ -19,7 +19,7 @@
 //   cover    optional image, 16:9
 //   sample   true = placeholder; delete once real posts are in
 
-// COMMENTS. Blog and devlog posts (not news) get a comment box under the post. Comments are stored in
+// COMMENTS. Every post (blog, devlog and news) gets a comment box under the post. Comments are stored in
 // GitHub Discussions on this repo (through giscus.app), in the category named below; each post is the
 // discussion titled post:<slug>, made on its first comment. Visitors sign in with GitHub to comment.
 window.GISCUS = {
