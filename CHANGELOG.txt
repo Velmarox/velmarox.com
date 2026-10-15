@@ -5,6 +5,11 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.32.4-alpha (2026-10-15)
+- "Update the exe (sorry for yelling)" moves to blog/update-the-exe/ (was blog/scream-at-your-computer-and-try-again/,
+  which now shows the 404 page). Its banner is art/banners/update-the-exe.html. The post is rewritten around the
+  problem itself: the token that couldn't be changed and the out-of-date exe and shortcut.
+
 v0.32.3-alpha (2026-10-15)
 - "If at First You Don't Succeed: Scream at Your Computer And Try Again" is renamed "Update the exe (sorry for
   yelling)". Its address stays blog/scream-at-your-computer-and-try-again/.

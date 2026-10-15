@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="version" content="v0.32.4-alpha">
+  <meta name="theme-color" content="#0b0b0d">
+  <title>Update the exe (sorry for yelling) | VRX Games</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Saira:ital,wght@0,400;0,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css">
+  <!-- meta -->
+  <link rel="canonical" href="https://velmarox.com/blog/update-the-exe/">
+  <meta name="description" content="Last night I yelled at my app in all caps, then apologized to it. The yelling turned out to be the best bug report I wrote all week.">
+  <meta property="og:site_name" content="VRX Games">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://velmarox.com/blog/update-the-exe/">
+  <meta property="og:title" content="Update the exe (sorry for yelling) | VRX Games">
+  <meta property="og:description" content="Last night I yelled at my app in all caps, then apologized to it. The yelling turned out to be the best bug report I wrote all week.">
+  <meta property="og:image" content="https://velmarox.com/blog/update-the-exe/cover.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- /meta -->
+</head>
+<body data-page="post" data-slug="update-the-exe">
+  <main>
+    <article id="post-content">
+      <p>Last night around 8:30, I yelled at my computer. Caps lock on, no punctuation, one long sentence with three demands in it. Then I said sorry to it. Out loud. To a computer.</p>
+
+      <h2>The problem</h2>
+      <p>Datcord is a small Windows app I'm making that backs up a Discord server: the channels, the roles, and now the chat logs. To talk to Discord it needs a bot token, which is basically a password. You paste it in once and the app remembers it.</p>
+      <p>It remembered it too well. Once a token was saved, there was no way to change it. No settings screen, no menu, no button. If I needed a different token, too bad. The app had decided it knew best, and I was locked out of my own app.</p>
+      <p>On top of that, the exe on my desktop and the shortcut pointing at it were still the old version. So every time I opened the app to check whether things were better, I got the same old app that still wouldn't let me type a password.</p>
+      <p>That was the moment the caps lock came on.</p>
+
+      <h2>The yelling was the bug report</h2>
+      <p>Here's the funny part. Under all the shouting, it was a perfect bug list:</p>
+      <ul>
+        <li>The exe and the desktop shortcut were out of date.</li>
+        <li>I couldn't put my token in again.</li>
+        <li>The app needed a menu bar with settings, so I could actually use it.</li>
+      </ul>
+      <p>Somebody calm would have said that more nicely. They wouldn't have said it more clearly.</p>
+
+      <h2>The fix</h2>
+      <p>Version 0.8 got a menu bar: File, Settings and Help. Settings has a Bot token option, with a Paste button and a Show button so you can check what you put in. The token isn't stuck anymore.</p>
+      <p>Then I kept going. 0.9 lets you choose which channels get their chat saved. 0.10 added automatic backups and a progress bar. 0.11 is a proper installer with an uninstaller, so updating means running one file instead of wondering which exe is the real one. Four versions after the yelling. Same evening.</p>
+
+      <h2>So here's my advice</h2>
+      <p>If at first you don't succeed, you're allowed to be mad about it. Type in all caps. Say the thing. Making stuff is frustrating, and acting like it isn't doesn't make you better at it.</p>
+      <p>Just don't stop there. The scream isn't the end of the work, it's usually where you find out what the work actually is. Mine told me exactly what was missing. Then I apologized, because I was raised right, and then I tried again.</p>
+      <p>Four versions later, it has a menu bar and an installer. lol.</p>
+    </article>
+  </main>
+  <script src="/js/data/games.js"></script>
+  <script src="/js/data/posts.js"></script>
+  <script src="/js/data/products.js"></script>
+  <script src="/js/site.js"></script>
+</body>
+</html>
