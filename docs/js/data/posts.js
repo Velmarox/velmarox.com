@@ -34,9 +34,9 @@ window.DISCORD = 'https://discord.gg/dcsAHeymNd';
 
 window.POSTS = [
   {
-    slug: 'scream-at-your-computer-and-try-again',
+    slug: 'update-the-exe',
     title: 'Update the exe (sorry for yelling)', date: '2026-10-14', tag: 'Thoughts',
-    cover: '/blog/scream-at-your-computer-and-try-again/cover.jpg',
+    cover: '/blog/update-the-exe/cover.jpg',
     excerpt: 'Last night I yelled at my app in all caps, then apologized to it. The yelling turned out to be the best bug report I wrote all week.'
   },
   {
