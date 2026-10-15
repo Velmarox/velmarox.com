@@ -35,7 +35,7 @@ window.DISCORD = 'https://discord.gg/dcsAHeymNd';
 window.POSTS = [
   {
     slug: 'scream-at-your-computer-and-try-again',
-    title: 'If at First You Don\'t Succeed: Scream at Your Computer And Try Again', date: '2026-10-14', tag: 'Thoughts',
+    title: 'Update the exe (sorry for yelling)', date: '2026-10-14', tag: 'Thoughts',
     cover: '/blog/scream-at-your-computer-and-try-again/cover.jpg',
     excerpt: 'Last night I yelled at my app in all caps, then apologized to it. The yelling turned out to be the best bug report I wrote all week.'
   },
