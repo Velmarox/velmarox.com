@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.32.3-alpha (2026-10-15)
+- "If at First You Don't Succeed: Scream at Your Computer And Try Again" is renamed "Update the exe (sorry for
+  yelling)". Its address stays blog/scream-at-your-computer-and-try-again/.
+
 v0.32.2-alpha (2026-10-15)
 - "Scream at Your Computer And Try Again": the banner goes back to "Update the exe and the shortcut" with "sorry for
   yelling." The post text keeps the paraphrased opening.
