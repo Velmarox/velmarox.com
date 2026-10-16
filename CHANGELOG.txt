@@ -5,6 +5,11 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.33.0-alpha (2026-10-16)
+- New blog post: "Things that went right" (blog/things-that-went-right/). A client consult that went well, the
+  first real inquiry through Studio Desk's push notifications, and a P.S. photo of Django. Its banner is
+  art/banners/things-that-went-right.html.
+
 v0.32.4-alpha (2026-10-15)
 - "Update the exe (sorry for yelling)" moves to blog/update-the-exe/ (was blog/scream-at-your-computer-and-try-again/,
   which now shows the 404 page). Its banner is art/banners/update-the-exe.html. The post is rewritten around the

@@ -34,6 +34,12 @@ window.DISCORD = 'https://discord.gg/dcsAHeymNd';
 
 window.POSTS = [
   {
+    slug: 'things-that-went-right',
+    title: 'Things that went right', date: '2026-10-16', tag: 'Thoughts',
+    cover: '/blog/things-that-went-right/cover.jpg',
+    excerpt: 'A client consult where the math held up, and the first real inquiry through my website. It was spam. It still counts.'
+  },
+  {
     slug: 'update-the-exe',
     title: 'Update the exe (sorry for yelling)', date: '2026-10-14', tag: 'Thoughts',
     cover: '/blog/update-the-exe/cover.jpg',
