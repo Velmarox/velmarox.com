@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  iPhone lock screen wallpaper, 1290x2796: a QR code for velmarox.com and one for merwinwebdesignz.com.
+  The top 1100px stays empty for the clock; the horizon is the Merwin Web Designz mark (the ridgeline M)
+  stretched across the screen, under the velmarox crimson sky. Render with tools/build_wallpaper.mjs.
+  QR sources: qr-velmarox.svg, qr-mwd.svg (segno, error correction Q).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=Saira:ital,wght@1,800&family=Inter+Tight:wght@500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1290px; height: 2796px; overflow: hidden; }
+  body {
+    position: relative; background: #0b0b0d; color: #f2f2f4;
+    background:
+      linear-gradient(rgba(255,255,255,.03) 2px, transparent 2px) 0 0 / 86px 86px,
+      linear-gradient(90deg, rgba(255,255,255,.03) 2px, transparent 2px) 0 0 / 86px 86px,
+      radial-gradient(ellipse 120% 55% at 50% 0%, #4a0c16 0%, #1d090d 45%, #0b0b0d 80%);
+  }
+
+  /* horizon */
+  .range { position: absolute; left: 0; top: 900px; width: 1290px; height: 700px; }
+
+  /* cards */
+  .card { position: absolute; top: 1620px; width: 545px; height: 870px; }
+  .card .head { height: 190px; display: flex; align-items: center; justify-content: center; }
+  .card .plate { margin: 0 auto; width: 455px; height: 455px; padding: 38px; }
+  .card .plate img { display: block; width: 100%; height: 100%; }
+  .card .url { margin-top: 34px; text-align: center; }
+  .card .sub { margin-top: 12px; text-align: center; }
+
+  /* velmarox: crimson frame with cut corners, yellow, hazard stripes */
+  .vrx { left: 70px; background: #e3122d;
+    clip-path: polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px); }
+  .vrx .in { position: absolute; inset: 4px; background: #141418;
+    clip-path: polygon(28px 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%, 0 28px); }
+  .vrx .head img { height: 128px; filter: drop-shadow(0 0 14px rgba(227,18,45,.45)); }
+  .vrx .plate { background: #f2f2f4;
+    clip-path: polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px); }
+  .vrx .url { font: italic 800 50px/1 "Saira", sans-serif; color: #f5e400; letter-spacing: .01em; }
+  .vrx .sub { font: 700 27px/1 "Saira Condensed", sans-serif; color: #9a9aa6; letter-spacing: .14em; text-transform: uppercase; }
+  .vrx .sub b { color: #e3122d; }
+  .vrx .stripe { position: absolute; left: 0; right: 0; bottom: 0; height: 26px;
+    background: repeating-linear-gradient(-45deg, #f5e400 0 22px, #141418 22px 44px); }
+
+  /* Merwin Web Designz: flat panel, hairline border, orange top edge, ridgeline mark */
+  .mwd { right: 70px; background: #16181D; border: 2px solid #2B3038; border-top: 5px solid #FF8A2B; border-radius: 12px; }
+  .mwd .head { gap: 26px; }
+  .mwd .head img { width: 104px; height: 104px; }
+  .mwd .wm b { display: block; font: 500 40px/1 "Inter Tight", sans-serif; letter-spacing: .42em; margin-right: -.42em; }
+  .mwd .wm span { display: block; margin-top: 14px; font: 500 19px/1 "JetBrains Mono", monospace; letter-spacing: .36em; color: #8B96A7; }
+  .mwd .plate { background: #F4F2ED; border-radius: 10px; }
+  .mwd .url { font: 500 27px/50px "JetBrains Mono", monospace; letter-spacing: .02em; color: #F4F2ED; }
+  .mwd .url i { font-style: normal; color: #FF8A2B; }
+  .mwd .sub { font: 500 19px/27px "JetBrains Mono", monospace; letter-spacing: .22em; color: #8B96A7; text-transform: uppercase; }
+  .mwd .rule { position: absolute; left: 50%; bottom: 40px; width: 150px; height: 5px; margin-left: -75px; background: #FF8A2B; }
+
+  .foot { position: absolute; left: 0; right: 0; bottom: 0; height: 30px;
+    background: repeating-linear-gradient(-45deg, #f5e400 0 30px, #0b0b0d 30px 60px); }
+</style>
+</head>
+<body>
+  <!-- The MWD mark's M (7,23.5 12.4,12 16,18.2 19.6,9.5 25,23.5) scaled to the full width. -->
+  <svg class="range" viewBox="0 0 1290 700" aria-hidden="true">
+    <defs>
+      <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#FF9F45"/>
+        <stop offset=".5" stop-color="#FF6B9D"/>
+        <stop offset="1" stop-color="#8B7BF0"/>
+      </linearGradient>
+      <linearGradient id="back" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e3122d" stop-opacity=".55"/>
+        <stop offset=".6" stop-color="#e3122d" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#16181D"/>
+        <stop offset=".5" stop-color="#0E0F11"/>
+        <stop offset="1" stop-color="#0E0F11" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <!-- back range, velmarox crimson -->
+    <path d="M0 330 L170 250 L300 330 L520 140 L700 300 L1000 200 L1290 360 V700 H0Z" fill="url(#back)"/>
+    <!-- front range: the M -->
+    <path d="M-20 620 L387 259 L645 454 L903 180 L1310 620 V700 H-20Z" fill="url(#ground)"/>
+    <path d="M-20 620 L387 259 L645 454 L903 180 L1310 620" fill="none" stroke="url(#edge)" stroke-width="10" stroke-linejoin="round"/>
+  </svg>
+
+  <div class="card vrx">
+    <div class="in">
+      <div class="head"><img src="vrx-games.png" alt="VRX Games"></div>
+      <div class="plate"><img src="qr-velmarox.svg" alt=""></div>
+      <p class="url">VELMAROX.COM</p>
+      <p class="sub">Games <b>/</b> Blog <b>/</b> Fun stuff</p>
+      <div class="stripe"></div>
+    </div>
+  </div>
+
+  <div class="card mwd">
+    <div class="head">
+      <img src="mwd-mark.svg" alt="">
+      <span class="wm"><b>MERWIN</b><span>WEB DESIGNZ</span></span>
+    </div>
+    <div class="plate"><img src="qr-mwd.svg" alt=""></div>
+    <p class="url">merwinwebdesignz<i>.com</i></p>
+    <p class="sub">Websites &amp; cards</p>
+    <div class="rule"></div>
+  </div>
+
+  <div class="foot"></div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Merwin Web Designz">
+  <title>Merwin Web Designz</title>
+  <defs>
+    <linearGradient id="mwEdge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF9F45"/>
+      <stop offset="0.48" stop-color="#FF6B9D"/>
+      <stop offset="1" stop-color="#8B7BF0"/>
+    </linearGradient>
+    <linearGradient id="mwPeak" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF9F45"/>
+      <stop offset="1" stop-color="#FFBD7F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Tile. The fill matches the ink-800 token so the mark sits flush on a panel. -->
+  <rect x="1" y="1" width="30" height="30" rx="7.5" fill="#16141C"/>
+  <rect x="1" y="1" width="30" height="30" rx="7.5" fill="none" stroke="url(#mwEdge)" stroke-width="1.5"/>
+
+  <!-- The M is drawn as a ridgeline: two peaks and the valley between them. It reads
+       as a letter at 30px in the header and as a mountain range at 512px on a share
+       card, which is the whole point — Montana, and a line that goes up. -->
+  <path d="M7 23.5 L12.4 12 L16 18.2 L19.6 9.5 L25 23.5"
+        fill="none" stroke="url(#mwPeak)" stroke-width="2.4"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
