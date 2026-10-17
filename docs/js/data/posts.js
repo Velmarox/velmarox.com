@@ -34,6 +34,12 @@ window.DISCORD = 'https://discord.gg/dcsAHeymNd';
 
 window.POSTS = [
   {
+    slug: 'conveyance',
+    title: 'The Crossroads of Game Design and Web UX', date: '2026-10-17', tag: 'Thoughts',
+    cover: '/blog/conveyance/cover.jpg',
+    excerpt: 'Games teach you by letting you fail. Websites teach you by making sure you never do. Conveyance, the yellow paint, and the form that wipes itself.'
+  },
+  {
     slug: 'update-the-exe',
     title: 'Update the exe (sorry for yelling)', date: '2026-10-14', tag: 'Thoughts',
     cover: '/blog/update-the-exe/cover.jpg',
