@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.33.1-alpha (2026-10-17)
+- "The Crossroads of Game Design and Web UX": the Super Mario Bros. example is now Mega Man X (wall slides, Vile and
+  Zero), with a link to the video that explains conveyance best.
+
 v0.33.0-alpha (2026-10-17)
 - New blog post: "The Crossroads of Game Design and Web UX" (blog/conveyance/), on conveyance: how games teach
   through level design and let you fail, and how websites teach through convention and catch errors before you do.
