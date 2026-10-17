@@ -5,6 +5,11 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.33.0-alpha (2026-10-17)
+- New blog post: "The Crossroads of Game Design and Web UX" (blog/conveyance/), on conveyance: how games teach
+  through level design and let you fail, and how websites teach through convention and catch errors before you do.
+  Its banner is art/banners/conveyance.html.
+
 v0.32.4-alpha (2026-10-15)
 - "Update the exe (sorry for yelling)" moves to blog/update-the-exe/ (was blog/scream-at-your-computer-and-try-again/,
   which now shows the 404 page). Its banner is art/banners/update-the-exe.html. The post is rewritten around the
