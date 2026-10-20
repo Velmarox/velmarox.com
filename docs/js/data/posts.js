@@ -34,6 +34,12 @@ window.DISCORD = 'https://discord.gg/dcsAHeymNd';
 
 window.POSTS = [
   {
+    slug: 'why-war-chats',
+    title: 'Nobody Knew What They Were Doing', date: '2026-10-20', tag: 'Thoughts', game: 'war-chats',
+    cover: '/blog/why-war-chats/cover.jpg',
+    excerpt: 'History bored me as a kid. Then a YouTube video turned World War II into a group chat, and I realized every empire in the textbook was a group of people winging it.'
+  },
+  {
     slug: 'conveyance',
     title: 'The Crossroads of Game Design and Web UX', date: '2026-10-17', tag: 'Thoughts',
     cover: '/blog/conveyance/cover.jpg',
