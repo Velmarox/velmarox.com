@@ -275,6 +275,152 @@ button { font: inherit; color: inherit; }
 }
 </style>
 
+<style>
+/* Histcord intro: a loading screen, then a login that types itself, then the app. Click or any key skips it. */
+#hc { position: fixed; inset: 0; z-index: 100; background: var(--d-3); color: var(--d-text); font-family: var(--f-body); display: grid; place-items: center; transition: opacity 0.35s ease; }
+#hc.out { opacity: 0; pointer-events: none; }
+#hc .stage { display: none; }
+#hc .stage.on { display: grid; }
+#hcLoad { justify-items: center; gap: 22px; text-align: center; padding: 0 16px; }
+#hcLoad .logo { width: 96px; height: 96px; }
+#hcLoad .glass { transform-origin: 32px 30px; animation: hcflip 1.4s cubic-bezier(.6, 0, .3, 1) infinite; }
+@keyframes hcflip { 0%, 45% { transform: rotate(0); } 70%, 100% { transform: rotate(180deg); } }
+.hcword { font: 700 34px var(--f-display); letter-spacing: 0.08em; color: #fff; text-transform: uppercase; }
+.hcdyk { font: 700 12px var(--f-body); letter-spacing: 0.1em; color: var(--d-mute); text-transform: uppercase; }
+.hctip { max-width: 420px; font-size: 15px; line-height: 1.45; color: var(--d-text); min-height: 44px; }
+#hcLogin { place-items: center; width: 100%; height: 100%; background:
+  radial-gradient(ellipse at 20% 20%, rgba(88, 101, 242, 0.35), transparent 55%),
+  radial-gradient(ellipse at 85% 80%, rgba(165, 58, 74, 0.35), transparent 50%), var(--d-3); }
+.hccard { width: min(480px, calc(100% - 32px)); box-sizing: border-box; background: var(--d-bg); padding: 32px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
+.hcbrand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 18px; }
+.hcbrand svg { width: 36px; height: 36px; }
+.hcbrand b { font: 700 24px var(--f-display); letter-spacing: 0.08em; color: #fff; text-transform: uppercase; }
+.hccard h1 { margin: 0; text-align: center; font-size: 24px; font-weight: 600; color: #f2f3f5; }
+.hccard .sub { margin: 6px 0 20px; text-align: center; color: #b5bac1; font-size: 15px; }
+.hclbl { display: block; margin: 0 0 8px; font: 700 12px var(--f-body); letter-spacing: 0.02em; color: #b5bac1; text-transform: uppercase; }
+.hclbl i { color: #f23f42; font-style: normal; }
+.hcin { height: 40px; box-sizing: border-box; padding: 0 10px; margin-bottom: 20px; background: var(--d-3); color: var(--d-text); font-size: 16px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; }
+.hcin.typing::after { content: ""; display: inline-block; width: 2px; height: 20px; margin-left: 1px; background: #dbdee1; animation: blink 1s steps(1) infinite; }
+.hcin.pw { letter-spacing: 0.18em; }
+.hcforgot { margin: -12px 0 20px; font-size: 14px; color: #00a8fc; }
+.hcbtn { height: 44px; width: 100%; border: 0; background: var(--blurple); color: #fff; font: 500 16px var(--f-body); display: grid; place-items: center; transition: background 0.15s, transform 0.1s; }
+.hcbtn.press { background: #4752c4; transform: translateY(1px); }
+.hcdots { display: none; gap: 5px; }
+.hcbtn.wait .hcdots { display: flex; }
+.hcbtn.wait .hct { display: none; }
+.hcdots i { width: 7px; height: 7px; background: #fff; animation: hcdot 0.9s ease-in-out infinite; }
+.hcdots i:nth-child(2) { animation-delay: 0.15s; } .hcdots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes hcdot { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: none; } }
+.hcreg { margin-top: 10px; font-size: 14px; color: var(--d-mute); }
+.hcreg span { color: #00a8fc; }
+.hcskip { position: fixed; right: 16px; bottom: 14px; font-size: 12px; color: var(--d-mute); }
+
+/* the WWII server, pinned to the top of the rail with its own icon */
+.srv.img { background: center / cover no-repeat var(--img); color: transparent; }
+.srv.img:hover, .srv.img.on { background: center / cover no-repeat var(--img); border-radius: 50%; }
+
+/* pinned "what is this" message under the credit box */
+.pinmsg { margin: 10px 16px 0; padding: 12px 14px; background: var(--d-2); border-left: 4px solid var(--amber); color: var(--d-text); font-size: 14px; line-height: 1.5; }
+.pinmsg .pmh { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--d-mute); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.pinmsg .pmh svg { width: 14px; height: 14px; color: var(--amber); }
+.pinmsg .pmn { color: #fff; font-size: 15px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.pinmsg .bot { background: var(--blurple); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 5px; letter-spacing: 0.02em; }
+.pinmsg p { margin: 6px 0 0; }
+.pinmsg b { color: #fff; }
+.pinmsg kbd { font: 500 12px var(--f-mono); background: var(--d-3); padding: 0 5px; color: #fff; }
+</style>
+
+<div id="hc" role="dialog" aria-label="Histcord is starting">
+  <section class="stage on" id="hcLoad">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M8 6h48v40H30l-12 12V46H8z" fill="#5865f2"/>
+      <g class="glass" fill="#fff">
+        <rect x="21" y="13" width="22" height="3"/><rect x="21" y="41" width="22" height="3"/>
+        <path d="M23 16h18l-7 11v4l7 10H23l7-10v-4z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="miter"/>
+        <path d="M25.5 18h13l-4.5 7h-4z"/><path d="M27 39l5-6 5 6z"/>
+      </g>
+    </svg>
+    <div class="hcword">Histcord</div>
+    <div class="hcdyk">Did you know</div>
+    <div class="hctip" id="hcTip"></div>
+  </section>
+  <section class="stage" id="hcLogin">
+    <div class="hccard">
+      <div class="hcbrand"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8 6h48v40H30l-12 12V46H8z" fill="#5865f2"/><rect x="21" y="13" width="22" height="3" fill="#fff"/><rect x="21" y="41" width="22" height="3" fill="#fff"/><path d="M23 16h18l-7 11v4l7 10H23l7-10v-4z" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M25.5 18h13l-4.5 7h-4z" fill="#fff"/><path d="M27 39l5-6 5 6z" fill="#fff"/></svg><b>Histcord</b></div>
+      <h1>Welcome back!</h1>
+      <p class="sub">History is about to repeat itself.</p>
+      <span class="hclbl">Username <i>*</i></span>
+      <div class="hcin" id="hcUser"></div>
+      <span class="hclbl">Password <i>*</i></span>
+      <div class="hcin pw" id="hcPass"></div>
+      <div class="hcforgot">Forgot your password? So did Rome.</div>
+      <div class="hcbtn" id="hcBtn"><span class="hct">Log In</span><span class="hcdots"><i></i><i></i><i></i></span></div>
+      <div class="hcreg">Need an account? <span>Too late, the war already started.</span></div>
+    </div>
+  </section>
+  <div class="hcskip">Click or press any key to skip</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var NAMES = ['xX_CaesarSalad_Xx', 'StabbedBy23Senators', 'RasputinWontDie', 'GenghisKhanDoIt', 'HenryVIIIsDivorceLawyer',
+    'SirFartsALot1066', 'EmuWarVeteran1932', 'PigWarSurvivor1859', 'BigCatherineEnergy', 'VladTheInhaler',
+    'IvanTheMildlyAnnoying', 'CharlemagnesMom', 'Lasted38MinInZanzibar', 'HannibalsElephantGuy', 'LetThemEatCake69',
+    'DefinitelyNotASpy', 'BeefWellingtonDuke', 'TrojanHorseGirl', 'AttilaTheHunny', 'KaiserDeezNuts',
+    'PeterTheGreatSize', 'LouisXIVsWigGuy', 'ColumbusWasLost', 'ManifestDestinysChild', 'BoudicaBurntLondon',
+    'ChurchillsCigarAsh', 'CommodusDidNothingWrong', 'WrongTurnInSarajevo', 'ShotMidSpeechStillTalked', 'LeifDidItFirst',
+    'StormedTheBastille4Snacks', 'BjornIronbuttocks', 'PlagueDoctorPhD', 'BloodyMaryOnTheRocks', 'HadriansWallflower',
+    'PompeiiWasntMe', 'BenFranklinsKiteLawyer', 'NeroFiddledHere', 'CaligulasHorseForConsul', 'SpartanAbsOnly',
+    'MongolPonyExpress', 'xX_TeaPartyDumper_Xx', 'ArchdukeOfFartington', 'NeitherHolyNorRoman', 'SunTzuSaysLater',
+    'UxbridgesLeftLeg', 'NapoleonComplexHaver', 'MooseKnuckleMcKinley', 'ThomasPaineInTheAss', 'DarthVercingetorix',
+    'BlackDeathMetalBand', 'GoodEmperorNumber6'];
+  var TIPS = ['The Hundred Years’ War lasted 116 years.',
+    'Cleopatra lived closer in time to the Moon landing than to the building of the Great Pyramid.',
+    'The shortest war on record, Britain against Zanzibar in 1896, was over in about 40 minutes.',
+    'Oxford University was teaching students before the Aztecs founded Tenochtitlan.',
+    'In 1859 the US and Britain nearly went to war over a shot pig. The pig was the only casualty.',
+    'Napoleon was about 5’7”, normal for his time. The “short” thing was mostly British cartoons.',
+    'Wojtek, a brown bear, was enlisted in the Polish army in WWII and carried ammunition at Monte Cassino.',
+    'In 1932 Australia sent soldiers with machine guns against the emus. The emus won.',
+    'Lord Uxbridge lost his leg at Waterloo. The leg got its own grave and became a tourist attraction.',
+    'Ivan the Terrible’s nickname, Grozny, is closer to “Ivan the Formidable.”',
+    'The line that split Korea in 1945 was drawn by two US officers in about half an hour.',
+    'The Holy Roman Empire, Voltaire said, was neither holy, nor Roman, nor an empire.'];
+  var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+  var $ = function (id) { return document.getElementById(id); };
+  var hc = $('hc'), timers = [], done = false;
+  var reduce = false; try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+  function finish() {
+    if (done) return; done = true;
+    timers.forEach(clearTimeout);
+    hc.classList.add('out');
+    setTimeout(function () { hc.remove(); }, 400);
+  }
+  // eat input while the intro is up, so the first keypress skips it instead of advancing the chat
+  function skip(e) { if (done) return; e.preventDefault(); e.stopImmediatePropagation(); finish(); }
+  addEventListener('keydown', skip, true);
+  hc.addEventListener('click', skip);
+
+  $('hcTip').textContent = pick(TIPS);
+  var name = pick(NAMES), pwLen = 10 + Math.floor(Math.random() * 6);
+  var user = $('hcUser'), pass = $('hcPass'), btn = $('hcBtn');
+  var t = reduce ? 600 : 2300;
+  at(t, function () { $('hcLoad').classList.remove('on'); $('hcLogin').classList.add('on'); });
+  t += 450;
+  // type the username fast, a little uneven like a real person
+  user.classList.add('typing');
+  for (var i = 1; i <= name.length; i++) (function (n) { at(t, function () { user.textContent = name.slice(0, n); }); })(i), t += 28 + Math.random() * 30;
+  at(t += 120, function () { user.classList.remove('typing'); pass.classList.add('typing'); });
+  // the password is only dots: there is no real password anywhere
+  for (var j = 1; j <= pwLen; j++) (function (n) { at(t, function () { pass.textContent = new Array(n + 1).join('•'); }); })(j), t += 24 + Math.random() * 22;
+  at(t += 150, function () { pass.classList.remove('typing'); btn.classList.add('press'); });
+  at(t += 140, function () { btn.classList.remove('press'); btn.classList.add('wait'); });
+  at(t += 900, finish);
+})();
+</script>
+
 <div id="app">
   <section id="mapPane" aria-label="Map">
     <svg id="map" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" role="img" aria-label="World map following the war">
@@ -654,10 +800,13 @@ var HASH = '<span class="ic ic-h">#</span>';
 var LOCK = '<span class="ic ic-l"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 9V7a5 5 0 0 0-10 0v2H5v12h14V9zm-8-2a3 3 0 0 1 6 0v2H9z"/></svg></span>';
 function slug(t) { return t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
 function yrs(d) { var m = /\b(1[89]\d\d|20\d\d)\b/.exec(d); return m ? m[1] : ''; }
+var PIN = 'wwii';
 function renderRail() {
   var h = '<button class="srv home' + (mode === 'home' ? ' on' : '') + '" data-go="home" type="button" tabindex="-1" aria-label="Direct messages" title="Direct messages"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></button><div class="sep"></div>';
-  var g = null;
+  var g = null, pin = byId[PIN];
+  h += '<button class="srv img' + (mode === 'war' && W && W.id === PIN ? ' on' : '') + '" data-war="' + PIN + '" style="--c:' + pin.color + ';--img:url(wwii-server.jpg)" type="button" tabindex="-1" aria-label="' + esc(pin.name) + ' (pinned)" title="' + esc(pin.name) + ' · ' + esc(pin.years) + ' · pinned">' + esc(pin.short) + '</button><div class="sep"></div>';
   WARS.forEach(function (w) {
+    if (w.id === PIN) return;
     if (g !== null && w.grp !== g) h += '<div class="sep"></div>';
     g = w.grp;
     h += '<button class="srv' + (w.soon ? ' soon' : '') + (mode === 'war' && W && W.id === w.id ? ' on' : '') + '" data-war="' + w.id + '" style="--c:' + w.color + '" type="button" tabindex="-1" aria-label="' + esc(w.name) + (w.soon ? ' (coming soon)' : '') + '" title="' + esc(w.name) + ' · ' + esc(w.years) + (w.soon ? ' · coming soon' : '') + '">' + esc(w.short) + '</button>';
@@ -746,12 +895,20 @@ var CREDIT = {
   roman: '<b>Original script</b>, written for this site in the style of <a href="' + SRC + '" target="_blank" rel="noopener">Server History&rsquo;s WW2 chat</a>, the video that started it.',
   korea: '<b>Original script</b>, written for this site in the style of <a href="' + SRC + '" target="_blank" rel="noopener">Server History&rsquo;s WW2 chat</a>, the video that started it.'
 };
+var PINNED = '<div class="pmh"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6h2v-6h5v-2z"/></svg>Pinned message</div>' +
+  '<div class="pmh"><span class="pmn">Histcord</span><span class="bot">BOT</span></div>' +
+  '<p><b>Welcome to Histcord, where every war is a group chat.</b> Each server on the left is a war. The countries (and a few emperors) are the users, and every big event gets its own channel.</p>' +
+  '<p>The map on the right follows the chat: it goes where the conversation is, tags whoever is talking, and recolors the borders as countries invade, switch sides or stop existing. The chat clock runs midnight to midnight across the whole war, so the timestamps line up with the real dates.</p>' +
+  '<p>The jokes are jokes, but the events are real. Open <b>Notes</b> on the map any time for what actually happened.</p>' +
+  '<p>History was made by people who had no idea what they were doing. Just like your group chat.</p>' +
+  '<p><kbd>Space</kbd> next message &middot; <kbd>&larr;</kbd> back &middot; <kbd>P</kbd> autoplay &middot; <kbd>R</kbd> restart &middot; <kbd>M</kbd> ding &middot; <kbd>N</kbd> music</p>';
 function rebuild() {
   log.replaceChildren();
   var wel = document.createElement('div'); wel.className = 'welcome';
   wel.innerHTML = '<div class="big">#</div><h1>Welcome to #general!</h1><p>This is the start of the #general channel.' + (W.soon ? '' : ' ' + esc(W.name) + ' as a group chat.') + '</p>';
   log.appendChild(wel);
   if (CREDIT[W.id]) { var c = document.createElement('div'); c.className = 'soonnote credit'; c.innerHTML = CREDIT[W.id]; log.appendChild(c); }
+  if (W.id === PIN) { var pm = document.createElement('div'); pm.className = 'pinmsg'; pm.innerHTML = PINNED; log.appendChild(pm); }
   if (W.soon) { var n = document.createElement('div'); n.className = 'soonnote'; n.innerHTML = '<b>Placeholder.</b> The ' + esc(W.name) + ' chat has not been added yet. When the transcript is ready it will play here, with its own map, facts and timeline.'; log.appendChild(n); }
   st.n = null; st.m = -99; lastClock = '12:00 AM';
   for (var i = 0; i < cur; i++) { if (L[i].k === 'm') lastClock = L[i].t; addLine(i, false); }
@@ -834,7 +991,7 @@ measure();
 
 navHidden = window.innerWidth <= 1250; navHide(navHidden);
 var startId = 'wwii';
-try { var sv = JSON.parse(localStorage.getItem('warchats') || 'null'); if (sv && sv.p) { prog = sv.p; if (sv.w && byId[sv.w]) startId = sv.w; } } catch (e) {}
+try { var sv = JSON.parse(localStorage.getItem('warchats') || 'null'); if (sv && sv.p) { prog = sv.p; /* always open on the pinned server */ } } catch (e) {}
 try { var uz = parseFloat(localStorage.getItem('warchats-ui')); setUiZ(uz > 0 ? uz : 1, false); } catch (e) { setUiZ(1, false); }
 try { var qw = new URLSearchParams(location.search).get('war'); if (qw && byId[qw]) startId = qw; } catch (e) {}
 loadWar(startId);
