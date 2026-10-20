@@ -811,15 +811,18 @@ var LOCK = '<span class="ic ic-l"><svg viewBox="0 0 24 24" fill="currentColor" a
 function slug(t) { return t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
 function yrs(d) { var m = /\b(1[89]\d\d|20\d\d)\b/.exec(d); return m ? m[1] : ''; }
 var PINW = 'wwii';
+/* wars with a picture in servers/<id>.jpg; the rest show their short name */
+var ICONS = { wwii: 1, roman: 1, threek: 1, boer: 1, wwi: 1, pacific: 1, korea: 1 };
+function icon(id) { return ICONS[id] ? ';--img:url(servers/' + id + '.jpg)' : ''; }
 function renderRail() {
   var h = '<button class="srv home' + (mode === 'home' ? ' on' : '') + '" data-go="home" type="button" tabindex="-1" aria-label="Direct messages" title="Direct messages"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></button><div class="sep"></div>';
   var g = null, pin = byId[PINW];
-  h += '<button class="srv img' + (mode === 'war' && W && W.id === PINW ? ' on' : '') + '" data-war="' + PINW + '" style="--c:' + pin.color + ';--img:url(wwii-server.jpg)" type="button" tabindex="-1" aria-label="' + esc(pin.name) + ' (pinned)" title="' + esc(pin.name) + ' · ' + esc(pin.years) + ' · pinned">' + esc(pin.short) + '</button><div class="sep"></div>';
+  h += '<button class="srv img' + (mode === 'war' && W && W.id === PINW ? ' on' : '') + '" data-war="' + PINW + '" style="--c:' + pin.color + '' + icon(PINW) + '" type="button" tabindex="-1" aria-label="' + esc(pin.name) + ' (pinned)" title="' + esc(pin.name) + ' · ' + esc(pin.years) + ' · pinned">' + esc(pin.short) + '</button><div class="sep"></div>';
   WARS.forEach(function (w) {
     if (w.id === PINW) return;
     if (g !== null && w.grp !== g) h += '<div class="sep"></div>';
     g = w.grp;
-    h += '<button class="srv' + (w.soon ? ' soon' : '') + (mode === 'war' && W && W.id === w.id ? ' on' : '') + '" data-war="' + w.id + '" style="--c:' + w.color + '" type="button" tabindex="-1" aria-label="' + esc(w.name) + (w.soon ? ' (coming soon)' : '') + '" title="' + esc(w.name) + ' · ' + esc(w.years) + (w.soon ? ' · coming soon' : '') + '">' + esc(w.short) + '</button>';
+    h += '<button class="srv' + (ICONS[w.id] ? ' img' : '') + (w.soon ? ' soon' : '') + (mode === 'war' && W && W.id === w.id ? ' on' : '') + '" data-war="' + w.id + '" style="--c:' + w.color + icon(w.id) + '" type="button" tabindex="-1" aria-label="' + esc(w.name) + (w.soon ? ' (coming soon)' : '') + '" title="' + esc(w.name) + ' · ' + esc(w.years) + (w.soon ? ' · coming soon' : '') + '">' + esc(w.short) + '</button>';
   });
   rail.innerHTML = h;
 }
