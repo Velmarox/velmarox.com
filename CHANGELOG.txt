@@ -5,6 +5,13 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.34.0-alpha (2026-10-20)
+- New game: War Chats (games/war-chats/), history as a Discord group chat with a live war-room map, border changes
+  and real-history notes. World War II (Server History's script, credited in the chat and on the page), the Roman
+  Empire and the Korean War. ?war=<id> opens a chat directly. New History category in the Games dropdown.
+- New blog post: "Nobody Knew What They Were Doing" (blog/why-war-chats/), on why War Chats exists. Its banner is
+  art/banners/war-chats.html, also used as the game's cover.
+
 v0.33.1-alpha (2026-10-17)
 - "The Crossroads of Game Design and Web UX": the Super Mario Bros. example is now Mega Man X (wall slides, Vile and
   Zero), with a link to the video that explains conveyance best.

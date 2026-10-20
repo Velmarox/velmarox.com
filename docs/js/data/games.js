@@ -48,10 +48,27 @@ window.CATEGORIES = {
   rpg: 'RPG',
   strategy: 'Strategy',
   idle: 'Idle',
-  story: 'Story'
+  story: 'Story',
+  history: 'History'
 };
 
 window.GAMES = [
+  {
+    slug: 'war-chats',
+    title: 'War Chats', tagline: 'History as a group chat, with a live map of who is talking, what borders moved, and what really happened.',
+    genres: ['history', 'story'], status: 'live', featured: true, trending: true, flag: 'Interactive',
+    released: '2026-10-20', updated: '2026-10-20', version: '1.0.0',
+    controls: 'Space or Next for each message; mouse or touch', platforms: 'Browser (best on desktop)', session: '20-40 minutes a war',
+    play: '/games/war-chats/play/',
+    thumb: '/games/war-chats/thumb.jpg', banner: '/games/war-chats/cover.jpg',
+    shots: ['/games/war-chats/shot-1.jpg', '/games/war-chats/shot-2.jpg', '/games/war-chats/shot-3.jpg', '/games/war-chats/shot-4.jpg'],
+    links: [{ label: 'Watch the video that started it', url: 'https://www.youtube.com/watch?v=51ZathOeW2E' }],
+    about: "Whole wars played out as a Discord server. Every country (and the odd emperor) is a user, every major event is a channel, and the chat clock runs from midnight to midnight across the war, so the time stamps line up with the real calendar.\n\nNext to the chat is a war-room map. It moves to wherever the conversation is, highlights who is talking, and recolors the borders as they change: who invaded whom, who switched sides, who stopped existing. Every scene has a Notes card with what actually happened, with dates and numbers, so the jokes come with the real story behind them.\n\nThree chats are in: World War II, the Roman Empire (all two thousand years of it) and the Korean War. World War I, the Pacific War, the Three Kingdoms, the Boer War, the Cold War and the War on Terror have their servers set up and are coming.\n\nThe World War II chat is the script from Server History's YouTube video IF WW2 WAS A DISCORD CHAT (HISTORICALLY ACCURATE). Every joke in it is theirs; the map, notes and timeline were added here. The Roman and Korean chats are original scripts written for this site in the same style.",
+    howto: ['Press Space (or Next) for the next message. Left arrow or Back steps back, R restarts.', 'Press P to let it play by itself.', 'Pick a war from the server icons on the left, and jump to any event from the channel list.', 'Click Notes on the map for the real history behind the current scene.', 'M turns the message ding off, N the music. The minus and plus buttons resize the chat.', 'Your place in every war is saved in your browser, so you can pick up where you left off.'],
+    log: [
+      { date: '2026-10-20', text: 'v1.0.0: on the site. World War II, the Roman Empire and the Korean War, each with its own map, notes and timeline.' }
+    ]
+  },
   {
     slug: 'contract-zero',
     title: 'Contract Zero', tagline: 'Creature bounties. One guy. The only way to win is to throw stuff into things.',
