@@ -1,0 +1,3 @@
+Gun models: "036 Weapon Pack" (All Weapon Pack.glb), from the user's Game Assets folder. Only 15 guns are used, pulled out by tools/extract-guns.mjs into guns.bin, guns.json, and palette.png.
+Muzzle flash textures (flash/): "BinbunVFX Muzzle Flash" (MuzzleFlashVFX.zip), made for Godot; only the PNG textures are used.
+Neither zip came with licence text. The terms should be confirmed where each pack was bought or downloaded before the game is put online.
