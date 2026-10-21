@@ -35,13 +35,54 @@ export const SKINS = {
 export const DEFAULT_SKIN = 'peach';
 
 // A rune is infused into one weapon for good. It changes what the weapon does and how it looks.
+// Runes come in three tiers: three of one tier merge into one of the next. tiers[n] is what
+// tier n + 1 does; text says it for the Armory.
 export const RUNES = {
-  fire:  { name: 'Fire Rune', text: 'Sets creatures alight: they burn for a while after each hit.', color: 0xff7a1a },
-  frost: { name: 'Frost Rune', text: 'Hits slow creatures down.', color: 0x7fd8ff },
-  shock: { name: 'Shock Rune', text: 'Hits arc to one more creature nearby.', color: 0xf8e040 },
-  venom: { name: 'Venom Rune', text: 'Hits poison; poison stacks.', color: 0x8fe040 },
-  blood: { name: 'Blood Rune', text: 'Hits heal you a little.', color: 0xe0203c },
+  fire: {
+    name: 'Fire Rune', color: 0xff7a1a,
+    tiers: [
+      { text: 'Sets creatures alight: they burn for a while after each hit.', burn: 0.2 },
+      { text: 'Burns hotter.', burn: 0.32 },
+      { text: 'Burns hotter still, and a creature that burns to death sets those nearby alight.', burn: 0.45, spread: true },
+    ],
+  },
+  frost: {
+    name: 'Frost Rune', color: 0x7fd8ff,
+    tiers: [
+      { text: 'Hits slow creatures down.', slow: 1.6 },
+      { text: 'Hits slow creatures down for longer.', slow: 2.6 },
+      { text: 'Slows for longer, and one hit in eight freezes a creature solid.', slow: 2.6, freeze: 0.125 },
+    ],
+  },
+  shock: {
+    name: 'Shock Rune', color: 0xf8e040,
+    tiers: [
+      { text: 'Hits arc to one more creature nearby.', arcs: 1 },
+      { text: 'Hits arc to two more creatures.', arcs: 2 },
+      { text: 'Hits arc to three more creatures, harder.', arcs: 3, arcShare: 0.65 },
+    ],
+  },
+  venom: {
+    name: 'Venom Rune', color: 0x8fe040,
+    tiers: [
+      { text: 'Hits poison; poison stacks five deep.', poison: 0.1, stacks: 5 },
+      { text: 'Stronger poison, stacking seven deep.', poison: 0.13, stacks: 7 },
+      { text: 'Stacks seven deep, and a full stack bursts for all its poison at once.', poison: 0.13, stacks: 7, burst: true },
+    ],
+  },
+  blood: {
+    name: 'Blood Rune', color: 0xe0203c,
+    tiers: [
+      { text: 'Hits heal you a little.', heal: 0.03 },
+      { text: 'Hits heal you more.', heal: 0.045 },
+      { text: 'Hits heal you more, and healing past full becomes up to 25 plate.', heal: 0.06, overheal: 25 },
+    ],
+  },
 };
+export const RUNE_TIERS = 3;
+export const MERGE_COUNT = 3;           // runes of one tier that make one of the next
+export const SOCKET_COST = 5;           // tier I runes, of any kind, to open a weapon's second socket
+export const TIER_NAMES = ['I', 'II', 'III'];
 
 // The slot machine. Tokens are bought with coins and carry over between runs.
 export const TOKEN_PRICE = 60;

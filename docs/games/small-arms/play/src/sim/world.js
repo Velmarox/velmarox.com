@@ -7,6 +7,7 @@ import { makeRng } from './rng.js';
 import { weaponStats, barrel } from '../content/weapons.js';
 import { ENEMIES } from '../content/enemies.js';
 import { POWERS } from '../content/cards.js';
+import { RUNES } from '../content/loot.js';
 import { startState, think, angleDiff, ATTACKING } from './enemies.js';
 import { useAbility, usePower, abilityCooldown } from './effects.js';
 
@@ -95,7 +96,9 @@ export function createSim({
     held: Math.max(0, Math.min(held, loadout.length - 1)),
     weapons: loadout.map((w) => {
       const stats = weaponStats(w.id, w.level, ranks[w.id] ?? {}, bonus);
-      return { id: w.id, level: w.level, rune: w.rune ?? null, stats, ammo: stats.mag ?? 0, reloadT: 0, cooldown: 0, aim: 0, x: 0, y: 0, kick: 0 };
+      // runes: [{ id, tier }] from its sockets. rune is the first one's id, for its look.
+      const runes = w.runes ?? (w.rune ? [{ id: w.rune, tier: 0 }] : []);
+      return { id: w.id, level: w.level, rune: runes[0]?.id ?? null, runes, stats, ammo: stats.mag ?? 0, reloadT: 0, cooldown: 0, aim: 0, x: 0, y: 0, kick: 0 };
     }),
   };
   sim.target = sim.guy;
@@ -253,24 +256,51 @@ export function createSim({
     }
     if (!src.dot) {
       if (sim.buffs.vampire > 0) sim.heal(shown * 0.04);
-      if (src.rune) applyRune(e, src.rune, shown, src);
+      for (const r of src.runes ?? []) applyRune(e, r.id, RUNES[r.id].tiers[r.tier], shown, src);
     }
     emit({ type: 'hit', id: e.id, x: e.x, y: e.y, amount: shown, stunned: dazed, dot: Boolean(src.dot), rune: src.rune ?? null });
-    if (e.hp <= 0) kill(e);
+    // A rune's own damage (a venom burst) can have finished it already.
+    if (e.hp <= 0 && !e.dead) kill(e);
     return shown;
   }
   sim.damage = damage;
 
-  function applyRune(e, rune, amount, src) {
-    if (rune === 'fire') { e.burnDps = (e.burn > 0 ? e.burnDps * 0.5 : 0) + amount * 0.2; e.burn = 2.2; }
-    else if (rune === 'frost') e.slowT = 1.6;
-    else if (rune === 'venom') { e.poison.push({ dps: amount * 0.1, t: 3 }); if (e.poison.length > 5) e.poison.shift(); }
-    else if (rune === 'blood') sim.heal(amount * 0.03);
-    else if (rune === 'shock' && !src.chained) {
-      const next = nearestEnemy(e.x, e.y, 3.5, e);
-      if (next) {
-        emit({ type: 'zap', points: [[e.x, e.y], [next.x, next.y]], small: true });
-        damage(next, amount * 0.5, 0, 0, 0, { weapon: src.weapon, chained: true });
+  // What one rune does on a hit. t is its tier's numbers (content/loot.js).
+  function applyRune(e, rune, t, amount, src) {
+    if (e.dead && rune !== 'blood' && rune !== 'shock') return;
+    if (rune === 'fire') {
+      e.burnDps = (e.burn > 0 ? e.burnDps * 0.5 : 0) + amount * t.burn;
+      e.burn = 2.2;
+      if (t.spread) e.burnSpread = true;
+    } else if (rune === 'frost') {
+      e.slowT = Math.max(e.slowT, t.slow);
+      if (t.freeze && rng.chance(t.freeze)) e.frozen = Math.max(e.frozen, 0.8 * (e.kind === 'bigone' ? 0.5 : 1));
+    } else if (rune === 'venom') {
+      e.poison.push({ dps: amount * t.poison, t: 3 });
+      if (t.burst && e.poison.length >= t.stacks) {
+        // A full stack bursts: all the poison still to come lands at once.
+        const all = e.poison.reduce((n, p) => n + p.dps * p.t, 0);
+        e.poison = [];
+        emit({ type: 'blast', x: e.x, y: e.y, r: 1.2, rune: 'venom' });
+        damage(e, all, 0, 0, 0, { weapon: src.weapon, dot: true, rune: 'venom' });
+      } else if (e.poison.length > t.stacks) e.poison.shift();
+    } else if (rune === 'blood') {
+      const g = sim.guy;
+      const heal = amount * t.heal;
+      const over = heal - (g.maxHp - g.hp);
+      sim.heal(heal);
+      if (t.overheal && over > 0 && g.plate < t.overheal) g.plate = Math.min(t.overheal, g.plate + over);
+    } else if (rune === 'shock' && !src.chained) {
+      // Each arc jumps on from the last creature it hit.
+      const hit = new Set([e]);
+      let from = e;
+      for (let i = 0; i < t.arcs; i++) {
+        const next = nearestEnemy(from.x, from.y, 3.5, hit);
+        if (!next) break;
+        emit({ type: 'zap', points: [[from.x, from.y], [next.x, next.y]], small: true });
+        hit.add(next);
+        damage(next, amount * (t.arcShare ?? 0.5), 0, 0, 0, { weapon: src.weapon, chained: true });
+        from = next;
       }
     }
   }
@@ -279,6 +309,17 @@ export function createSim({
     e.dead = true;
     sim.kills++;
     emit({ type: 'death', id: e.id, kind: e.kind, x: e.x, y: e.y, r: e.r, boss: e.kind === 'bigone' });
+    // A tier III fire rune: dying while alight sets the creatures nearby burning.
+    if (e.burn > 0 && e.burnSpread) {
+      for (const o of sim.enemies) {
+        if (o.dead || o === e || Math.hypot(o.x - e.x, o.y - e.y) > 2.5 + o.r) continue;
+        o.burnDps = Math.max(o.burnDps, e.burnDps);
+        o.burn = 2.2;
+        o.burnSpread = true;
+        o.lastSrc = o.lastSrc ?? e.lastSrc;
+      }
+      emit({ type: 'blast', x: e.x, y: e.y, r: 2.5, rune: 'fire' });
+    }
     if (e.lastSrc) sim.xp[e.lastSrc] = (sim.xp[e.lastSrc] ?? 0) + e.def.xp * (1 + 0.05 * (wave - 1)) * (1 + (bonus.xp ?? 0)) * (e.child ? 0.5 : 1);
     // Cash comes out as coins that spray and then get pulled in.
     let value = Math.max(1, Math.round(e.def.cash * cashScale * (e.mod ? 1.6 : 1) * (e.child ? 0.5 : 1)));
@@ -447,7 +488,7 @@ export function createSim({
       const a = w.aim + spread;
       const speed = st.speed * (pellets > 1 ? rng.range(0.85, 1.1) : 1);
       const b = {
-        id: id(), gun: w.id, rune: w.rune, cls: st.class, x: mx, y: my, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+        id: id(), gun: w.id, rune: w.rune, runes: w.runes, cls: st.class, x: mx, y: my, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
         life: st.life * (pellets > 1 ? rng.range(0.85, 1.1) : 1), damage: st.damage, pierce: st.pierce ?? 0, hits: new Set(),
         knock: st.knock, blast: st.blast ?? 0, lob: Boolean(st.lob), accel: st.accel ?? 0, maxSpeed: st.maxSpeed ?? speed, age: 0,
       };
@@ -486,7 +527,7 @@ export function createSim({
       const d = Math.hypot(dx, dy);
       if (d > st.reach + e.r) continue;
       if (d > e.r && Math.abs(angleDiff(Math.atan2(dy, dx), angle)) > st.arc + Math.atan2(e.r, d)) continue;
-      damage(e, st.damage, dx / (d || 1), dy / (d || 1), st.knock, { weapon: w.id, rune: w.rune, melee: true });
+      damage(e, st.damage, dx / (d || 1), dy / (d || 1), st.knock, { weapon: w.id, rune: w.rune, runes: w.runes, melee: true });
       landed++;
     }
     for (const s of sim.shots) {
@@ -601,7 +642,7 @@ export function createSim({
       const y1 = y0 + b.vy * STEP;
       b.x = x1;
       b.y = y1;
-      const src = { weapon: b.gun === 'turret' || b.gun === 'frag' ? null : b.gun, rune: b.rune };
+      const src = { weapon: b.gun === 'turret' || b.gun === 'frag' ? null : b.gun, rune: b.rune, runes: b.runes };
       if (b.lob) {
         // In the air until it lands; walls still stop it.
         if (b.life <= 0 || sim.solidAt(x1, y1)) { b.dead = true; explode(clamp(x0, 0.2, ROOM.w - 0.2), clamp(y0, 0.2, ROOM.h - 0.2), b.blast, b.damage, b.knock, src); }

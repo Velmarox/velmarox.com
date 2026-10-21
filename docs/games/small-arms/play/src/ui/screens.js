@@ -5,9 +5,9 @@
 import { WEAPONS, WEAPON_ORDER, MAX_LEVEL, MAX_WEAPONS, MASTERY, MASTERY_MAX, weaponStats, upgradeCost, masteryCost, masteryKeys, dps, isMelee } from '../content/weapons.js';
 import { ENEMIES } from '../content/enemies.js';
 import { ABILITIES, POWERS, MAX_ABILITIES, MAX_POWERS, DECK_NAMES } from '../content/cards.js';
-import { HATS, SKINS, RUNES, TOKEN_PRICE, PRIZES } from '../content/loot.js';
-import { cardEffect, canUpgrade, isBossWave, maxHealth } from '../game/run.js';
-import { hatBonus, rankOf, canBuyRank } from '../game/meta.js';
+import { HATS, SKINS, RUNES, TOKEN_PRICE, PRIZES, RUNE_TIERS, TIER_NAMES, MERGE_COUNT, SOCKET_COST } from '../content/loot.js';
+import { cardEffect, canUpgrade, upgradePrice, isBossWave, maxHealth, rerollCost, canPatch, patchCost, PATCH_HP } from '../game/run.js';
+import { hatBonus, rankOf, canBuyRank, runeCount, socketsOf, socketRune, infusedRunes, bestTier, canMerge, canOpenSocket, spareRunes } from '../game/meta.js';
 import { LOOKS } from './skins.js';
 
 const n = (value) => Math.round(value).toLocaleString('en-US');
@@ -27,6 +27,9 @@ const head = (kicker, title, sub = '') => `
 const icon = (icons, id) => (icons?.[id] ? `<img class="gunicon" src="${icons[id]}" alt="">` : '<i class="gunicon"></i>');
 const pips = (level, unlocked = level) => `<span class="lv" aria-label="Level ${level} of ${MAX_LEVEL}">${Array.from({ length: MAX_LEVEL }, (_, i) => `<i class="${i < level ? 'on' : i < unlocked ? 'open' : ''}"></i>`).join('')}</span>`;
 const classLabel = (id) => ({ handgun: 'Handgun', long: 'Long gun', melee: 'Melee' })[WEAPONS[id].class];
+const runeName = (r) => `<b class="rune" style="color:${hex(RUNES[r.id].color)}">${RUNES[r.id].name} ${TIER_NAMES[r.tier]}</b>`;
+// The runes in a weapon's sockets, as coloured names.
+const runeTags = (meta, id) => infusedRunes(meta, id).map(runeName).join(' ');
 
 // Simple shapes for the cards' pictures, drawn in the pixel font's fallback.
 const GLYPH = { ring: '&#9678;', ball: '&#9679;', tower: '&#9650;', bolt: '&#991;', bubble: '&#9711;', clock: '&#9719;', arrow: '&#10140;', drop: '&#9660;', guy: '&#9786;', mine: '&#10039;', flake: '&#10033;', ammo: '&#9646;', heart: '&#9829;' };
@@ -85,7 +88,7 @@ export function howto() {
   return `
     ${head('How to play', 'Shoot, swing, survive')}
     <p class="hint">Rounds of creatures never stop coming. After each round, three cards are dealt: one weapon, one ability, one power. Take one.</p>
-    <p class="hint">Weapons: carry up to ${MAX_WEAPONS} and hold one at a time. Draw a weapon you already have and it unlocks its next level, which you buy with coins.</p>
+    <p class="hint">Weapons: carry up to ${MAX_WEAPONS} and hold one at a time. Draw a weapon you already have and its next level gets cheap; without a duplicate you can still force it, for more coins. Coins also buy a new deal of cards and a patch-up between rounds.</p>
     <p class="hint">Abilities (up to ${MAX_ABILITIES}) run on a cooldown. Powers (up to ${MAX_POWERS}) are used once. Both are gone when the run ends.</p>
     <p class="hint">Weapons earn XP as you use them, and XP buys permanent ranks in the Armory. Slot tokens, runes, hats, and skins last between runs too.</p>
     ${keyList}
@@ -129,8 +132,8 @@ function cardFace(card, i, run, save, icons) {
     const have = run.weapons.find((x) => x.id === card.id);
     name = w.name;
     picture = icon(icons, card.id);
-    const rune = save.meta.infused[card.id];
-    body = `<p class="cardtext">${classLabel(card.id)}. ${w.blurb}${rune ? ` <b class="rune" style="color:${hex(RUNES[rune].color)}">${RUNES[rune].name}</b>` : ''}</p>
+    const runes = runeTags(save.meta, card.id);
+    body = `<p class="cardtext">${classLabel(card.id)}. ${w.blurb}${runes ? ` ${runes}` : ''}</p>
       ${statLines(weaponStats(card.id, have?.level ?? 1, save.meta.ranks[card.id] ?? {}, hatBonus(save.meta)))}`;
   } else if (card.deck === 'ability') {
     const a = ABILITIES[card.id];
@@ -159,7 +162,8 @@ export function pick({ save, icons, summary }) {
   return `
     ${head(summary?.won ? `Round ${summary.wave} cleared` : 'Choose a card', 'Pick one')}
     ${result}
-    <div class="cards three dealt">${run.offer.map((c, i) => cardFace(c, i, run, save, icons)).join('')}</div>`;
+    <div class="cards three dealt">${run.offer.map((c, i) => cardFace(c, i, run, save, icons)).join('')}</div>
+    <nav class="row">${button('reroll', `Deal again ${cash(rerollCost(run))}`, { disabled: run.coins < rerollCost(run), title: 'Three new cards; the price doubles each time until the next round' })}<span class="tagline">${cash(run.coins)} to spend</span></nav>`;
 }
 
 // A card that needs room: pick what goes.
@@ -200,13 +204,14 @@ export function camp({ save, icons }) {
   const weapons = run.weapons.map((w, slot) => {
     const ranks = meta.ranks[w.id] ?? {};
     const stats = weaponStats(w.id, w.level, ranks, bonus);
-    const next = w.level < w.unlocked ? weaponStats(w.id, w.level + 1, ranks, bonus) : undefined;
+    const next = w.level < MAX_LEVEL ? weaponStats(w.id, w.level + 1, ranks, bonus) : undefined;
     const up = canUpgrade(run, slot);
-    const rune = meta.infused[w.id];
-    const label = w.level >= MAX_LEVEL ? 'Maxed' : w.level >= w.unlocked ? 'Needs a duplicate' : `Upgrade ${cash(upgradeCost(w.id, w.level))}`;
+    const runes = runeTags(meta, w.id);
+    // Without a duplicate the next level still sells, at a premium.
+    const label = w.level >= MAX_LEVEL ? 'Maxed' : w.level >= w.unlocked ? `Force it ${cash(upgradePrice(w))}` : `Upgrade ${cash(upgradePrice(w))}`;
     return `
       <article class="card gun ${slot === run.held ? 'held' : ''}">
-        <header>${icon(icons, w.id)}<h3>${WEAPONS[w.id].name}</h3><p>${classLabel(w.id)} &middot; ${pips(w.level, w.unlocked)}${rune ? ` &middot; <b style="color:${hex(RUNES[rune].color)}">${RUNES[rune].name}</b>` : ''}</p></header>
+        <header>${icon(icons, w.id)}<h3>${WEAPONS[w.id].name}</h3><p>${classLabel(w.id)} &middot; ${pips(w.level, w.unlocked)}${runes ? ` &middot; ${runes}` : ''}</p></header>
         ${statLines(stats, next)}
         <footer>${button('upgrade', label, { data: `data-slot="${slot}"`, disabled: !up.ok, primary: up.ok })}${slot === run.held ? '<span class="tagline">In hand</span>' : button('hold', 'Hold first', { data: `data-slot="${slot}"`, quiet: true })}</footer>
       </article>`;
@@ -232,6 +237,7 @@ export function camp({ save, icons }) {
     </div>
     <nav class="stack top">
       ${button('fight', `Start round ${run.wave}`, { primary: true })}
+      ${button('patch', run.hp >= top ? 'Patch up (at full health)' : `Patch up +${PATCH_HP} health ${cash(patchCost(run))}`, { disabled: !canPatch(run, meta).ok })}
       ${button('slots', 'Slot machine')}
       ${button('armory', 'Armory')}
       ${button('wardrobe', 'Wardrobe')}
@@ -284,10 +290,29 @@ export function armory({ save, icons, picked }) {
     const can = canBuyRank(meta, id, key);
     return `<li><span class="rank">${MASTERY[key].name} ${pips(rank)}</span><small>+${Math.round(MASTERY[key].per * 100)}% each</small>${button('rank', rank >= MASTERY_MAX ? 'Maxed' : `${n(masteryCost(rank))} XP`, { data: `data-gun="${id}" data-key="${key}"`, disabled: !can.ok, primary: can.ok })}</li>`;
   }).join('');
+  // The weapon's sockets: what's in each, and the second one's price until it's open.
+  const open = socketsOf(meta, id);
+  const sockets = [0, 1].map((s) => {
+    if (s >= open) {
+      const can = canOpenSocket(meta, id);
+      return `<li><span class="rank">Socket ${s + 1}</span><small>Locked. Opens for ${SOCKET_COST} tier I runes of any kind (you have ${n(spareRunes(meta))}). Two different runes work together.</small>${button('socket', `Open ${SOCKET_COST} runes`, { data: `data-gun="${id}"`, disabled: !can.ok, primary: can.ok })}</li>`;
+    }
+    const r = socketRune(meta, id, s);
+    return `<li><span class="rank">Socket ${s + 1} ${r ? runeName(r) : ''}</span><small>${r ? RUNES[r.id].tiers[r.tier].text : 'Empty. Infuse a rune from the bag below.'}</small>${r ? button('takeout', 'Take out', { data: `data-gun="${id}" data-socket="${s}"`, quiet: true }) : '<span class="tagline">Empty</span>'}</li>`;
+  }).join('');
+  // The bag: counts by tier, merging, and infusing the best tier into a socket.
   const runes = Object.entries(RUNES).map(([rid, r]) => {
-    const have = meta.runes[rid] ?? 0;
-    const on = meta.infused[id] === rid;
-    return `<li><b style="color:${hex(r.color)}">${r.name}</b> <span class="count">&times;${have}</span><small>${r.text}</small>${on ? '<span class="tagline">Infused</span>' : button('infuse', 'Infuse', { data: `data-gun="${id}" data-rune="${rid}"`, disabled: have < 1 })}</li>`;
+    const best = bestTier(meta, rid);
+    const counts = TIER_NAMES.map((t, i) => `${t}&times;${runeCount(meta, rid, i)}`).join(' &middot; ');
+    const merges = Array.from({ length: RUNE_TIERS - 1 }, (_, t) => (runeCount(meta, rid, t) >= MERGE_COUNT
+      ? button('merge', `Merge ${MERGE_COUNT} ${TIER_NAMES[t]} &rarr; ${TIER_NAMES[t + 1]}`, { data: `data-rune="${rid}" data-tier="${t}"`, disabled: !canMerge(meta, rid, t).ok }) : '')).join('');
+    const infuses = best < 0 ? '' : Array.from({ length: open }, (_, s) => {
+      const here = socketRune(meta, id, s);
+      const elsewhere = socketRune(meta, id, 1 - s)?.id === rid;
+      const done = here?.id === rid && here.tier >= best;
+      return button('infuse', `${TIER_NAMES[best]} &rarr; socket ${s + 1}`, { data: `data-gun="${id}" data-rune="${rid}" data-socket="${s}"`, disabled: done || elsewhere, primary: !here && !elsewhere });
+    }).join('');
+    return `<li><span><b style="color:${hex(r.color)}">${r.name}</b> <span class="count tiers">${counts}</span></span><small>${r.tiers[Math.max(0, best)].text}${best < RUNE_TIERS - 1 ? ` Next tier: ${r.tiers[Math.max(0, best) + 1].text}` : ''}</small><span class="btns">${merges}${infuses || '<span class="tagline">None in the bag</span>'}</span></li>`;
   }).join('');
   return `
     ${head('Lasts between runs', 'Armory', 'Each weapon earns its own XP from the damage it does and the creatures it finishes. Ranks last for good.')}
@@ -296,7 +321,9 @@ export function armory({ save, icons, picked }) {
       <div class="detail">
         <header class="gunhead">${icon(icons, id)}<div><h3>${WEAPONS[id].name}</h3><p class="sub">${classLabel(id)} &middot; <b>${n(meta.xp[id] ?? 0)} XP</b> to spend</p></div></header>
         <ul class="ranks">${ranks}</ul>
-        <h3 class="tier">Rune <span>Infused for good. A rune taken out goes back in the bag.</span></h3>
+        <h3 class="tier">Sockets <span>Infused for good. A rune taken out goes back in the bag.</span></h3>
+        <ul class="ranks">${sockets}</ul>
+        <h3 class="tier">Rune bag <span>${MERGE_COUNT} of a tier merge into one of the next. Infusing uses the best tier you have.</span></h3>
         <ul class="ranks">${runes}</ul>
       </div>
     </div>

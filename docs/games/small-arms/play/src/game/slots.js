@@ -57,7 +57,9 @@ export function spin(meta, run) {
     out.text = `$${amount}`;
   } else if (kind === 'rune') {
     const id = rng.pick(Object.keys(RUNES));
-    meta.runes[id] = (meta.runes[id] ?? 0) + 1;
+    const counts = meta.runes[id] ?? [0, 0, 0];
+    counts[0]++;
+    meta.runes[id] = counts;
     out.item = id;
     out.text = `${RUNES[id].name}! Infuse it in the Armory.`;
   } else if (kind === 'hat') {
