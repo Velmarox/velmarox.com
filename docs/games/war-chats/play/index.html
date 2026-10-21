@@ -134,6 +134,12 @@ button { font: inherit; color: inherit; }
 .btn.on { background: var(--amber); color: #10161f; border-color: var(--amber); }
 .btn kbd { font: inherit; opacity: 0.7; margin-left: 6px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 3px; padding: 0 4px; }
 .btn.on kbd { border-color: rgba(16, 22, 31, 0.4); }
+.vol { display: inline-flex; align-items: center; gap: 7px; color: var(--ink); background: var(--panel); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 5px; padding: 0 10px; height: 32px; box-sizing: border-box; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.vol:hover { border-color: var(--amber); }
+.vol svg { width: 15px; height: 15px; flex: none; }
+.vol input { width: 84px; margin: 0; accent-color: var(--amber); cursor: pointer; }
+.vol input:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+.vol .vv { font: 500 11px var(--f-mono); letter-spacing: 0.06em; min-width: 30px; text-align: right; color: var(--mute); }
 #prog { font: 500 11px var(--f-mono); color: var(--mute); letter-spacing: 0.08em; padding: 0 4px; background: var(--panel); border-radius: 4px; line-height: 30px; }
 #start { top: 52%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); border: 1px solid var(--amber); border-radius: 6px; padding: 12px 20px; font: 600 13px var(--f-mono); letter-spacing: 0.12em; color: var(--amber); text-transform: uppercase; white-space: nowrap; animation: nudge 1.8s ease-in-out infinite; }
 #start[hidden] { display: none; }
@@ -460,6 +466,7 @@ button { font: inherit; color: inherit; }
           <span class="zgrp" role="group" aria-label="Interface zoom"><button class="btn" id="bZm" tabindex="-1" type="button" aria-label="Zoom interface out" title="Interface zoom out">&minus;</button><button class="btn zv" id="zv" tabindex="-1" type="button" aria-label="Reset interface zoom" title="Reset interface zoom">100%</button><button class="btn" id="bZp" tabindex="-1" type="button" aria-label="Zoom interface in" title="Interface zoom in">+</button></span>
           <button class="btn on" id="bSnd" tabindex="-1" type="button" title="Message ding">Chat sound <kbd>M</kbd></button>
           <button class="btn on" id="bMus" tabindex="-1" type="button" title="Background music (anthem)">Music <kbd>N</kbd></button>
+          <label class="vol" title="Volume for the chat sound and music"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg><input type="range" id="vol" min="0" max="100" step="5" value="100" tabindex="-1" aria-label="Volume"><span class="vv" id="volV">100%</span></label>
         </div>
       </div>
       <div class="tlwrap">
@@ -798,15 +805,15 @@ function setClock(t) {
 /* ---------- chat ---------- */
 var log = $('log'), scroller = $('scroll'), cin = $('cin'), cbox = $('cbox');
 var st = { n: null, m: -99 };
-var cur = 0, auto = null, muted = false, mutedMus = false, snd = $('snd'), anth = $('anthem'), fadeT = null;
+var cur = 0, auto = null, muted = false, mutedMus = false, snd = $('snd'), anth = $('anthem'), fadeT = null, vol = 1;
 /* the anthem is pre-mixed at 10% volume; it plays once when a cued scene starts and fades out when the scene changes */
 function stopAnthem() {
   clearInterval(fadeT);
   if (!anth || anth.paused) return;
-  fadeT = setInterval(function () { if (anth.volume > 0.15) anth.volume = Math.max(0, anth.volume - 0.12); else { clearInterval(fadeT); anth.pause(); anth.volume = 1; } }, 80);
+  fadeT = setInterval(function () { if (anth.volume > 0.15 * vol) anth.volume = Math.max(0, anth.volume - 0.12 * vol); else { clearInterval(fadeT); fadeT = null; anth.pause(); anth.volume = vol; } }, 80);
 }
 function cueAnthem(on, id) {
-  if (on && !mutedMus && CFG.anthem && CFG.anthem.indexOf(id) >= 0) { clearInterval(fadeT); try { anth.volume = 1; anth.currentTime = 0; var pr = anth.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }
+  if (on && !mutedMus && CFG.anthem && CFG.anthem.indexOf(id) >= 0) { clearInterval(fadeT); fadeT = null; try { anth.volume = vol; anth.currentTime = 0; var pr = anth.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }
   else stopAnthem();
 }
 var PIN = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6h2v-6h5v-2z"/></svg>';
@@ -1030,6 +1037,16 @@ function toggleAuto() {
 }
 function toggleSound() { muted = !muted; $('bSnd').classList.toggle('on', !muted); $('bSnd').setAttribute('aria-pressed', String(!muted)); }
 function toggleMusic() { mutedMus = !mutedMus; $('bMus').classList.toggle('on', !mutedMus); $('bMus').setAttribute('aria-pressed', String(!mutedMus)); if (mutedMus) stopAnthem(); }
+/* volume for the ding and the anthem, kept on this device */
+function setVol(v, save) {
+  vol = Math.max(0, Math.min(1, v));
+  snd.volume = vol; if (!fadeT || anth.paused) anth.volume = vol;
+  $('vol').value = Math.round(vol * 100); $('volV').textContent = Math.round(vol * 100) + '%';
+  if (save) try { localStorage.setItem('warchats-vol', String(vol)); } catch (e) {}
+}
+$('vol').addEventListener('input', function (e) { setVol(e.target.value / 100, true); });
+$('vol').addEventListener('change', function (e) { e.target.blur(); });
+try { var sv0 = localStorage.getItem('warchats-vol'); setVol(sv0 === null ? 1 : parseFloat(sv0) || 0, false); } catch (e) { setVol(1, false); }
 /* interface zoom: scales the Discord panel and the fact card, not the map */
 var uiZ = 1;
 function setUiZ(z, save) {
@@ -1063,6 +1080,7 @@ function loadWar(id) {
 
 addEventListener('keydown', function (e) {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.target && e.target.id === 'vol' && /^Arrow|^Home$|^End$/.test(e.key)) return;
   if (e.code === 'Space' || e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) next(); }
   else if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); prev(); }
   else if (e.key === 'r' || e.key === 'R') restart();
