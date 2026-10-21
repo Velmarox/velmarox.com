@@ -315,7 +315,7 @@ export function wardrobe({ save }) {
   const skins = Object.entries(SKINS).map(([id, s]) => {
     const mine = meta.skins.includes(id);
     const on = meta.skin === id;
-    return `<article class="card perk ${mine ? '' : 'locked'}"><header><i class="skinswatch" style="background:linear-gradient(${mine ? `${s.top}, ${s.low}` : '#5860a8, #141a52'})"></i><h3>${mine ? s.name : '???'}</h3></header>
+    return `<article class="card perk ${mine ? '' : 'locked'}"><header><i class="skinswatch" style="background:${!mine ? 'linear-gradient(#5860a8, #141a52)' : s.png ? `url(${s.png}) -50px -6px / 147px 147px` : `linear-gradient(${s.top}, ${s.low})`}"></i><h3>${mine ? s.name : '???'}</h3></header>
       <footer><span></span>${on ? '<span class="tagline">Wearing</span>' : button('skin', 'Wear', { data: `data-skin="${id}"`, disabled: !mine, primary: mine })}</footer></article>`;
   }).join('');
   return `

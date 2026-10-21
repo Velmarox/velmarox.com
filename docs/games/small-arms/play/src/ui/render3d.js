@@ -11,6 +11,7 @@ import { SKINS, RUNES, DEFAULT_SKIN } from '../content/loot.js';
 import { guySkin, creatureSkin, LOOKS } from './skins.js';
 import { loadGunModels, gunMesh } from './gunModels.js';
 import { makeHat } from './hats.js';
+import { remapPart, BODY_DETAIL, LIMB_SIDES } from './sheet.js';
 
 const COLORS = {
   sky: 0xd9bcc8, floor: 0xdfc4ce, grid: 0xcbaab8, wall: 0x9a7a8c,
@@ -111,8 +112,9 @@ export function createRenderer3d(canvas, overlay) {
 
   // A faceted ball wearing a skin: one painted picture wrapped round it (see skins.js).
   // The ball is turned so the middle of the picture, where the face is, points along +x.
-  function blob(radius, skin, extra) {
-    const geometry = new THREE.IcosahedronGeometry(radius, 1).rotateY(Math.PI);
+  function blob(radius, skin, extra, sheet = false) {
+    const geometry = new THREE.IcosahedronGeometry(radius, BODY_DETAIL).rotateY(Math.PI);
+    if (sheet) remapPart(geometry, 'body');
     return solid(geometry, flat(0xffffff, { ...skin, ...extra }));
   }
 
@@ -132,22 +134,26 @@ export function createRenderer3d(canvas, overlay) {
   // A white copy of a body over the body, shown for a moment when it's hit.
   const flashMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
 
-  function makeCharacter({ r, skin, bodyExtra, limbColor, arm, leg, claws, decorate }) {
+  // sheet: the skin is a whole skin sheet (see sheet.js), so the limbs take their colours
+  // from it too instead of from limbColor. Only the guy has one.
+  function makeCharacter({ r, skin, bodyExtra, limbColor, arm, leg, claws, decorate, sheet = false }) {
     const group = new THREE.Group();
     const inner = new THREE.Group();
     group.add(inner);
     const centre = new THREE.Vector3(0, r * 0.9 + leg.length - 0.12 * (r / 0.5), 0);
-    const body = blob(r, skin, bodyExtra);
+    const body = blob(r, skin, bodyExtra, sheet);
     body.position.copy(centre);
     body.scale.set(1, 0.92, 1);
     inner.add(body);
-    const limb = flat(limbColor);
+    const limb = sheet ? flat(0xffffff, { ...skin, ...bodyExtra }) : flat(limbColor);
+    // His own right is the +z side (the side his right hand is on).
+    const limbGeometry = (geometry, kind, side) => (sheet ? remapPart(geometry, `${side > 0 ? 'right' : 'left'}${kind}`) : geometry);
     const rig = { group, inner, body, centre, r, armLength: arm.length, size: r / 0.5, arms: [], legs: [], phase: 0, lastForward: 0, lunge: 0, lastFoot: 0, lift: 0 };
     for (const side of [-1, 1]) {
       // Each leg hangs from a hip so it can swing.
       const hip = new THREE.Group();
       hip.position.set(0, leg.length, side * r * leg.spread);
-      hip.add(solid(new THREE.CylinderGeometry(leg.top, leg.bottom, leg.length, 5).translate(0, -leg.length / 2, 0), limb));
+      hip.add(solid(limbGeometry(new THREE.CylinderGeometry(leg.top, leg.bottom, leg.length, LIMB_SIDES), 'Leg', side).translate(0, -leg.length / 2, 0), limb));
       inner.add(hip);
       rig.legs.push({ hip, side });
 
@@ -155,7 +161,7 @@ export function createRenderer3d(canvas, overlay) {
       const rest = onBall(1, side * arm.turn, arm.rise);
       const shoulder = new THREE.Group();
       shoulder.position.copy(centre).addScaledVector(rest, r * 0.9);
-      shoulder.add(solid(new THREE.CylinderGeometry(arm.tip, arm.root, arm.length, 5).translate(0, arm.length / 2, 0), limb));
+      shoulder.add(solid(limbGeometry(new THREE.CylinderGeometry(arm.tip, arm.root, arm.length, LIMB_SIDES), 'Arm', side).translate(0, arm.length / 2, 0), limb));
       if (claws) shoulder.add(solid(new THREE.ConeGeometry(0.07 * r / 0.85, 0.2 * r / 0.85, 4).translate(0, arm.length + 0.08 * r / 0.85, 0), flat(claws)));
       inner.add(shoulder);
       rig.arms.push({ shoulder, rest, side, swing: 0, lift: 0, swingSpeed: 0, liftSpeed: 0, turn: arm.turn, baseTurn: arm.turn, rise: arm.rise, stretch: 1 });
@@ -248,7 +254,7 @@ export function createRenderer3d(canvas, overlay) {
   function makeGuy(skinId = DEFAULT_SKIN, extra = {}) {
     const look = SKINS[skinId] ?? SKINS[DEFAULT_SKIN];
     return makeCharacter({
-      r: 0.5, skin: { ...guySkin(look), ...extra }, limbColor: look.limb,
+      r: 0.5, skin: guySkin(look), bodyExtra: extra, limbColor: look.limb, sheet: true,
       arm: { length: ARM_LENGTH, root: 0.12, tip: 0.08, turn: 1.45, rise: -0.25 },
       leg: { length: 0.3, top: 0.1, bottom: 0.06, spread: 0.4 },
     });

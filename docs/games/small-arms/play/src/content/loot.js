@@ -13,8 +13,8 @@ export const HATS = {
   tophat:  { name: 'Top Hat', text: 'Dash comes back 25% sooner.', bonus: { dash: 0.25 } },
 };
 
-// Skins repaint his body. These are colour sets on the same painted face; a skin with
-// png set uses that picture instead (see models/skins/skin-template.png for the layout).
+// Skins repaint all of him. The first six are colour sets on the same painted face; a skin
+// with png set uses that painted sheet instead (layout: models/skins/skin-sheet-guides.png).
 export const SKINS = {
   peach:  { name: 'Peach', top: '#f9bd9b', low: '#e08876', limb: 0xe58f7c, blush: 'rgba(245, 140, 150, 0.75)' },
   mint:   { name: 'Mint', top: '#b8f0d0', low: '#6cc49a', limb: 0x5fb48a, blush: 'rgba(255, 150, 170, 0.6)' },
@@ -22,6 +22,15 @@ export const SKINS = {
   gold:   { name: 'Gold Rush', top: '#ffe58a', low: '#d9a028', limb: 0xc8901c, blush: 'rgba(255, 130, 90, 0.6)' },
   ghost:  { name: 'Ghost', top: '#f4f4fa', low: '#b8bcd8', limb: 0xa8acc8, blush: 'rgba(170, 190, 255, 0.6)' },
   shadow: { name: 'Shadow', top: '#5a5070', low: '#2b2338', limb: 0x2b2338, blush: 'rgba(255, 60, 110, 0.6)', eyes: '#ff5a7a' },
+  // Painted sheets (art/skins/ holds the originals; tools/view/skin-import.html makes these).
+  watermelon: { name: 'Watermelon', png: 'models/skins/watermelon.jpg' },
+  pizza:      { name: 'Pepperoni', png: 'models/skins/pizza.jpg' },
+  galaxy:     { name: 'Galaxy', png: 'models/skins/galaxy.jpg' },
+  lava:       { name: 'Lava Lamp', png: 'models/skins/lava.jpg' },
+  disco:      { name: 'Disco Ball', png: 'models/skins/disco.jpg' },
+  frost:      { name: 'Frostbite', png: 'models/skins/frost.jpg' },
+  wood:       { name: 'Woodgrain', png: 'models/skins/wood.jpg' },
+  honey:      { name: 'Honey Drip', png: 'models/skins/honey.jpg' },
 };
 export const DEFAULT_SKIN = 'peach';
 
