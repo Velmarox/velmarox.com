@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.50.0-alpha (2026-10-21)
+- War Chats 2.2.0: the American Civil War chat (1820-1877), 725 lines, 37 scenes, with state-by-state front lines
+  from US Census state outlines. Fix: a member who is kicked and comes back is listed once in the member list.
+
 v0.49.0-alpha (2026-10-21)
 - War Chats 2.1.0: reactions, replies, join/leave/kick/ban messages, DMs, polls, a member list grouped by side,
   finished-war checks, links to a message (#war/n) and "X and Y are typing" in all nine chats; front lines on the
