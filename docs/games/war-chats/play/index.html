@@ -654,7 +654,7 @@ var FX = {
   pop: { src: 'fx/blast_small.png', w: 32, h: 32, n: 8, s: 1.4, ay: 0.5 },
   clash: { src: 'fx/clash.png', w: 48, h: 48, n: 7, s: 1.2, ay: 0.5 },
   dust: { src: 'fx/dust.png', w: 32, h: 32, n: 10, s: 1.5, ay: 0.5 },
-  alert: { src: 'fx/alert.png', w: 40, h: 40, n: 14, s: 1.2, ay: 1.25, hold: 1 },
+  alert: { src: 'fx/alert.png', w: 40, h: 40, n: 14, s: 1.2, ay: 1.25, loop: 1 },
   warn: { src: 'fx/warning.png', w: 40, h: 40, n: 60, s: 1.2, ay: 1.25, loop: 1 },
   test: { src: 'fx/test.png', w: 96, h: 96, n: 15, s: 1.4, ay: 0.7 }
 };
@@ -676,20 +676,24 @@ function fxPlay(k, ll, delay) {
     }, 67);
   }, delay || 0));
 }
+/* every effect loops until the scene changes: k plays, then again after its own length plus a random pause */
+function fxLoop(k, ll, first, gap, also) {
+  var len = FX[k].n * 67;
+  function go() {
+    if (!document.hidden && mode === 'war') { fxPlay(k, ll, 0); if (also) fxPlay(also, ll, 250); }
+    fxTimers.push(setTimeout(go, len + gap[0] + Math.random() * gap[1]));
+  }
+  fxTimers.push(setTimeout(go, first));
+}
 function fxScene(sc, animate) {
   fxClear();
   if (reduce || sc.quiet) return;
-  var old = CFG.fx === 'ancient';
-  var spots = (sc.m || []).filter(function (m) { return m.k === 'battle' && !m.q; }).map(function (m) { return [m.lon, m.lat]; });
-  if (animate) {
-    spots.forEach(function (ll, i) { fxPlay(old ? 'clash' : 'boom', ll, 900 + i * 380); if (old) fxPlay('dust', ll, 1150 + i * 380); });
-    (sc.ar || []).forEach(function (a, i) { if (!a.dash) fxPlay(old ? 'dust' : 'pop', a.p[a.p.length - 1], 1500 + i * 280); });
-  }
-  (sc.fx || []).forEach(function (x, i) { fxPlay(x.k, x.at, animate ? 1100 + i * 400 : 200); });
-  if (spots.length) fxAmb = setInterval(function () {
-    if (document.hidden || mode !== 'war') return;
-    fxPlay(old ? 'clash' : 'pop', spots[Math.floor(Math.random() * spots.length)], Math.random() * 1500);
-  }, 5200);
+  var old = CFG.fx === 'ancient', t0 = animate ? 900 : 150;
+  (sc.m || []).filter(function (m) { return m.k === 'battle' && !m.q; }).forEach(function (m, i) {
+    fxLoop(old ? 'clash' : 'boom', [m.lon, m.lat], t0 + i * 380, [600, 1800], old ? 'dust' : null);
+  });
+  (sc.ar || []).forEach(function (a, i) { if (!a.dash) fxLoop(old ? 'dust' : 'pop', a.p[a.p.length - 1], (animate ? 1500 : 300) + i * 280, [1000, 1600]); });
+  (sc.fx || []).forEach(function (x, i) { if (FX[x.k].loop) fxPlay(x.k, x.at, t0 + i * 400); else fxLoop(x.k, x.at, t0 + i * 400, [1200, 1800]); });
 }
 function buildScene(sc, animate) {
   ovScene.replaceChildren(); items = [];

@@ -5,11 +5,52 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.45.1-alpha (2026-10-20)
+- War Chats 2.0.1: map effects loop until their scene ends (each battle, arrow landing and symbol repeats with a short
+  random pause), also when arriving at a scene by Back or a channel jump.
+- Fix: the War Chats game page text, update log and the unTied Games credit for the map effects were never written
+  for releases 1.1.0 to 2.0.0 (a broken edit script); they are now. The missing CHANGELOG entries are restored below.
+
 v0.45.0-alpha (2026-10-20)
 - New game: Small Arms (games/small-arms/), Contract Zero's pink guy with weapons. Endless rounds with a card pick
   from three decks after each one, one weapon held at a time, melee, abilities, powers, weapon XP, a slot machine,
   hats, skins and runes. Game version 1.2.1. Its cover and screenshots come from the game's own picture mode.
-- Not logged here: v0.35.0-alpha to v0.44.0-alpha (the War Chats updates). See the git history for those.
+
+v0.44.0-alpha (2026-10-20)
+- War Chats 2.0.0: the Boer War chat (1652-1902), 613 lines, 19 scenes, with an accelerating chat clock. All nine servers open.
+
+v0.43.0-alpha (2026-10-20)
+- War Chats 1.9.0: pixel effects on the map (Super Pixel Effects Gigapack, Will Tice / unTied Games, sprites in play/fx/).
+
+v0.42.0-alpha (2026-10-20)
+- War Chats 1.8.0: the World War I chat (1871-1919), 607 lines, 27 scenes.
+
+v0.41.0-alpha (2026-10-20)
+- War Chats 1.7.0: the WWII Pacific chat (1931-1945), 561 lines, 30 scenes.
+
+v0.40.0-alpha (2026-10-20)
+- War Chats 1.6.0: the Cold War chat (1945-1991), 621 lines, 27 scenes.
+
+v0.39.0-alpha (2026-10-20)
+- War Chats 1.5.0: the War on Terror chat (2001-2021), 623 lines, 26 scenes.
+
+v0.38.0-alpha (2026-10-20)
+- War Chats 1.4.0: the Three Kingdoms chat (184-280 AD), 686 lines, 31 scenes; shaded territories on the map.
+
+v0.37.1-alpha (2026-10-20)
+- War Chats 1.3.1: picture icons for seven servers.
+
+v0.37.0-alpha (2026-10-20)
+- War Chats 1.3.0: the Korean War chat rewritten to read like real texting.
+
+v0.36.0-alpha (2026-10-20)
+- War Chats 1.2.0: Roman chat rewrite, Caesar and Cleopatra photos, nine Roman avatars; fix for the pin icon.
+
+v0.35.1-alpha (2026-10-20)
+- War Chats 1.1.1: ten Roman profile pictures.
+
+v0.35.0-alpha (2026-10-20)
+- War Chats 1.1.0: the Histcord loading screen and login, WWII pinned with its icon, the pinned explainer message.
 
 v0.34.0-alpha (2026-10-20)
 - New game: War Chats (games/war-chats/), history as a Discord group chat with a live war-room map, border changes
