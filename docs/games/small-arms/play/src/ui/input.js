@@ -4,6 +4,9 @@
 // dashes, R reloads. Mouse wheel or Tab swaps weapon; 1-4 picks one. Q, E, F are the three
 // abilities; Z, X, C use the three stored powers. Arrow keys aim without a mouse.
 //
+// Touch (ui/touch.js): a move stick on the left half, an aim stick on the right half that
+// attacks while pushed, and buttons for the rest.
+//
 // Controller (standard layout, twin-stick): left stick moves, right stick aims, right
 // trigger attacks, left trigger dashes, bumpers swap weapon. A, B, Y are the abilities,
 // X reloads, and the D-pad's left, up, and right use the three powers. Start pauses.
@@ -15,7 +18,7 @@ const DEAD = 0.25;
 const ABILITY_KEYS = ['KeyQ', 'KeyE', 'KeyF'];
 const POWER_KEYS = ['KeyZ', 'KeyX', 'KeyC'];
 
-export function createInput(stage, toWorld) {
+export function createInput(stage, toWorld, touch = null) {
   const keys = new Set();
   const mouse = { x: 0, y: 0, hold: false, seen: false };
   // One-shot presses, kept until the next sample reads them.
@@ -48,9 +51,11 @@ export function createInput(stage, toWorld) {
     keys.add(e.code);
   });
   window.addEventListener('keyup', (e) => keys.delete(e.code));
+  // A finger anywhere means touch, until a key, the mouse, or a controller is used again.
+  window.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') device = 'touch'; }, { capture: true });
   window.addEventListener('blur', () => { keys.clear(); mouse.hold = false; });
 
-  stage.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.seen = true; keyAim = null; device = 'keys'; });
+  stage.addEventListener('mousemove', (e) => { if (device === 'touch') return; mouse.x = e.clientX; mouse.y = e.clientY; mouse.seen = true; keyAim = null; device = 'keys'; });
   stage.addEventListener('mousedown', (e) => {
     mouse.x = e.clientX; mouse.y = e.clientY;
     mouse.seen = true;
@@ -138,6 +143,23 @@ export function createInput(stage, toWorld) {
         if (edge(pad, 'start')) pressed.push('Escape');
       }
       padWas = pad ?? {};
+
+      if (touch && device === 'touch') {
+        const t = touch.state();
+        const press = touch.take();
+        input.moveX = t.moveX;
+        input.moveY = t.moveY;
+        const aim = t.aim ?? Math.atan2(input.aimY - g.y, input.aimX - g.x);
+        input.aimX = g.x + Math.cos(aim) * 7;
+        input.aimY = g.y + Math.sin(aim) * 7;
+        input.fire = t.fire;
+        input.dash = press.dash;
+        input.reload = press.reload;
+        input.swap = press.swap;
+        input.ability = press.ability;
+        input.power = press.power;
+        if (press.pause) pressed.push('Escape');
+      }
       return input;
     },
     // For menus: which way the controller was just pushed, and whether it confirmed or backed out.

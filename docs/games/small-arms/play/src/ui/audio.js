@@ -13,7 +13,8 @@ const SHOTS = {
   rocket:   { noise: 0.5, cut: 900, body: 80, drop: 40, gain: 0.7, tail: true },
 };
 
-export function createAudio() {
+// muted: never make a sound or start the browser's audio at all (?mute, for testing).
+export function createAudio({ muted = false } = {}) {
   let ctx = null;
   let master = null;
   let noiseBuffer = null;
@@ -21,6 +22,7 @@ export function createAudio() {
   const last = new Map();
 
   function wake() {
+    if (muted) return;
     if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;

@@ -27,7 +27,8 @@ const ARM_LENGTH = 0.22;
 const css = (hex) => `#${hex.toString(16).padStart(6, '0')}`;
 const ease = (t) => t * t * (3 - 2 * t);
 
-export function createRenderer3d(canvas, overlay) {
+// light: a phone or tablet. Fewer pixels and a smaller shadow map, so it keeps up.
+export function createRenderer3d(canvas, overlay, { light = false } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -48,7 +49,7 @@ export function createRenderer3d(canvas, overlay) {
   sun.position.set(ROOM.w / 2 - 10, 30, ROOM.h / 2 + 12);
   sun.target.position.set(ROOM.w / 2, 0, ROOM.h / 2);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(light ? 1024 : 2048, light ? 1024 : 2048);
   Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 18, bottom: -18, near: 1, far: 80 });
   sun.shadow.bias = -0.0006;
   scene.add(sun, sun.target);
@@ -971,7 +972,7 @@ export function createRenderer3d(canvas, overlay) {
   function resize() {
     const w = canvas.clientWidth || window.innerWidth;
     const h = canvas.clientHeight || window.innerHeight;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, light ? 1.5 : 2));
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
