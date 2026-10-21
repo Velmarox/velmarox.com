@@ -5,6 +5,13 @@
 // the head, and the bottom edge is underneath.
 
 import * as THREE from '../../lib/three.module.js';
+import { SHEET, PARTS, PART_LABELS, CAP_NAMES, sheetFaces, sheetEdges } from './sheet.js';
+
+// Where the front and back of a limb fall along its unrolled strip (checked on the model).
+const LIMB_FRONT = 0.25;
+const LIMB_BACK = 0.75;
+
+const hex = (n) => '#' + n.toString(16).padStart(6, '0');
 
 const W = 1024;
 const H = 512;
@@ -49,15 +56,26 @@ function shade(ctx, top, low) {
   ctx.fillRect(0, 0, W, H);
 }
 
-// The player: peach by default, with shiny dark eyes, blush, and a small mouth. look is a
-// skin from content/loot.js: its colours, or a painted picture (png) laid out like
-// models/skins/skin-template.png, which replaces the whole thing.
-export function guySkin(look = { top: '#f9bd9b', low: '#e08876', blush: 'rgba(245, 140, 150, 0.75)' }) {
+// The player's skin is a whole sheet (see sheet.js): the body wraps the top half and the
+// arms and legs take patches of the bottom half. look is a skin from content/loot.js: its
+// colours, or a painted sheet (png) laid out like models/skins/skin-sheet-guides.png.
+export function guySkin(look = DEFAULT_LOOK) {
   if (look.png) {
     const map = new THREE.TextureLoader().load(look.png);
     map.colorSpace = THREE.SRGBColorSpace;
+    // The faces along his back run a little past the right edge; this wraps them round to the left.
+    map.wrapS = THREE.RepeatWrapping;
     return { map };
   }
+  const map = texture(paintSheet(look));
+  map.wrapS = THREE.RepeatWrapping;
+  return { map };
+}
+
+const DEFAULT_LOOK = { top: '#f9bd9b', low: '#e08876', limb: 0xe58f7c, blush: 'rgba(245, 140, 150, 0.75)' };
+
+// The body's picture on its own, 1024 x 512: shaded, with shiny dark eyes, blush, and a small mouth.
+function paintBody(look) {
   const { el, ctx } = canvas();
   shade(ctx, look.top, look.low);
   const eye = look.eyes ?? '#2b1f30';
@@ -68,41 +86,121 @@ export function guySkin(look = { top: '#f9bd9b', low: '#e08876', blush: 'rgba(24
     patch(ctx, side * 0.42 + 0.05, 0.44, 0.03, '#ffffff');
   }
   patch(ctx, 0, 0.3, 0.07, eye, { squash: 0.3 });
-  return { map: texture(el) };
+  return el;
 }
 
-// The guide for painting a skin: the same picture size and layout, with the face drawn
-// where it sits, and lines showing the front, sides, and back. For models/skins/.
-export function skinTemplate() {
-  const { el, ctx } = canvas();
-  // Flat colours, so it's clear which parts are paint and which are guides.
-  ctx.fillStyle = '#f9bd9b';
-  ctx.fillRect(0, 0, W, H);
-  for (const side of [-1, 1]) {
-    patch(ctx, side * 0.72, 0.28, 0.13, '#f58c96', { squash: 0.7 });
-    patch(ctx, side * 0.42, 0.5, 0.17, '#2b1f30');
-    patch(ctx, side * 0.42 - 0.05, 0.56, 0.06, '#ffffff');
+function shadeHex(n, k) {
+  const r = Math.round(((n >> 16) & 255) * k);
+  const g = Math.round(((n >> 8) & 255) * k);
+  const b = Math.round((n & 255) * k);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function sheetCanvas() {
+  const el = document.createElement('canvas');
+  el.width = el.height = SHEET;
+  return { el, ctx: el.getContext('2d') };
+}
+
+// A whole sheet in a skin's colours: the body on top, the limbs in their limb colour, a
+// shade darker toward the ends, with darker soles.
+function paintSheet(look) {
+  const { el, ctx } = sheetCanvas();
+  ctx.drawImage(paintBody(look), 0, 0, SHEET, SHEET / 2);
+  const tone = look.limb ?? DEFAULT_LOOK.limb;
+  for (const [part, patches] of Object.entries(PARTS)) {
+    if (part === 'body') continue;
+    const { side, top, bottom } = patches;
+    const leg = part.endsWith('Leg');
+    // Arms run from the shoulder (bottom of the strip) to the fist (top); legs from the hip (top) to the foot.
+    const fill = ctx.createLinearGradient(0, side.y, 0, side.y + side.h);
+    fill.addColorStop(0, leg ? hex(tone) : shadeHex(tone, 0.88));
+    fill.addColorStop(1, leg ? shadeHex(tone, 0.85) : hex(tone));
+    ctx.fillStyle = fill;
+    ctx.fillRect(side.x, side.y, side.w, side.h);
+    ctx.fillStyle = leg ? hex(tone) : shadeHex(tone, 0.88);
+    ctx.fillRect(top.x, top.y, top.w, top.h);
+    ctx.fillStyle = leg ? shadeHex(tone, 0.7) : hex(tone);
+    ctx.fillRect(bottom.x, bottom.y, bottom.w, bottom.h);
   }
-  patch(ctx, 0, 0.3, 0.07, '#2b1f30', { squash: 0.3 });
-  ctx.strokeStyle = 'rgba(40, 30, 60, 0.6)';
-  ctx.fillStyle = 'rgba(40, 30, 60, 0.85)';
+  return el;
+}
+
+// Which parts of the sheet land on him. The ball is faceted, so near the top and bottom of
+// the body whole patches never show; the limb patches show only inside their outlines.
+export function skinCoverage() {
+  const { el, ctx } = sheetCanvas();
+  ctx.fillStyle = ctx.strokeStyle = '#fff';
+  // A little outline on every face, so no gap opens between neighbours.
   ctx.lineWidth = 2;
-  ctx.font = '20px monospace';
-  // Checked on the model: the left quarter of the picture is his right side.
-  for (const [turn, label] of [[-Math.PI, 'BACK'], [-Math.PI / 2, 'HIS RIGHT'], [0, 'FRONT (face)'], [Math.PI / 2, 'HIS LEFT'], [Math.PI, 'BACK']]) {
-    const x = Math.min(W - 2, Math.max(2, px(turn)));
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-    ctx.fillText(label, Math.min(W - 70, Math.max(6, x + 6)), 56);
+  ctx.lineJoin = 'round';
+  for (const [a, b, c] of sheetFaces()) {
+    ctx.beginPath();
+    ctx.moveTo(...a);
+    ctx.lineTo(...b);
+    ctx.lineTo(...c);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
   }
-  for (const [rise, label] of [[Math.PI / 4, 'upper body'], [0, 'middle'], [-Math.PI / 4, 'lower body']]) {
-    const y = py(rise);
-    ctx.setLineDash([6, 6]);
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText(label, 8, y - 6);
+  return el;
+}
+
+// A sheet ready to paint on, for models/skins/: the default skin, cut to what shows on him.
+// guides adds every crease of his body and limbs and labels saying what each patch is.
+export function skinTemplate({ guides = true } = {}) {
+  const el = paintSheet(DEFAULT_LOOK);
+  const ctx = el.getContext('2d');
+  if (guides) {
+    ctx.strokeStyle = 'rgba(40, 30, 60, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    for (const [a, b] of sheetEdges()) {
+      ctx.beginPath();
+      ctx.moveTo(...a);
+      ctx.lineTo(...b);
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(40, 30, 60, 0.85)';
+    ctx.textAlign = 'center';
+    ctx.font = '18px monospace';
+    // Which way round the body goes. Checked on the model: the left quarter is his right side.
+    for (const [turn, label] of [[-Math.PI * 0.92, 'BACK'], [-Math.PI / 2, 'HIS RIGHT'], [0, 'FRONT'], [Math.PI / 2, 'HIS LEFT'], [Math.PI * 0.92, 'BACK']]) {
+      ctx.fillText(label, px(turn), 300);
+    }
+    for (const [part, patches] of Object.entries(PARTS)) {
+      if (part === 'body') continue;
+      const { side, top, bottom } = patches;
+      const arm = part.endsWith('Arm');
+      ctx.fillStyle = 'rgba(40, 30, 60, 0.85)';
+      ctx.font = '14px monospace';
+      // Round the limb: one spot along the strip faces forward, the opposite one back.
+      ctx.fillText('FRONT', side.x + side.w * LIMB_FRONT, side.y + side.h / 2);
+      ctx.fillText('BACK', side.x + side.w * LIMB_BACK, side.y + side.h / 2);
+      ctx.fillText(arm ? 'fist end' : 'hip end', side.x + side.w / 2, side.y + 20);
+      ctx.fillText(arm ? 'shoulder end' : 'foot end', side.x + side.w / 2, side.y + side.h - 10);
+    }
   }
-  ctx.fillText('TOP of head (hidden under a hat)', 8, 24);
-  ctx.fillText('UNDERNEATH', 8, H - 10);
+  // Whatever never shows on him is cut out, so it's clear where not to paint.
+  ctx.globalCompositeOperation = 'destination-in';
+  ctx.drawImage(skinCoverage(), 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  // The names of the limb patches go in the clear space round them.
+  if (guides) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(40, 30, 60, 0.9)';
+    for (const [part, patches] of Object.entries(PARTS)) {
+      if (part === 'body') continue;
+      const { side, top, bottom } = patches;
+      const [topName, bottomName] = CAP_NAMES[part];
+      ctx.font = 'bold 20px monospace';
+      ctx.fillText(PART_LABELS[part], side.x + side.w / 2, side.y - 14);
+      ctx.font = '13px monospace';
+      ctx.fillText(topName, top.x + top.w / 2, top.y + top.h + 18);
+      ctx.fillText(bottomName, bottom.x + bottom.w / 2, bottom.y + bottom.h + 18);
+    }
+    ctx.textAlign = 'start';
+  }
   return el;
 }
 
@@ -118,7 +216,6 @@ export const LOOKS = {
   bigone:  { top: 0x3a2d47, low: 0x15101c, belly: 0xd9a441, limb: 0xd9a441, spike: 0xd9a441, eye: 0xff3b30, core: 0xffe08a },
 };
 
-const hex = (n) => '#' + n.toString(16).padStart(6, '0');
 
 // An enemy: shaded body with a belly, slanted glowing eyes under heavy brows, and fangs.
 export function creatureSkin(look) {
