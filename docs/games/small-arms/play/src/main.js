@@ -9,8 +9,8 @@ import { createTouchControls } from './ui/touch.js';
 import { createAudio } from './ui/audio.js';
 import { makeGunIcons } from './ui/gunIcons.js';
 import * as screens from './ui/screens.js';
-import { newRun, deal, takeCard, resolvePending, upgradeWeapon, dropAbility, dropPower, buyTokens, waveSetup, finishWave, isBossWave, maxHealth } from './game/run.js';
-import { buyRank, infuse, equipHat, equipSkin, hatBonus } from './game/meta.js';
+import { newRun, deal, takeCard, resolvePending, upgradeWeapon, reroll, patchUp, dropAbility, dropPower, buyTokens, waveSetup, finishWave, isBossWave, maxHealth } from './game/run.js';
+import { buyRank, infuse, takeOut, mergeRunes, openSocket, infusedRunes, equipHat, equipSkin, hatBonus } from './game/meta.js';
 import { spin } from './game/slots.js';
 import { loadSave, writeSave, freshSave, bankRun } from './game/save.js';
 import { SYMBOLS } from './content/loot.js';
@@ -81,7 +81,7 @@ renderer.setLook({ skin: state.save.meta.skin, hat: state.save.meta.hat });
 function menuSim() {
   const run = state.save.run;
   const meta = state.save.meta;
-  const loadout = run ? run.weapons.map((w) => ({ id: w.id, level: w.level, rune: meta.infused[w.id] ?? null })) : [{ id: 'pistol', level: 1, rune: meta.infused.pistol ?? null }];
+  const loadout = run ? run.weapons.map((w) => ({ id: w.id, level: w.level, runes: infusedRunes(meta, w.id) })) : [{ id: 'pistol', level: 1, runes: infusedRunes(meta, 'pistol') }];
   return createSim({ idle: true, loadout, held: run?.held ?? 0, ranks: meta.ranks, bonus: hatBonus(meta) });
 }
 const refreshBackdrop = () => { state.sim = menuSim(); };
@@ -259,6 +259,8 @@ const actions = {
     show('camp');
   },
   upgrade(el) { act(() => upgradeWeapon(state.save.run, Number(el.dataset.slot)), { backdrop: true }); },
+  reroll() { act(() => reroll(state.save.run)); },
+  patch() { act(() => patchUp(state.save.run, state.save.meta)); },
   hold(el) { act(() => { state.save.run.held = Number(el.dataset.slot); return { ok: true }; }, { backdrop: true }); },
   dropability(el) { act(() => dropAbility(state.save.run, Number(el.dataset.slot))); },
   droppower(el) { act(() => dropPower(state.save.run, Number(el.dataset.slot))); },
@@ -269,7 +271,10 @@ const actions = {
 
   pickgun(el) { show('armory', { picked: el.dataset.gun }); },
   rank(el) { act(() => buyRank(state.save.meta, el.dataset.gun, el.dataset.key), { backdrop: true }); },
-  infuse(el) { act(() => infuse(state.save.meta, el.dataset.gun, el.dataset.rune), { backdrop: true }); },
+  infuse(el) { act(() => infuse(state.save.meta, el.dataset.gun, el.dataset.rune, Number(el.dataset.socket)), { backdrop: true }); },
+  takeout(el) { act(() => takeOut(state.save.meta, el.dataset.gun, Number(el.dataset.socket)), { backdrop: true }); },
+  merge(el) { act(() => mergeRunes(state.save.meta, el.dataset.rune, Number(el.dataset.tier))); },
+  socket(el) { act(() => openSocket(state.save.meta, el.dataset.gun)); },
   hat(el) {
     act(() => {
       const result = equipHat(state.save.meta, el.dataset.hat || null);
@@ -450,7 +455,7 @@ async function pictureMode(name) {
   run.abilities = scene.abilities ?? [];
   run.powers = scene.powers ?? [];
   meta.hat = scene.hat;
-  if (scene.rune) meta.infused[scene.rune[0]] = scene.rune[1];
+  if (scene.rune) meta.infused[scene.rune[0]] = [{ id: scene.rune[1], tier: 0 }, null];
   renderer.setLook({ hat: meta.hat });
   run.hp = 100;
   const setup = waveSetup(run, meta);
@@ -528,7 +533,7 @@ window.loaded = {
     state.home ??= d.cameraHome.clone();
     if (!id) { d.cameraHome.copy(state.home); screenEl.hidden = false; refreshBackdrop(); return 'back'; }
     const meta = state.save.meta;
-    state.sim = createSim({ idle: true, loadout: [{ id, level: 1, rune: meta.infused[id] ?? null }], ranks: meta.ranks, bonus: hatBonus(meta) });
+    state.sim = createSim({ idle: true, loadout: [{ id, level: 1, runes: infusedRunes(meta, id) }], ranks: meta.ranks, bonus: hatBonus(meta) });
     const sim = state.sim;
     const step = sim.step;
     const a = (aimDeg * Math.PI) / 180;

@@ -5,11 +5,11 @@
 
 import { WEAPONS } from '../content/weapons.js';
 import { ABILITIES, POWERS } from '../content/cards.js';
-import { freshMeta } from './meta.js';
+import { freshMeta, upgradeRunes } from './meta.js';
 
 const KEY = 'loaded-save';
 const BACKUP = 'loaded-save-backup';
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export function freshSave() {
   return {
@@ -22,9 +22,10 @@ export function freshSave() {
 }
 
 // One step per old version. Version 1 had the shop; its run can't carry over, but the
-// settings and records do.
+// settings and records do. Version 2 had runes without tiers or second sockets.
 const MIGRATIONS = {
   1: (save) => ({ ...freshSave(), settings: save.settings ?? {}, records: save.records ?? {} }),
+  2: (save) => ({ ...save, version: 3, meta: upgradeRunes({ ...freshMeta(), ...save.meta }) }),
 };
 
 function check(raw) {

@@ -8,7 +8,7 @@ import { ENEMIES, MOD_ORDER } from '../content/enemies.js';
 import { WEAPONS, STARTER_WEAPONS, MAX_WEAPONS, MAX_LEVEL, upgradeCost } from '../content/weapons.js';
 import { DECKS, MAX_ABILITIES, MAX_POWERS } from '../content/cards.js';
 import { TOKEN_PRICE } from '../content/loot.js';
-import { hatBonus } from './meta.js';
+import { hatBonus, infusedRunes } from './meta.js';
 
 // Cover in the room. The middle is always clear, because that is where he starts.
 const LAYOUTS = [
@@ -76,6 +76,8 @@ export function newRun(seed = Math.floor(Math.random() * 2 ** 31)) {
     draws: 0,
     offer: null,      // the three cards on the table, once dealt
     pending: null,    // a taken card that needs room making for it
+    rerolls: 0,       // redeals bought since the last round; each costs double the one before
+    patches: 0,       // camp heals bought since the last round, likewise
     stats: { kills: 0, earned: 0, shots: 0, hurt: 0, xp: 0, cards: 0 },
   };
   const rng = makeRng(seed ^ 0x5eed);
@@ -111,6 +113,21 @@ export function deal(run) {
     { deck: 'power', id: draw(run, 'power') },
   ].filter((c) => c.id);
   return run.offer;
+}
+
+// A redeal: the three on the table go back in their decks and three more come out.
+// $50, then $100, $200, ... until the next round.
+export const REROLL_BASE = 50;
+export const rerollCost = (run) => REROLL_BASE * 2 ** (run.rerolls ?? 0);
+export function reroll(run) {
+  if (!run.offer) return no('Nothing dealt');
+  const cost = rerollCost(run);
+  if (run.coins < cost) return no('Not enough coins');
+  for (const c of run.offer) run.decks[c.deck].discard.push(c.id);
+  run.offer = null;
+  run.rerolls = (run.rerolls ?? 0) + 1;
+  deal(run);
+  return pay(run, cost);
 }
 
 // What taking a card would do, for the card's own label.
@@ -159,21 +176,43 @@ export function resolvePending(run, slot) {
   return { ok: true };
 }
 
+// A duplicate makes the next level cheap; without one it can still be bought, at a premium.
+export const FORCE_PREMIUM = 2.5;
+export function upgradePrice(w) {
+  const cost = upgradeCost(w.id, w.level);
+  return w.level < w.unlocked ? cost : Math.round((cost * FORCE_PREMIUM) / 10) * 10;
+}
 export function canUpgrade(run, slot) {
   const w = run.weapons[slot];
   if (!w) return no('Nothing there');
   if (w.level >= MAX_LEVEL) return no('Maxed');
-  if (w.level >= w.unlocked) return no('Find a duplicate');
-  if (run.coins < upgradeCost(w.id, w.level)) return no('Not enough coins');
-  return { ok: true };
+  if (run.coins < upgradePrice(w)) return no('Not enough coins');
+  return { ok: true, cost: upgradePrice(w), forced: w.level >= w.unlocked };
 }
 export function upgradeWeapon(run, slot) {
   const check = canUpgrade(run, slot);
   if (!check.ok) return check;
   const w = run.weapons[slot];
-  const cost = upgradeCost(w.id, w.level);
   w.level++;
-  return pay(run, cost);
+  w.unlocked = Math.max(w.unlocked, w.level);
+  return pay(run, check.cost);
+}
+
+// Patching up at camp: 25 health for coins. The price grows with the round, and each
+// patch before the next round costs half as much again as the first.
+export const PATCH_HP = 25;
+export const patchCost = (run) => Math.round(((30 + 5 * run.wave) * (1 + 0.5 * (run.patches ?? 0))) / 10) * 10;
+export function canPatch(run, meta) {
+  if (run.hp >= maxHealth(run, meta)) return no('Already well');
+  if (run.coins < patchCost(run)) return no('Not enough coins');
+  return { ok: true, cost: patchCost(run) };
+}
+export function patchUp(run, meta) {
+  const check = canPatch(run, meta);
+  if (!check.ok) return check;
+  run.hp = Math.min(maxHealth(run, meta), run.hp + PATCH_HP);
+  run.patches = (run.patches ?? 0) + 1;
+  return pay(run, check.cost);
 }
 
 export function dropAbility(run, slot) {
@@ -202,7 +241,7 @@ export function waveSetup(run, meta) {
   const maxHp = maxHealth(run, meta);
   return {
     seed, wave: run.wave, plan: wavePlan(run.wave, seed),
-    loadout: run.weapons.map((w) => ({ id: w.id, level: w.level, rune: meta.infused[w.id] ?? null })),
+    loadout: run.weapons.map((w) => ({ id: w.id, level: w.level, runes: infusedRunes(meta, w.id) })),
     ranks: meta.ranks, held: run.held, abilities: [...run.abilities], powers: [...run.powers],
     bonus: hatBonus(meta), hp: Math.min(run.hp, maxHp), maxHp,
   };
@@ -245,6 +284,8 @@ export function finishWave(run, sim, meta) {
     summary.healed = Math.min(WAVE_HEAL, maxHealth(run, meta) - run.hp);
     run.hp += summary.healed;
     run.wave++;
+    run.rerolls = 0;
+    run.patches = 0;
   }
   return summary;
 }
