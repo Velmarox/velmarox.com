@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Small Arms | VRX Games</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="stage">
+    <canvas id="arena3d" aria-label="The arena. One guy, his weapons, and creatures to beat."></canvas>
+    <div id="overlay"></div>
+  </div>
+
+  <div id="hud" role="status" hidden></div>
+  <div id="guns" hidden></div>
+  <div id="cardbar" hidden></div>
+  <div id="banner" role="alert" hidden></div>
+
+  <div id="help" hidden>
+    <span class="for-keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
+    <span class="for-keys"><kbd>Hold left mouse</kbd> attack</span>
+    <span class="for-keys"><kbd>Space</kbd> dash</span>
+    <span class="for-keys"><kbd>Wheel</kbd> <kbd>1</kbd>-<kbd>4</kbd> swap</span>
+    <span class="for-keys"><kbd>Q</kbd><kbd>E</kbd><kbd>F</kbd> abilities</span>
+    <span class="for-keys"><kbd>Z</kbd><kbd>X</kbd><kbd>C</kbd> powers</span>
+    <span class="for-keys"><kbd>Esc</kbd> pause</span>
+    <span class="for-pad"><kbd>L stick</kbd> move</span>
+    <span class="for-pad"><kbd>R stick</kbd> aim</span>
+    <span class="for-pad"><kbd>RT</kbd> attack</span>
+    <span class="for-pad"><kbd>LT</kbd> dash</span>
+    <span class="for-pad"><kbd>LB</kbd><kbd>RB</kbd> swap</span>
+    <span class="for-pad"><img class="pad start" src="img/pad/start.png" alt="Start"> pause</span>
+  </div>
+
+  <main id="screen"></main>
+
+  <!-- VRX badge: links back to the game's page on the site. Re-add this block after copying a new build. -->
+  <style>
+    .vrx-badge { position: fixed; left: 10px; bottom: 8px; z-index: 30; display: block; width: 84px; opacity: .72; }
+    .vrx-badge:hover { opacity: 1; }
+    .vrx-badge img { display: block; width: 100%; height: auto; }
+  </style>
+  <a class="vrx-badge" href="../" aria-label="Back to the game page"><picture><source srcset="/assets/brand/vrx-badge.webp" type="image/webp"><img src="/assets/brand/vrx-badge.png" width="180" height="85" alt="VRX Games" decoding="async"></picture></a>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

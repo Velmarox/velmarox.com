@@ -54,6 +54,21 @@ window.CATEGORIES = {
 
 window.GAMES = [
   {
+    slug: 'small-arms',
+    title: 'Small Arms', tagline: 'One little guy, tiny arms, a lot of weapons. Survive the rounds, pick a card, go again.',
+    genres: ['action', 'arcade', 'roguelike'], status: 'live', featured: true, trending: true, flag: 'Early build',
+    released: '2026-10-20', updated: '2026-10-20', version: '1.2.1',
+    controls: 'Keyboard and mouse, or a twin-stick controller', platforms: 'Browser (desktop)', session: '10-30 minutes a run',
+    play: '/games/small-arms/play/',
+    thumb: '/games/small-arms/thumb.jpg', banner: '/games/small-arms/cover.jpg',
+    shots: ['/games/small-arms/cover.jpg', '/games/small-arms/shot-1.jpg', '/games/small-arms/shot-2.jpg', '/games/small-arms/shot-3.jpg', '/games/small-arms/shot-4.jpg', '/games/small-arms/shot-5.jpg'],
+    about: "The little pink guy from Contract Zero, with weapons this time. The creatures are the same ones, and they still draw every attack on the floor before it lands. The rounds never stop.\n\nHe holds one weapon at a time and carries up to four. A handgun goes out in front in both tiny fists. For a rifle he turns side-on and shoulders it. A bat or a katana gets swung in a wide arc, a spear gets thrust, and the chainsaw gets held out and leaned on. Melee ignores the Shell's armour and knocks rocks out of the air.\n\nThere is no shop. After every round three cards are dealt, one from each deck: a weapon, an ability or a power. Take one. A weapon you already have unlocks its next upgrade, which you pay for with the coins the creatures drop. Abilities run on a cooldown, powers are used once, and you can hold three of each. They are all gone when the run ends.\n\nSome things last. Every weapon earns its own XP, and the Armory turns it into permanent ranks. Between rounds a slot machine takes tokens and pays out mostly powers, and now and then a rune, a hat or a skin. A rune infuses one weapon for good: fire, frost, shock, venom or blood. A hat is the only gear that fits him, and each one does something small.\n\nThis is an early build and it has been balanced against a bot, not people, so expect rough edges. Saves stay in your browser only.\n\nThe weapons are from the 036 Weapon Pack and the muzzle flashes are from BinbunVFX. Drawing by three.js (MIT). Pixel fonts from the Not Jam font pack (CC0). Every sound is made in the browser.",
+    howto: ['WASD to move, mouse to aim, hold the left button to shoot or swing. Space or right mouse dashes, and nothing can hurt you mid-dash.', 'Mouse wheel, Tab or 1 to 4 swaps weapons. A gun you are not holding reloads itself.', 'Q, E and F are your abilities. Z, X and C use your powers.', 'A red shape on the floor is an attack about to land. Get out of it. A Charger that misses you and hits a wall is stunned and takes extra damage.', 'Shoot a Shell in the back or the side, or hit it with something you swing.', 'After a round, take one of three cards. Between rounds, upgrade what duplicates have unlocked, spin the slot machine, and spend weapon XP in the Armory.', 'Controller: left stick moves, right stick aims, RT attacks, LT dashes, the bumpers swap weapons, A B Y are abilities and the D-pad uses powers.'],
+    log: [
+      { date: '2026-10-20', text: 'v1.2.1: first release on the site. One weapon held at a time, posed by its size, with five melee weapons. Card picks from three decks after every round, 15 abilities, 15 powers, weapon XP and permanent ranks, a slot machine, eight hats, six skins and five runes.' }
+    ]
+  },
+  {
     slug: 'war-chats',
     title: 'War Chats', tagline: 'History as a group chat, with a live map of who is talking, what borders moved, and what really happened.',
     genres: ['history', 'story'], status: 'live', featured: true, trending: true, flag: 'Interactive',

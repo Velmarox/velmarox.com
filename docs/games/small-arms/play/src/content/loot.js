@@ -1,0 +1,50 @@
+// Things that last between runs: hats, skins, and weapon runes, and the slot machine that
+// pays them out. Data only; spinning is in game/slots.js.
+
+// One hat at a time: with his build, a hat is the only gear that fits.
+export const HATS = {
+  cap:     { name: 'Ball Cap', text: 'Run 6% faster.', bonus: { speed: 0.06 } },
+  hardhat: { name: 'Hard Hat', text: '+20 most health.', bonus: { maxHp: 20 } },
+  cowboy:  { name: 'Ten-Gallon', text: 'Handguns hit 15% harder.', bonus: { handgun: 0.15 } },
+  beanie:  { name: 'Beanie', text: 'Guns reload 10% faster.', bonus: { reload: 0.1 } },
+  party:   { name: 'Party Hat', text: 'Creatures drop 15% more coins.', bonus: { coins: 0.15 } },
+  crown:   { name: 'Crown', text: 'Weapons earn 20% more XP.', bonus: { xp: 0.2 } },
+  wizard:  { name: 'Wizard Hat', text: 'Abilities come back 15% sooner.', bonus: { cooldown: 0.15 } },
+  tophat:  { name: 'Top Hat', text: 'Dash comes back 25% sooner.', bonus: { dash: 0.25 } },
+};
+
+// Skins repaint his body. These are colour sets on the same painted face; a skin with
+// png set uses that picture instead (see models/skins/skin-template.png for the layout).
+export const SKINS = {
+  peach:  { name: 'Peach', top: '#f9bd9b', low: '#e08876', limb: 0xe58f7c, blush: 'rgba(245, 140, 150, 0.75)' },
+  mint:   { name: 'Mint', top: '#b8f0d0', low: '#6cc49a', limb: 0x5fb48a, blush: 'rgba(255, 150, 170, 0.6)' },
+  grape:  { name: 'Grape', top: '#c9a8f0', low: '#8a62c4', limb: 0x7f58b8, blush: 'rgba(255, 140, 200, 0.6)' },
+  gold:   { name: 'Gold Rush', top: '#ffe58a', low: '#d9a028', limb: 0xc8901c, blush: 'rgba(255, 130, 90, 0.6)' },
+  ghost:  { name: 'Ghost', top: '#f4f4fa', low: '#b8bcd8', limb: 0xa8acc8, blush: 'rgba(170, 190, 255, 0.6)' },
+  shadow: { name: 'Shadow', top: '#5a5070', low: '#2b2338', limb: 0x2b2338, blush: 'rgba(255, 60, 110, 0.6)', eyes: '#ff5a7a' },
+};
+export const DEFAULT_SKIN = 'peach';
+
+// A rune is infused into one weapon for good. It changes what the weapon does and how it looks.
+export const RUNES = {
+  fire:  { name: 'Fire Rune', text: 'Sets creatures alight: they burn for a while after each hit.', color: 0xff7a1a },
+  frost: { name: 'Frost Rune', text: 'Hits slow creatures down.', color: 0x7fd8ff },
+  shock: { name: 'Shock Rune', text: 'Hits arc to one more creature nearby.', color: 0xf8e040 },
+  venom: { name: 'Venom Rune', text: 'Hits poison; poison stacks.', color: 0x8fe040 },
+  blood: { name: 'Blood Rune', text: 'Hits heal you a little.', color: 0xe0203c },
+};
+
+// The slot machine. Tokens are bought with coins and carry over between runs.
+export const TOKEN_PRICE = 60;
+// What a spin pays, by weight. Mostly common powers; the lasting things are rare.
+export const PRIZES = [
+  { kind: 'power', weight: 58 },
+  { kind: 'coins', weight: 14 },
+  { kind: 'rune', weight: 12 },
+  { kind: 'hat', weight: 8 },
+  { kind: 'skin', weight: 5 },
+  { kind: 'jackpot', weight: 3 },
+];
+// The symbols on the reels, and which prize each three-of-a-kind means.
+export const SYMBOLS = ['POW', 'COIN', 'RUNE', 'HAT', 'SKIN', '7'];
+export const SYMBOL_FOR = { power: 'POW', coins: 'COIN', rune: 'RUNE', hat: 'HAT', skin: 'SKIN', jackpot: '7' };

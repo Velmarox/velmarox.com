@@ -5,6 +5,12 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.45.0-alpha (2026-10-20)
+- New game: Small Arms (games/small-arms/), Contract Zero's pink guy with weapons. Endless rounds with a card pick
+  from three decks after each one, one weapon held at a time, melee, abilities, powers, weapon XP, a slot machine,
+  hats, skins and runes. Game version 1.2.1. Its cover and screenshots come from the game's own picture mode.
+- Not logged here: v0.35.0-alpha to v0.44.0-alpha (the War Chats updates). See the git history for those.
+
 v0.34.0-alpha (2026-10-20)
 - New game: War Chats (games/war-chats/), history as a Discord group chat with a live war-room map, border changes
   and real-history notes. World War II (Server History's script, credited in the chat and on the page), the Roman
