@@ -581,3 +581,114 @@ i.gunicon.plus::after { content: "+"; position: absolute; inset: 0; display: gri
 #cover-title h1 { font-size: 154px; text-shadow: 7px 7px 0 #a04818, 14px 14px 0 var(--shade); }
 #cover-title h1 span { text-shadow: 7px 7px 0 var(--red), 14px 14px 0 var(--shade); }
 #cover-title p { display: inline-block; margin-top: 26px; padding: 6px 22px 10px; font-size: 36px; text-transform: uppercase; color: var(--gold); background: var(--shade); border: 4px solid var(--frame); }
+
+/* ----- v1.4: phones and tablets ----- */
+
+/* Touch controls: a layer over the arena during a fight (over the site badge too, which
+   comes back on the menus). The two halves of the screen are
+   the stick zones; a stick appears where the finger lands. Square, like everything else. */
+#touch { position: absolute; inset: 0; z-index: 40; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.tzone { position: absolute; top: 0; bottom: 0; }
+.tzone.left { left: 0; width: 50%; }
+.tzone.right { right: 0; width: 50%; }
+.tstick { position: absolute; left: -60px; top: -60px; width: 120px; height: 120px; pointer-events: none; background: rgba(20, 26, 82, 0.28); border: var(--px) solid rgba(248, 248, 248, 0.7); outline: var(--px) solid rgba(8, 10, 36, 0.4); }
+.tstick i { position: absolute; left: 36px; top: 36px; width: 42px; height: 42px; background: rgba(248, 248, 248, 0.85); border: var(--px) solid var(--shade); }
+.tstick.aim i { background: rgba(232, 72, 72, 0.9); }
+.tbtn { position: relative; min-width: 64px; padding: 6px 10px 8px; font: 14px/1.1 var(--text-font); text-align: center; text-transform: uppercase; color: var(--text); background: rgba(28, 36, 112, 0.82); border: var(--px) solid var(--frame); outline: var(--px) solid var(--shade); text-shadow: 2px 2px 0 var(--shade); touch-action: none; }
+.tbtn::before { display: none; }
+.tbtn.down { background: var(--frame); color: var(--shade); text-shadow: none; }
+.tbar { position: absolute; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; gap: 10px; }
+.tbar .dash { min-width: 84px; color: var(--gold); }
+.tcards { position: absolute; right: calc(10px + env(safe-area-inset-right)); top: 64px; display: grid; grid-template-columns: repeat(3, 92px); gap: 6px; }
+.tcards .tbtn { min-width: 0; padding: 5px 4px 9px; font-size: 11px; overflow: hidden; }
+.tcards .tbtn span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tcards .tbtn b { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--teal); }
+.tcards .tbtn.ready b { background: var(--green); }
+.tcards .tbtn.power { background: rgba(74, 58, 16, 0.88); }
+.tbtn.pause { position: absolute; right: calc(10px + env(safe-area-inset-right)); top: 8px; min-width: 44px; z-index: 2; }
+.tcards .tbtn[hidden] { display: none !important; }
+
+/* With touch, the buttons replace the keys line and the ability bar, and the weapon list
+   moves up out of the left stick's way. */
+body[data-device="touch"] #help, body[data-device="touch"] #cardbar { display: none !important; }
+body[data-device="touch"] #guns { top: 64px; bottom: auto; left: calc(10px + env(safe-area-inset-left)); width: 230px; font-size: 10px; }
+body[data-device="touch"] .gunrow { grid-template-columns: auto 1fr 50px 44px; }
+body[data-device="touch"] .gunrow kbd { display: none; }
+body[data-device="touch"] #stage { cursor: default; }
+body[data-device="touch"] .tcards { top: 64px; }
+
+/* Turn sideways: phones in portrait get a message instead of a squashed game. */
+#rotate { display: none; }
+@media (orientation: portrait) and (pointer: coarse) and (max-width: 820px) {
+  #rotate { position: fixed; inset: 0; z-index: 100; display: grid; place-content: center; gap: 24px; text-align: center; background: var(--win-low); color: var(--gold); font: 28px/1.3 var(--title-font); text-transform: uppercase; text-shadow: 3px 3px 0 var(--shade); }
+  #rotate i { justify-self: center; width: 60px; height: 100px; border: 6px solid var(--frame); animation: turnme 1.6s steps(4) infinite; }
+}
+@keyframes turnme { 50%, 100% { transform: rotate(90deg); } }
+
+/* Short screens (a phone held sideways): everything a size smaller. */
+@media (max-height: 520px) {
+  html, body { font-size: 18px; }
+  #hud .cell { min-height: 40px; padding: 2px 10px 4px; }
+  .cell span { font-size: 10px; }
+  .cell b { font-size: 16px; }
+  .cell.hp { min-width: 150px; }
+  .cell.hp .meter { width: 90px; }
+  .cell.hp b { font-size: 12px; right: 10px; bottom: 4px; }
+  .cell.boss { min-width: 160px; }
+  #banner { font-size: 40px; padding: 10px 28px 12px; }
+  .tcards, body[data-device="touch"] #guns { top: 50px; }
+  #screen { padding: 10px 10px calc(14px + env(safe-area-inset-bottom)); }
+  .panel { padding: 12px 14px 16px; }
+  .panel.home, .panel.pause { margin-top: 0; }
+  /* The title screen in two columns: name and records on the left, the menu on the right. */
+  .panel.home { max-width: 760px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; align-items: start; }
+  .panel.home > nav { grid-column: 2; grid-row: 1 / span 3; margin-top: 0; }
+  .panel.home > .title, .panel.home > .stats, .panel.home > .notice { grid-column: 1; }
+  .panel.home .stat { padding: 4px 8px 6px; }
+  .panel.pause { max-width: 760px; }
+  .title { padding: 4px 0 8px; }
+  h1 { font-size: 40px; }
+  .lineup .gunicon { width: 72px; height: 36px; }
+  .head { margin-bottom: 10px; padding-bottom: 8px; }
+  .head h2 { font-size: 26px; }
+  button { font-size: 18px; padding: 2px 10px 4px 34px; }
+  .stack button.primary { font-size: 24px; }
+  .stack button { padding-top: 3px; padding-bottom: 5px; }
+  .stat b { font-size: 22px; }
+  .stats.big .stat.lead b { font-size: 40px; }
+  .popup { font-size: 14px; }
+  /* The three dealt cards stay side by side on a wide, short screen. */
+  .cards.three.dealt { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .card.deal { min-height: 0; }
+  .card.deal > header .gunicon { width: 110px; height: 55px; }
+  .card.deal > header h3 { font-size: 20px; }
+  .glyph { width: 52px; height: 52px; font-size: 36px; }
+  .cardtext { padding: 6px 10px 0; font-size: 12px; }
+  .gunstats { font-size: 10px; padding: 6px 10px 0; }
+  .card.deal > footer button { font-size: 20px; padding-top: 2px; padding-bottom: 4px; }
+  /* Room is short: the weapon card keeps its description and drops its stat table. */
+  .card.deal .gunstats { display: none; }
+  .card.deal > header { padding: 4px 8px 6px; gap: 2px; }
+  .card.deal > footer { padding: 6px 10px 8px; }
+  .panel.pick > .hint { margin-bottom: 6px; font-size: 10px; line-height: 1.3; }
+  .panel.pick .head { margin-bottom: 6px; padding-bottom: 4px; }
+  .panel.pick .head h2 { font-size: 20px; }
+  .card.deal > header .gunicon { width: 84px; height: 42px; }
+  .card.deal .glyph { width: 42px; height: 42px; font-size: 28px; }
+  .card.deal > header h3 { font-size: 18px; }
+  .card.deal .cardtext.dim { display: none; }
+  .cards.small { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .reel { height: 70px; }
+  .reel b { font-size: 26px; }
+  .reel .sym-7 { font-size: 40px; }
+  .machine { margin: 8px auto; padding: 10px; }
+  /* The stats bar stays one row on a short, wide screen. */
+  .bar { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-flow: column; margin-bottom: 8px; }
+  .bar .stat.wide { grid-column: auto; }
+  .stack.top { margin-bottom: 0; }
+  section > h3, h3.tier { margin: 10px 0 8px; }
+  .payout { margin-top: 6px; min-height: 0; font-size: 18px; }
+}
+
+/* Taps on menu buttons shouldn't flash or zoom. */
+button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }

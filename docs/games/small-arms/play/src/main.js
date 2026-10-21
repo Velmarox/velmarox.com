@@ -5,6 +5,7 @@ import { createSim } from './sim/world.js';
 import { STEP, tuning, ROOM } from './sim/tuning.js';
 import { createRenderer3d } from './ui/render3d.js';
 import { createInput } from './ui/input.js';
+import { createTouchControls } from './ui/touch.js';
 import { createAudio } from './ui/audio.js';
 import { makeGunIcons } from './ui/gunIcons.js';
 import * as screens from './ui/screens.js';
@@ -23,9 +24,14 @@ const gunsEl = document.getElementById('guns');
 const cardsEl = document.getElementById('cardbar');
 const bannerEl = document.getElementById('banner');
 const helpEl = document.getElementById('help');
-const renderer = createRenderer3d(document.getElementById('arena3d'), overlay);
-const input = createInput(stage, (x, y) => renderer.toWorld(x, y));
-const audio = createAudio();
+// Phones and tablets: touch controls, and a lighter renderer so it keeps up.
+const coarse = window.matchMedia('(pointer: coarse)').matches;
+const renderer = createRenderer3d(document.getElementById('arena3d'), overlay, { light: coarse });
+const touch = createTouchControls(document.body);
+const input = createInput(stage, (x, y) => renderer.toWorld(x, y), touch);
+if (coarse) document.body.dataset.device = 'touch';
+// ?mute keeps the game silent, for testing.
+const audio = createAudio({ muted: location.search.includes('mute') });
 
 // The browser can refuse storage (private windows, blocked site data). The game still
 // plays; it just won't remember.
@@ -87,6 +93,7 @@ function show(name, view = {}) {
   const inArena = name === 'arena';
   screenEl.hidden = inArena;
   for (const el of [hudEl, gunsEl, cardsEl, helpEl]) el.hidden = !inArena;
+  touch.show(inArena && (coarse || input.device() === 'touch'));
   if (inArena) { screenEl.innerHTML = ''; input.reset(); return; }
   const data = { save: state.save, status: state.status, problem: state.problem, icons: state.icons, ...view };
   const keep = name === state.lastScreen ? screenEl.scrollTop : 0;
@@ -133,7 +140,15 @@ function startRun() {
   startWave();
 }
 
+// On a phone, a run plays fullscreen and sideways where the browser allows it.
+function goFullscreen() {
+  if (!(coarse || input.device() === 'touch') || document.fullscreenElement) return;
+  const el = document.documentElement;
+  el.requestFullscreen?.({ navigationUI: 'hide' }).then(() => screen.orientation?.lock?.('landscape')).catch(() => {});
+}
+
 function startWave() {
+  goFullscreen();
   const run = state.save.run;
   persist();
   state.back = [];
@@ -312,7 +327,11 @@ function frame(now) {
   const inArena = state.screen === 'arena';
 
   // Prompts show keys or controller buttons, whichever was touched last.
-  if (document.body.dataset.device !== input.device()) document.body.dataset.device = input.device();
+  const device = coarse && input.device() === 'keys' ? 'touch' : input.device();
+  if (document.body.dataset.device !== device) {
+    document.body.dataset.device = device;
+    if (inArena) touch.show(device === 'touch');
+  }
 
   // A controller walks the cursor through a menu's options, confirms with A, backs out with B.
   if (!inArena) {
@@ -365,6 +384,7 @@ function frame(now) {
       if (parts.hud !== shown.hud) { hudEl.innerHTML = parts.hud; shown.hud = parts.hud; }
       if (parts.guns !== shown.guns) { gunsEl.innerHTML = parts.guns; shown.guns = parts.guns; }
       if (parts.cards !== shown.cards) { cardsEl.innerHTML = parts.cards; shown.cards = parts.cards; }
+      touch.update(sim);
     }
   } else if (!inArena && sim && !state.frozen) {
     // Behind a menu: he idles and looks round, so what he's holding is on show.
