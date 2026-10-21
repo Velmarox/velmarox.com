@@ -75,7 +75,7 @@ window.GAMES = [
     slug: 'war-chats',
     title: 'War Chats', tagline: 'History as a group chat, with a live map of who is talking, what borders moved, and what really happened.',
     genres: ['history', 'story'], status: 'live', featured: true, trending: true, flag: 'Interactive',
-    released: '2026-10-20', updated: '2026-10-20', version: '2.0.1',
+    released: '2026-10-20', updated: '2026-10-21', version: '2.0.2',
     controls: 'Space or Next for each message; mouse or touch', platforms: 'Browser (best on desktop)', session: '20-40 minutes a war',
     play: '/games/war-chats/play/',
     thumb: '/games/war-chats/thumb.jpg', banner: '/games/war-chats/cover.jpg',
@@ -84,6 +84,7 @@ window.GAMES = [
     about: "Whole wars played out as a Discord server. Every country (and the odd emperor) is a user, every major event is a channel, and the chat clock runs from midnight to midnight across the war, so the time stamps line up with the real calendar.\n\nNext to the chat is a war-room map. It moves to wherever the conversation is, highlights who is talking, and recolors the borders as they change: who invaded whom, who switched sides, who stopped existing. Every scene has a Notes card with what actually happened, with dates and numbers, so the jokes come with the real story behind them.\n\nAll nine chats are in: the Roman Empire (all two thousand years of it), the Three Kingdoms, the Boer War, World War I, World War II, the Pacific War, the Korean War, the Cold War and the War on Terror.\n\nThe World War II chat is the script from Server History's YouTube video IF WW2 WAS A DISCORD CHAT (HISTORICALLY ACCURATE). Every joke in it is theirs; the map, notes and timeline were added here. The other eight chats are original scripts written for this site in the same style.\n\nMap effects from the Super Pixel Effects Gigapack by Will Tice / unTied Games.",
     howto: ['Press Space (or Next) for the next message. Left arrow or Back steps back, R restarts.', 'Press P to let it play by itself.', 'Pick a war from the server icons on the left, and jump to any event from the channel list.', 'Click Notes on the map for the real history behind the current scene.', 'M turns the message ding off, N the music. The minus and plus buttons resize the chat.', 'Your place in every war is saved in your browser, so you can pick up where you left off.'],
     log: [
+      { date: '2026-10-21', text: 'v2.0.2: a volume slider next to Chat sound and Music, for both the ding and the anthem. It remembers where you left it.' },
       { date: '2026-10-20', text: 'v2.0.1: map effects loop for as long as their scene is on screen: battles keep going off, arrows keep landing, alerts keep flashing.' },
       { date: '2026-10-20', text: 'v2.0.0: the Boer War chat, 1652 to 1902, and with it every server is open. Its clock speeds up so the war gets most of the day; the Boer republics are drawn on the map, then annexed, then crossed with blockhouse lines.' },
       { date: '2026-10-20', text: 'v1.9.0: pixel effects on the map. Battles go off with explosions (clashes and dust in the Roman and Three Kingdoms chats), invasion arrows land with an impact, and Petrov and the Cuban Missile Crisis get alerts. Massacres, terror attacks and atomic bombings stay quiet.' },

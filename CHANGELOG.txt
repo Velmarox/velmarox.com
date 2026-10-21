@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.48.1-alpha (2026-10-21)
+- War Chats 2.0.2: a volume slider beside Chat sound and Music sets the level of the ding and the anthem, and is
+  remembered on the device.
+
 v0.48.0-alpha (2026-10-21)
 - Small Arms 1.5.0: more to spend coins and runes on. Deal the cards again, force an upgrade without a duplicate,
   patch up between rounds, merge runes into stronger tiers, and open a second rune socket on a weapon.
