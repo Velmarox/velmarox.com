@@ -5,6 +5,10 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.51.0-alpha (2026-11-12)
+- Blog: "How to use CREATR", a guide to the Discord voice-room bot (make a room, every control, saved settings,
+  Claim, the empty-room timer) ending with its new kick/block messages. Cover image and icon in blog/creatr-guide/.
+
 v0.50.0-alpha (2026-10-21)
 - War Chats 2.2.0: the American Civil War chat (1820-1877), 725 lines, 37 scenes, with state-by-state front lines
   from US Census state outlines. Fix: a member who is kicked and comes back is listed once in the member list.

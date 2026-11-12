@@ -34,6 +34,12 @@ window.DISCORD = 'https://discord.gg/dcsAHeymNd';
 
 window.POSTS = [
   {
+    slug: 'creatr-guide',
+    title: 'How to use CREATR', date: '2026-11-12', tag: 'Guide',
+    cover: '/blog/creatr-guide/cover.jpg',
+    excerpt: 'Your own Discord voice room in one click: make it, lock it, hide it, pick who gets in. Plus the new kick and block messages.'
+  },
+  {
     slug: 'why-war-chats',
     title: 'Nobody Knew What They Were Doing', date: '2026-10-20', tag: 'Thoughts', game: 'war-chats',
     cover: '/blog/why-war-chats/cover.jpg',
