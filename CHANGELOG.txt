@@ -5,6 +5,9 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.51.1-alpha (2026-11-15)
+- Blog: "How to use CREATR" updated for the bot's v1.13.2: blocked people can still see a room, they just can't join it.
+
 v0.51.0-alpha (2026-11-12)
 - Blog: "How to use CREATR", a guide to the Discord voice-room bot (make a room, every control, saved settings,
   Claim, the empty-room timer) ending with its new kick/block messages. Cover image and icon in blog/creatr-guide/.
