@@ -5,6 +5,12 @@ Stages: -alpha → -beta at feature-complete → -rc1 when launch-ready → v1.0
 The current version lives in <meta name="version"> in docs/index.html and in the latest entry here.
 Git history is the archive: every release is a commit, and old versions can be checked out from it.
 
+v0.52.0-alpha (2026-11-24)
+- Blog: "CREATR: greetings, safe claims and full rooms", a step-by-step post on CREATR v1.14.0 (fully usable rooms,
+  the room greeting, claiming without overwriting your settings) with six annotated screenshots and a cover in
+  blog/creatr-update/. The screenshots are recreations of CREATR's panels with made-up names.
+- "How to use CREATR" lists the Greeting button and links to the new post.
+
 v0.51.1-alpha (2026-11-15)
 - Blog: "How to use CREATR" updated for the bot's v1.13.2: blocked people can still see a room, they just can't join it.
 

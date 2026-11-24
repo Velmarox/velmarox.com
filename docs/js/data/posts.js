@@ -34,6 +34,12 @@ window.DISCORD = 'https://discord.gg/dcsAHeymNd';
 
 window.POSTS = [
   {
+    slug: 'creatr-update',
+    title: 'CREATR: greetings, safe claims and full rooms', date: '2026-11-24', tag: 'Guide',
+    cover: '/blog/creatr-update/cover.jpg',
+    excerpt: 'Three CREATR updates, step by step: rooms you can fully use, a greeting at the top of your room, and taking over a room without losing your own settings.'
+  },
+  {
     slug: 'creatr-guide',
     title: 'How to use CREATR', date: '2026-11-12', tag: 'Guide',
     cover: '/blog/creatr-guide/cover.jpg',
